@@ -357,6 +357,7 @@ export function DataTable({
     [data]
   )
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table is not yet compatible with React Compiler
   const table = useReactTable({
     data,
     columns,

@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Montserrat, Nunito_Sans } from "next/font/google";
+import { Geist_Mono, Montserrat, Nunito_Sans } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
