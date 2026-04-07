@@ -23,7 +23,7 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: CARD_DURATION, ease: "easeOut" },
+    transition: { duration: CARD_DURATION, ease: "easeOut" as const },
   },
 }
 
@@ -54,13 +54,13 @@ function withStaggeredChildren(children: React.ReactNode) {
 
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const hasMountedRef = React.useRef(false)
+  const [hasMounted, setHasMounted] = React.useState(false)
 
   React.useEffect(() => {
-    hasMountedRef.current = true
+    setHasMounted(true)
   }, [])
 
-  const shouldAnimate = hasMountedRef.current
+  const shouldAnimate = hasMounted
 
   return (
     <AnimatePresence mode="wait" initial={false}>
