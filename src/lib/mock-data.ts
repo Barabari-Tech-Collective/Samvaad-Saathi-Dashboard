@@ -18,8 +18,15 @@ export const overviewKpis = {
 
 // ── Overview time-series (score trend over 90 days) ────────────────────────
 
-function generateDailyScores(days: number) {
-  const data: { date: string; avgScore: number; activeUsers: number }[] = []
+export type OverviewTimePoint = {
+  date: string
+  avgScore: number
+  activeUsers: number
+  interviewCount: number
+}
+
+function generateDailyScores(days: number): OverviewTimePoint[] {
+  const data: OverviewTimePoint[] = []
   const base = new Date("2024-04-01")
   for (let i = 0; i < days; i++) {
     const d = new Date(base)
@@ -28,6 +35,7 @@ function generateDailyScores(days: number) {
       date: d.toISOString().slice(0, 10),
       avgScore: +(65 + Math.random() * 15 + i * 0.06).toFixed(1),
       activeUsers: Math.round(40 + Math.random() * 30 + i * 0.3),
+      interviewCount: Math.round(35 + Math.random() * 55 + i * 0.4),
     })
   }
   return data
@@ -51,9 +59,19 @@ export interface StudentRow {
   consistency: "Stable" | "Fluctuating" | "Improving"
   practiceCompliance: number
   lastActive: string
+  registeredAt: string
 }
 
-const colleges = ["IIT Delhi", "BITS Pilani", "NIT Trichy", "VIT Vellore", "NSUT Delhi", "DTU Delhi", "IIIT Hyderabad", "COEP Pune"]
+export const colleges = [
+  "IIT Delhi",
+  "BITS Pilani",
+  "NIT Trichy",
+  "VIT Vellore",
+  "NSUT Delhi",
+  "DTU Delhi",
+  "IIIT Hyderabad",
+  "COEP Pune",
+] as const
 const roles = ["Frontend", "Backend", "Fullstack", "Data Science", "DevOps", "Mobile", "ML Engineer", "QA"]
 const weakAreaPool = ["High filler usage", "Low energy", "Poor structure", "Too short answers", "Low technical accuracy", "Weak examples", "Inconsistent pace", "Low relevance"]
 
@@ -81,6 +99,7 @@ function generateStudents(n: number): StudentRow[] {
       consistency: (["Stable", "Fluctuating", "Improving"] as const)[Math.floor(Math.random() * 3)],
       practiceCompliance: +(30 + Math.random() * 70).toFixed(0) as unknown as number,
       lastActive: new Date(Date.now() - Math.random() * 30 * 86_400_000).toISOString().slice(0, 10),
+      registeredAt: new Date(Date.now() - Math.random() * 90 * 86_400_000).toISOString().slice(0, 10),
     }
   })
 }
@@ -115,6 +134,7 @@ export interface InterviewRow {
   id: string
   studentId: string
   studentName: string
+  college: string
   role: string
   difficulty: "Easy" | "Medium" | "Hard"
   totalScore: number
@@ -129,12 +149,14 @@ export interface InterviewRow {
 
 function generateInterviews(n: number): InterviewRow[] {
   return Array.from({ length: n }, (_, i) => {
+    const stu = students[i % students.length]
     const speech = +(50 + Math.random() * 45).toFixed(1)
     const knowledge = +(45 + Math.random() * 50).toFixed(1)
     return {
       id: `INT-${String(i + 1).padStart(5, "0")}`,
-      studentId: students[i % students.length].id,
-      studentName: students[i % students.length].name,
+      studentId: stu.id,
+      studentName: stu.name,
+      college: stu.college,
       role: roles[i % roles.length],
       difficulty: (["Easy", "Medium", "Hard"] as const)[Math.floor(Math.random() * 3)],
       totalScore: +((speech + knowledge) / 2).toFixed(1),
@@ -150,6 +172,80 @@ function generateInterviews(n: number): InterviewRow[] {
 }
 
 export const interviews = generateInterviews(200)
+
+export const recentInterviews = [...interviews]
+  .sort((a, b) => b.date.localeCompare(a.date))
+  .slice(0, 10)
+
+export const recentlyAddedStudents = [...students]
+  .sort((a, b) => b.registeredAt.localeCompare(a.registeredAt))
+  .slice(0, 10)
+
+export const interviewsCountByRole = roles.map((role) => ({
+  role,
+  count: interviews.filter((i) => i.role === role).length,
+}))
+
+function modeValue<T extends string>(values: readonly T[]): T {
+  const counts = new Map<T, number>()
+  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1)
+  let best = values[0]!
+  let n = 0
+  for (const [k, v] of counts) {
+    if (v > n) {
+      n = v
+      best = k
+    }
+  }
+  return best
+}
+
+export const mockPopularInterviewRole = modeValue(interviews.map((i) => i.role))
+export const mockPopularInterviewDifficulty = modeValue(interviews.map((i) => i.difficulty))
+export const mockAvgInterviewDuration = +(
+  interviews.reduce((acc, i) => acc + i.duration, 0) / interviews.length
+).toFixed(1)
+
+export type CollegeSummaryRow = {
+  college: string
+  studentsCount: number
+  interviewsCount: number
+  avgScore: number
+  improvementPct: number
+  activeUsersLast30d: number
+}
+
+function buildCollegesSummary(): CollegeSummaryRow[] {
+  const boundary = new Date()
+  boundary.setDate(boundary.getDate() - 30)
+  const boundaryStr = boundary.toISOString().slice(0, 10)
+  return colleges.map((collegeName) => {
+    const cohort = students.filter((s) => s.college === collegeName)
+    const stuIds = new Set(cohort.map((s) => s.id))
+    const iv = interviews.filter((i) => stuIds.has(i.studentId))
+    const activeUsersLast30d = cohort.filter((s) => s.lastActive >= boundaryStr).length
+    const studentsCount = cohort.length
+    const interviewsCount = iv.length
+    const avgScore =
+      studentsCount > 0
+        ? +(cohort.reduce((acc, s) => acc + s.avgScore, 0) / studentsCount).toFixed(1)
+        : 0
+    const improvementPct =
+      studentsCount > 0
+        ? +(cohort.reduce((acc, s) => acc + s.improvementRate, 0) / studentsCount).toFixed(1)
+        : 0
+    return {
+      college: collegeName,
+      studentsCount,
+      interviewsCount,
+      avgScore,
+      improvementPct,
+      activeUsersLast30d,
+    }
+  })
+}
+
+export const collegesSummary = buildCollegesSummary()
 
 export const interviewsByDifficulty = [
   { difficulty: "Easy", avgScore: 78.2, completionRate: 92, count: 68 },
@@ -281,3 +377,16 @@ export const alerts: AlertItem[] = [
   { id: "A-007", type: "student", severity: "info", title: "Low practice compliance", description: "Student 41 has completed only 1 out of 8 recommended exercises.", timestamp: "2024-06-25", studentId: "STU-0041" },
   { id: "A-008", type: "system", severity: "warning", title: "Question causing high drop-off", description: "'Design a cache system' has a 22% drop-off rate — highest across all questions.", timestamp: "2024-06-26" },
 ]
+
+export const studentAttentionAlerts = alerts.filter((a) => a.type === "student").slice(0, 8)
+
+export function getStudentById(id: string): StudentRow | undefined {
+  return students.find((s) => s.id === id)
+}
+
+export function countActiveStudentsLast30d(): number {
+  const boundary = new Date()
+  boundary.setDate(boundary.getDate() - 30)
+  const boundaryStr = boundary.toISOString().slice(0, 10)
+  return students.filter((s) => s.lastActive >= boundaryStr).length
+}
