@@ -1,8 +1,10 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
+import { TOKEN_COOKIE_NAME } from "./lib/token-cookies.utils"
+
 
 export default function proxy(request: NextRequest) {
-  const token = request.cookies.get("token")?.value
+  const token = request.cookies.get(TOKEN_COOKIE_NAME)?.value
   const { pathname } = request.nextUrl
 
   if (pathname === "/login") {

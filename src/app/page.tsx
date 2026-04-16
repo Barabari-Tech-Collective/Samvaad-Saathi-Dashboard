@@ -1,6 +1,5 @@
 "use client"
 
-import { getCookie, setCookie } from "cookies-next/client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import * as React from "react"
@@ -11,18 +10,11 @@ import { MagicCard } from "@/components/ui/magic-card"
 import { RainbowButton } from "@/components/ui/rainbow-button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { COGNITO_LOGIN_PATH } from "@/lib/api/auth-paths"
-
-const COOKIE_OPTIONS = {
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict" as const,
-    maxAge: 60 * 60 * 24 * 7,
-}
-
-function getApiBaseUrl(): string {
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? ""
-    return base.replace(/\/$/, "")
-}
+import {
+    getAccessToken,
+    getRefreshToken,
+    setAuthTokens,
+} from "@/lib/token-cookies.utils"
 
 function LandingShell({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
@@ -49,8 +41,8 @@ export default function Page() {
     const [isProcessing, setIsProcessing] = React.useState(false)
 
     React.useEffect(() => {
-        const existingToken = getCookie("token")
-        const existingRefresh = getCookie("refresh_token")
+        const existingToken = getAccessToken()
+        const existingRefresh = getRefreshToken()
 
         if (existingToken && existingRefresh) {
             router.replace("/dashboard")
@@ -67,15 +59,14 @@ export default function Page() {
 
         if (token && refreshToken) {
             setIsProcessing(true)
-            setCookie("token", token, COOKIE_OPTIONS)
-            setCookie("refresh_token", refreshToken, COOKIE_OPTIONS)
+            setAuthTokens(token, refreshToken)
             window.history.replaceState({}, document.title, window.location.pathname)
             router.replace("/dashboard")
             return
         }
     }, [router])
 
-    const loginUrl = `${getApiBaseUrl()}/${COGNITO_LOGIN_PATH}`
+    const loginUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${COGNITO_LOGIN_PATH}`
 
     if (isProcessing) {
         return (

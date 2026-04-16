@@ -1,21 +1,21 @@
-import { createApiClient, createAuthInterceptor } from "react-query-ease"
 import axios from "axios"
-import { deleteCookie, getCookie, setCookie } from "cookies-next/client"
+import { createApiClient, createAuthInterceptor } from "react-query-ease"
 
-const COOKIE_OPTIONS = {
-  path: "/",
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
-  maxAge: 60 * 60 * 24 * 7,
-}
+import {
+    clearAuthCookies,
+    getAccessToken,
+    getRefreshToken,
+    setAccessToken,
+    setRefreshToken,
+} from "@/lib/token-cookies.utils"
 
 function getBaseUrl(): string {
   return (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "")
 }
 
 const authInterceptor = createAuthInterceptor({
-  getAccessToken: () => getCookie("token") ?? null,
-  getRefreshToken: () => getCookie("refresh_token") ?? null,
+  getAccessToken: () => getAccessToken() ?? null,
+  getRefreshToken: () => getRefreshToken() ?? null,
   refreshTokens: async ({ refreshToken }) => {
     if (!refreshToken) {
       throw new Error("No refresh token")
@@ -32,14 +32,13 @@ const authInterceptor = createAuthInterceptor({
     }
   },
   setTokens: (tokens) => {
-    setCookie("token", tokens.accessToken, COOKIE_OPTIONS)
+    setAccessToken(tokens.accessToken)
     if (tokens.refreshToken) {
-      setCookie("refresh_token", tokens.refreshToken, COOKIE_OPTIONS)
+      setRefreshToken(tokens.refreshToken)
     }
   },
   onRefreshFailure: () => {
-    deleteCookie("token", { path: "/" })
-    deleteCookie("refresh_token", { path: "/" })
+    clearAuthCookies()
     window.location.assign("/")
   },
 })
