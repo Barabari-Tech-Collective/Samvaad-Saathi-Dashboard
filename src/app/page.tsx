@@ -5,6 +5,10 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import * as React from "react"
 
+import { BlurFade } from "@/components/ui/blur-fade"
+import { LightRays } from "@/components/ui/light-rays"
+import { MagicCard } from "@/components/ui/magic-card"
+import { RainbowButton } from "@/components/ui/rainbow-button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { COGNITO_LOGIN_PATH } from "@/lib/api/auth-paths"
 
@@ -18,6 +22,26 @@ const COOKIE_OPTIONS = {
 function getApiBaseUrl(): string {
     const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? ""
     return base.replace(/\/$/, "")
+}
+
+function LandingShell({ children }: Readonly<{ children: React.ReactNode }>) {
+    return (
+        <div className="relative min-h-screen overflow-hidden">
+            <div className="absolute inset-0 z-0">
+                <LightRays
+                    className="rounded-none"
+                    count={8}
+                    color="oklch(0.55 0.18 264 / 0.4)"
+                    blur={42}
+                    speed={5}
+                    length="100vh"
+                />
+            </div>
+            <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-10">
+                {children}
+            </div>
+        </div>
+    )
 }
 
 export default function Page() {
@@ -55,35 +79,44 @@ export default function Page() {
 
     if (isProcessing) {
         return (
-            <div className="flex h-screen w-full flex-col items-center justify-center gap-6 px-4">
-                <Skeleton className="h-[110px] w-[116px] rounded-xl" />
-                <Skeleton className="h-8 w-64" />
-                <Skeleton className="h-6 w-40" />
-                <Skeleton className="h-11 w-72 rounded-lg" />
-            </div>
+            <LandingShell>
+                <div className="flex flex-col items-center gap-6">
+                    <Skeleton className="h-[110px] w-[116px] rounded-xl" />
+                    <Skeleton className="h-8 w-64" />
+                    <Skeleton className="h-6 w-40" />
+                    <Skeleton className="h-11 w-72 rounded-lg" />
+                </div>
+            </LandingShell>
         )
     }
 
     return (
-        <div className="flex h-screen w-full flex-col items-center justify-center px-4">
-            <div
-                className="mb-6 flex h-[110px] w-[116px] items-center justify-center rounded-xl bg-primary/15 text-2xl font-semibold text-primary"
-                aria-hidden
-            >
-                SS
-            </div>
-            <h2 className="font-heading mb-2 text-center text-[32px] font-semibold">
-                Welcome to Samvaad Saathi Dashboard!
-            </h2>
-            <h1 className="font-heading mb-8 text-[20px] font-semibold">Sign in</h1>
-            <Link href={loginUrl}>
-                <button
-                    type="button"
-                    className="flex h-11 w-72 cursor-pointer items-center justify-center gap-3 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-md transition active:scale-95"
-                >
-                    Continue with Google
-                </button>
-            </Link>
-        </div>
+        <LandingShell>
+            <MagicCard className="w-full max-w-md rounded-2xl border border-border/60 bg-card/90 shadow-xl backdrop-blur-sm">
+                <div className="space-y-6 p-8">
+                    <BlurFade delay={0}>
+                        <div className="flex justify-center">
+                            <div
+                                className="flex h-[110px] w-[116px] items-center justify-center rounded-xl bg-primary/15 text-2xl font-semibold text-primary"
+                                aria-hidden
+                            >
+                                SS
+                            </div>
+                        </div>
+                    </BlurFade>
+                    <BlurFade delay={0.08}>
+                        <h2 className="font-heading text-center text-[32px] font-semibold leading-tight text-foreground">
+                            Welcome to Samvaad Saathi Dashboard!
+                        </h2>
+                    </BlurFade>
+
+                    <BlurFade delay={0.24}>
+                        <RainbowButton size="lg" className="w-full min-w-2xs">
+                            <Link href={loginUrl} className="text-black">Continue with Google</Link>
+                        </RainbowButton>
+                    </BlurFade>
+                </div>
+            </MagicCard>
+        </LandingShell>
     )
 }
