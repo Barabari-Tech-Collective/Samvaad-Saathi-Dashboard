@@ -18,10 +18,6 @@ import {
   IconDashboard,
   IconUsers,
   IconMicrophone,
-  IconChartBar,
-  IconDeviceAnalytics,
-  IconTargetArrow,
-  IconAlertTriangle,
   IconSettings,
   IconHelp,
   IconMessageChatbot,
@@ -36,7 +32,7 @@ const data = {
   },
   navMain: [
     {
-      title: "Overview",
+      title: "Dashboard",
       url: "/dashboard",
       icon: <IconDashboard />,
     },
@@ -49,26 +45,6 @@ const data = {
       title: "Interviews",
       url: "/dashboard/interviews",
       icon: <IconMicrophone />,
-    },
-    {
-      title: "Segments",
-      url: "/dashboard/segments",
-      icon: <IconChartBar />,
-    },
-    {
-      title: "Product",
-      url: "/dashboard/product",
-      icon: <IconDeviceAnalytics />,
-    },
-    {
-      title: "Scoring",
-      url: "/dashboard/scoring",
-      icon: <IconTargetArrow />,
-    },
-    {
-      title: "Alerts",
-      url: "/dashboard/alerts",
-      icon: <IconAlertTriangle />,
     },
   ],
   navSecondary: [

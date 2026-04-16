@@ -1,78 +1,77 @@
 "use client"
 
-import * as React from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { usePathname } from "next/navigation"
+import * as React from "react"
 
 const STAGGER_DELAY = 0.08
 const CARD_DURATION = 0.26
 
 const containerVariants = {
-  hidden: { opacity: 1 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: STAGGER_DELAY,
-      delayChildren: 0.02,
+    hidden: { opacity: 1 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: STAGGER_DELAY,
+            delayChildren: 0.02,
+        },
     },
-  },
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: CARD_DURATION, ease: "easeOut" as const },
-  },
+    hidden: { opacity: 0, y: 8 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: CARD_DURATION, ease: "easeOut" as const },
+    },
 }
 
 function withStaggeredChildren(children: React.ReactNode) {
-  if (!React.isValidElement<{ children?: React.ReactNode }>(children)) {
-    return <motion.div variants={itemVariants}>{children}</motion.div>
-  }
+    if (!React.isValidElement<{ children?: React.ReactNode }>(children)) {
+        return <motion.div variants={itemVariants}>{children}</motion.div>
+    }
 
-  const rootChildren = children.props.children
-  const items = React.Children.toArray(rootChildren)
+    const rootChildren = children.props.children
+    const items = React.Children.toArray(rootChildren)
 
-  if (items.length === 0) {
-    return children
-  }
+    if (items.length === 0) {
+        return children
+    }
 
-  const staggeredChildren = items.map((item, index) => (
-    <motion.div
-      key={`stagger-item-${index}`}
-      variants={itemVariants}
-      className="will-change-transform"
-    >
-      {item}
-    </motion.div>
-  ))
+    const staggeredChildren = items.map((item, index) => (
+        <motion.div
+            key={`stagger-item-${index}`}
+            variants={itemVariants}
+            className="will-change-transform"
+        >
+            {item}
+        </motion.div>
+    ))
 
-  return React.cloneElement(children, undefined, staggeredChildren)
+    return React.cloneElement(children, undefined, staggeredChildren)
 }
 
 export function PageTransition({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const [hasMounted, setHasMounted] = React.useState(false)
+    const pathname = usePathname()
+    const [hasMounted, setHasMounted] = React.useState(false)
 
-  React.useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    React.useEffect(() => {
+        setHasMounted(true)
+    }, [])
 
-  const shouldAnimate = hasMounted
+    const shouldAnimate = hasMounted
 
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        className="h-full"
-        variants={containerVariants}
-        initial={shouldAnimate ? "hidden" : false}
-        animate="visible"
-      >
-        {withStaggeredChildren(children)}
-      </motion.div>
-    </AnimatePresence>
-  )
+    return (
+        <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+                key={pathname}
+                className="h-full"
+                variants={containerVariants}
+                initial={shouldAnimate ? "hidden" : false}
+            >
+                {withStaggeredChildren(children)}
+            </motion.div>
+        </AnimatePresence>
+    )
 }

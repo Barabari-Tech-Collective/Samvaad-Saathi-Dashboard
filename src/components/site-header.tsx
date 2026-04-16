@@ -6,18 +6,25 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 
 const titleMap: Record<string, { title: string; subtitle?: string }> = {
-  "/dashboard": { title: "Overview", subtitle: "Admin Dashboard" },
-  "/dashboard/students": { title: "Students", subtitle: "Student-level analytics" },
-  "/dashboard/interviews": { title: "Interviews", subtitle: "Session-level analytics" },
-  "/dashboard/segments": { title: "Segments", subtitle: "Role, difficulty & college analytics" },
-  "/dashboard/product": { title: "Product", subtitle: "System & funnel analytics" },
-  "/dashboard/scoring": { title: "Scoring", subtitle: "Score distribution & correlation" },
-  "/dashboard/alerts": { title: "Alerts", subtitle: "Student & system alerts" },
+  "/dashboard": { title: "Dashboard", subtitle: "Executive overview" },
+  "/dashboard/students": { title: "Students", subtitle: "All students" },
+  "/dashboard/students/colleges": { title: "Students", subtitle: "Colleges" },
+  "/dashboard/interviews": { title: "Interviews", subtitle: "All interviews" },
+}
+
+function resolveHeaderMeta(pathname: string): { title: string; subtitle?: string } {
+  if (pathname in titleMap) {
+    return titleMap[pathname as keyof typeof titleMap]
+  }
+  if (pathname.startsWith("/dashboard/students/")) {
+    return { title: "Students", subtitle: "Student detail" }
+  }
+  return { title: "Dashboard" }
 }
 
 export function SiteHeader() {
   const pathname = usePathname()
-  const meta = titleMap[pathname] ?? { title: "Dashboard" }
+  const meta = resolveHeaderMeta(pathname)
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
