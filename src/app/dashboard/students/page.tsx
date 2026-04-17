@@ -1,6 +1,10 @@
-"use client"
+import type { Metadata } from "next"
 
-import * as React from "react"
+export const metadata: Metadata = {
+  title: "All students",
+  description:
+    "Student roster with scores, improvement, interview counts, and last active dates.",
+}
 import Link from "next/link"
 import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react"
 

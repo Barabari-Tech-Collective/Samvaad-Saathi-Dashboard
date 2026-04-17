@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
@@ -16,6 +17,18 @@ import { getStudentById } from "@/lib/mock-data"
 type PageProps = Readonly<{
   params: Promise<{ id: string }>
 }>
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params
+  const student = getStudentById(decodeURIComponent(id))
+  if (!student) {
+    return { title: "Student" }
+  }
+  return {
+    title: student.name,
+    description: `${student.name} · ${student.college} · ${student.role}. Scores, interviews, and progress.`,
+  }
+}
 
 export default async function StudentDetailPage({ params }: PageProps) {
   const { id } = await params

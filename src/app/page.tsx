@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import * as React from "react"
@@ -87,11 +88,15 @@ export default function Page() {
                 <div className="space-y-6 p-8">
                     <BlurFade delay={0}>
                         <div className="flex justify-center">
-                            <div
-                                className="flex h-[110px] w-[116px] items-center justify-center rounded-xl bg-primary/15 text-2xl font-semibold text-primary"
-                                aria-hidden
-                            >
-                                SS
+                            <div className="relative overflow-hidden">
+                                <Image
+                                    src="/barabari_logo.png"
+                                    alt="Barabari"
+                                    width={116}
+                                    height={110}
+                                    className="h-full w-full object-contain p-2"
+                                    priority
+                                />
                             </div>
                         </div>
                     </BlurFade>

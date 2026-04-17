@@ -1,6 +1,9 @@
-"use client"
+import type { Metadata } from "next"
 
-import * as React from "react"
+export const metadata: Metadata = {
+  title: "Colleges",
+  description: "Compare institutions by enrollment, interviews, scores, and activity.",
+}
 import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
