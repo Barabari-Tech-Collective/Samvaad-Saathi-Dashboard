@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import { StudentsSectionNav } from "@/components/dashboard/students-section-nav"
 
 export const metadata: Metadata = {
+  title: "All students",
   description: "Browse students, drill into profiles, and compare colleges.",
 }
 

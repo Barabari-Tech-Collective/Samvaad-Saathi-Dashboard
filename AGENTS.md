@@ -138,8 +138,9 @@ src/
 ├── hooks/                # Custom React hooks
 │   └── use-*.ts
 └── lib/                  # Utilities, constants, types
-    ├── utils.ts          # cn() utility
-    └── mock-data.ts
+    ├── api/              # API client and analytics hooks
+    ├── kpi-format.ts     # KPI display helpers
+    └── utils.ts          # cn() utility
 ```
 
 ### Tailwind CSS (v4)
