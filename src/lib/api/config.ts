@@ -9,10 +9,6 @@ import {
     setRefreshToken,
 } from "@/lib/token-cookies.utils"
 
-function getBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "")
-}
-
 const authInterceptor = createAuthInterceptor({
   getAccessToken: () => getAccessToken() ?? null,
   getRefreshToken: () => getRefreshToken() ?? null,
@@ -23,7 +19,7 @@ const authInterceptor = createAuthInterceptor({
     const response = await axios.post<{
       accessToken: string
       refreshToken: string
-    }>(`${getBaseUrl()}/api/auth/cognito/refresh`, {
+    }>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/cognito/refresh`, {
       refresh_token: refreshToken,
     })
     return {
@@ -39,11 +35,11 @@ const authInterceptor = createAuthInterceptor({
   },
   onRefreshFailure: () => {
     clearAuthCookies()
-    window.location.assign("/")
+window.location.assign("/")
   },
 })
 
 export const api = createApiClient({
-  baseURL: getBaseUrl(),
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   configure: authInterceptor,
 })

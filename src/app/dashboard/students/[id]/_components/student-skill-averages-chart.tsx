@@ -5,7 +5,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   PolarAngleAxis,
   PolarGrid,
   PolarRadiusAxis,
@@ -51,8 +50,7 @@ export function StudentSkillAveragesChart({ studentId }: Readonly<{ studentId: n
       value: it.value,
     }))
 
-    const barRows = [...withValues].sort((a, b) => b.value - a.value).map((it, i) => ({
-      id: `m-${i}`,
+    const barRows = [...withValues].sort((a, b) => b.value - a.value).map((it) => ({
       name: it.name,
       value: it.value,
     }))
@@ -123,11 +121,12 @@ export function StudentSkillAveragesChart({ studentId }: Readonly<{ studentId: n
                 tick={{ fontSize: 11 }}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={28}>
-                {barRows.map((entry) => (
-                  <Cell key={entry.id} fill="var(--color-value)" />
-                ))}
-              </Bar>
+              <Bar
+                dataKey="value"
+                fill="var(--color-value)"
+                radius={[0, 4, 4, 0]}
+                maxBarSize={28}
+              />
             </BarChart>
           </ChartContainer>
         )}
