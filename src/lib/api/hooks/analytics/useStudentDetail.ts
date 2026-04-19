@@ -1,5 +1,7 @@
 "use client"
 
+import type { QueryKey } from "@tanstack/react-query"
+
 import { api } from "@/lib/api/config"
 
 import { analyticsKey } from "./query-keys"
@@ -21,13 +23,25 @@ function studentBase(studentId: number | string) {
   return `/v2/analytics/students/${encodeURIComponent(String(studentId))}`
 }
 
+/** Stable query key when `studentId` is missing — not an API path. */
+function studentDetailIdleKey(studentId: number | string | undefined, segment: string): QueryKey {
+  return ["analytics", "students", String(studentId ?? "none"), segment] as const
+}
+
+function studentDetailQueryEnabled(
+  studentId: number | string | undefined,
+): studentId is number | string {
+  return studentId !== undefined && studentId !== ""
+}
+
 export function useStudentProfile(studentId: number | string | undefined) {
-  const path = studentId ? `${studentBase(studentId)}/profile` : "/v2/analytics/students/_/profile"
+  const enabled = studentDetailQueryEnabled(studentId)
+  const path = enabled ? `${studentBase(studentId)}/profile` : undefined
   const query = api.useQuery<StudentProfileResponse>({
     url: path,
     method: "GET",
-    key: analyticsKey(path),
-    enabled: studentId !== undefined && studentId !== "",
+    key: path ? analyticsKey(path) : studentDetailIdleKey(studentId, "profile"),
+    enabled,
   })
   return {
     studentProfile: query.data,
@@ -37,14 +51,15 @@ export function useStudentProfile(studentId: number | string | undefined) {
 }
 
 export function useStudentSummary(studentId: number | string | undefined, filters?: StudentDetailDateParams) {
-  const path = studentId ? `${studentBase(studentId)}/summary` : "/v2/analytics/students/_/summary"
+  const enabled = studentDetailQueryEnabled(studentId)
+  const path = enabled ? `${studentBase(studentId)}/summary` : undefined
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<StudentSummaryResponse>({
     url: path,
     method: "GET",
-    key: analyticsKey(path, params),
+    key: path ? analyticsKey(path, params) : studentDetailIdleKey(studentId, "summary"),
     params,
-    enabled: studentId !== undefined && studentId !== "",
+    enabled,
   })
   return {
     studentSummary: query.data,
@@ -54,14 +69,15 @@ export function useStudentSummary(studentId: number | string | undefined, filter
 }
 
 export function useStudentScoreHistory(studentId: number | string | undefined, filters?: StudentDetailDateParams) {
-  const path = studentId ? `${studentBase(studentId)}/score-history` : "/v2/analytics/students/_/score-history"
+  const enabled = studentDetailQueryEnabled(studentId)
+  const path = enabled ? `${studentBase(studentId)}/score-history` : undefined
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<StudentScoreHistoryResponse>({
     url: path,
     method: "GET",
-    key: analyticsKey(path, params),
+    key: path ? analyticsKey(path, params) : studentDetailIdleKey(studentId, "score-history"),
     params,
-    enabled: studentId !== undefined && studentId !== "",
+    enabled,
   })
   return {
     scoreHistory: query.data,
@@ -74,16 +90,15 @@ export function useStudentSpeechVsKnowledgeHistory(
   studentId: number | string | undefined,
   filters?: StudentDetailDateParams,
 ) {
-  const path = studentId
-    ? `${studentBase(studentId)}/speech-vs-knowledge-history`
-    : "/v2/analytics/students/_/speech-vs-knowledge-history"
+  const enabled = studentDetailQueryEnabled(studentId)
+  const path = enabled ? `${studentBase(studentId)}/speech-vs-knowledge-history` : undefined
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<StudentSpeechVsKnowledgeResponse>({
     url: path,
     method: "GET",
-    key: analyticsKey(path, params),
+    key: path ? analyticsKey(path, params) : studentDetailIdleKey(studentId, "speech-vs-knowledge-history"),
     params,
-    enabled: studentId !== undefined && studentId !== "",
+    enabled,
   })
   return {
     speechVsKnowledgeHistory: query.data,
@@ -93,14 +108,15 @@ export function useStudentSpeechVsKnowledgeHistory(
 }
 
 export function useStudentSkillAverages(studentId: number | string | undefined, filters?: StudentDetailDateParams) {
-  const path = studentId ? `${studentBase(studentId)}/skill-averages` : "/v2/analytics/students/_/skill-averages"
+  const enabled = studentDetailQueryEnabled(studentId)
+  const path = enabled ? `${studentBase(studentId)}/skill-averages` : undefined
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<StudentSkillAveragesResponse>({
     url: path,
     method: "GET",
-    key: analyticsKey(path, params),
+    key: path ? analyticsKey(path, params) : studentDetailIdleKey(studentId, "skill-averages"),
     params,
-    enabled: studentId !== undefined && studentId !== "",
+    enabled,
   })
   return {
     skillAverages: query.data,
@@ -110,16 +126,15 @@ export function useStudentSkillAverages(studentId: number | string | undefined, 
 }
 
 export function useStudentPracticeCompletion(studentId: number | string | undefined, filters?: StudentDetailDateParams) {
-  const path = studentId
-    ? `${studentBase(studentId)}/practice-completion`
-    : "/v2/analytics/students/_/practice-completion"
+  const enabled = studentDetailQueryEnabled(studentId)
+  const path = enabled ? `${studentBase(studentId)}/practice-completion` : undefined
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<StudentPracticeCompletionResponse>({
     url: path,
     method: "GET",
-    key: analyticsKey(path, params),
+    key: path ? analyticsKey(path, params) : studentDetailIdleKey(studentId, "practice-completion"),
     params,
-    enabled: studentId !== undefined && studentId !== "",
+    enabled,
   })
   return {
     practiceCompletion: query.data,
@@ -129,14 +144,15 @@ export function useStudentPracticeCompletion(studentId: number | string | undefi
 }
 
 export function useStudentInterviews(studentId: number | string | undefined, filters?: PaginationParams) {
-  const path = studentId ? `${studentBase(studentId)}/interviews` : "/v2/analytics/students/_/interviews"
+  const enabled = studentDetailQueryEnabled(studentId)
+  const path = enabled ? `${studentBase(studentId)}/interviews` : undefined
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<StudentInterviewsResponse>({
     url: path,
     method: "GET",
-    key: analyticsKey(path, params),
+    key: path ? analyticsKey(path, params) : studentDetailIdleKey(studentId, "interviews"),
     params,
-    enabled: studentId !== undefined && studentId !== "",
+    enabled,
   })
   return {
     studentInterviews: query.data,
@@ -146,12 +162,13 @@ export function useStudentInterviews(studentId: number | string | undefined, fil
 }
 
 export function useStudentLatestFeedback(studentId: number | string | undefined) {
-  const path = studentId ? `${studentBase(studentId)}/latest-feedback` : "/v2/analytics/students/_/latest-feedback"
+  const enabled = studentDetailQueryEnabled(studentId)
+  const path = enabled ? `${studentBase(studentId)}/latest-feedback` : undefined
   const query = api.useQuery<StudentLatestFeedbackResponse>({
     url: path,
     method: "GET",
-    key: analyticsKey(path),
-    enabled: studentId !== undefined && studentId !== "",
+    key: path ? analyticsKey(path) : studentDetailIdleKey(studentId, "latest-feedback"),
+    enabled,
   })
   return {
     latestFeedback: query.data,

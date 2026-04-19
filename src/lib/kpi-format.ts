@@ -5,6 +5,10 @@ export function formatKpiDisplayValue(k: KpiItem): string {
   if (typeof k.value !== "number") return String(k.value)
   if (k.unit === "percent") return `${k.value}%`
   if (k.unit === "score") return k.value.toFixed(2)
+  if (k.unit === "ratio") {
+    if (k.value >= 0 && k.value <= 1) return `${(k.value * 100).toFixed(0)}%`
+    return k.value.toLocaleString(undefined, { maximumFractionDigits: 2 })
+  }
   return k.value.toLocaleString()
 }
 

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card"
 import { useDashboardAttentionRequired } from "@/lib/api/hooks/analytics"
 
+import Link from "next/link"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
 export function DashboardAttentionRequired() {
@@ -40,22 +41,22 @@ export function DashboardAttentionRequired() {
                 {isLoadingAttentionRequired ? (
                     <DashboardAttentionSkeleton rows={4} />
                 ) : (
-                    items.map((a, index) => (
+                    items.map((attention, index) => (
                         <div
-                            key={`${a.entity_type}-${a.user_id}-${a.type}-${index}`}
+                            key={`${attention.entity_type}-${attention.user_id}-${attention.type}-${index}`}
                             className="rounded-md border px-3 py-2 text-sm"
                         >
                             <div className="flex flex-wrap items-center gap-2">
                                 <Badge
-                                    variant={a.severity === "critical" ? "destructive" : "secondary"}
+                                    variant={attention.severity === "critical" ? "destructive" : "secondary"}
                                     className="text-xs capitalize"
                                 >
-                                    {a.severity}
+                                    {attention.severity}
                                 </Badge>
-                                <span className="font-medium">{a.type.replace(/_/g, " ")}</span>
+                                <span className="font-medium">{attention.type.replace(/_/g, " ")}</span>
                             </div>
-                            <p className="mt-1 text-muted-foreground">{a.message}</p>
-                            <p className="mt-1 text-xs text-muted-foreground">User #{a.user_id}</p>
+                            <p className="mt-1 text-muted-foreground">{attention.message}</p>
+                            <Link href={`/dashboard/students/${attention.user_id}`} className="mt-1 text-xs text-muted-foreground">User #{attention.user_id}</Link>
                         </div>
                     ))
                 )}
