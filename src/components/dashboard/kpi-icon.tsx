@@ -14,7 +14,8 @@ import {
 
 const iconClass = "size-5 shrink-0 text-muted-foreground"
 
-export function DashboardKpiIcon({ kpiKey }: { kpiKey: string }) {
+/** Picks an icon from the KPI `key` string (e.g. `total_students`). */
+export function KpiIcon({ kpiKey }: Readonly<{ kpiKey: string }>) {
   const k = kpiKey.toLowerCase()
   let Icon: TablerIcon = IconChartBar
   if (k.includes("student")) Icon = IconUsers
@@ -23,7 +24,7 @@ export function DashboardKpiIcon({ kpiKey }: { kpiKey: string }) {
   else if (k.includes("completion") || k.includes("complete")) Icon = IconChecks
   else if (k.includes("improve")) Icon = IconSparkles
   else if (k.includes("score") || k.includes("avg")) Icon = IconAward
-  else if (k.includes("percent") || k.includes("rate") && !k.includes("score")) Icon = IconPercentage
+  else if (k.includes("percent") || (k.includes("rate") && !k.includes("score"))) Icon = IconPercentage
   else if (k.includes("active") || k.includes("trend")) Icon = IconActivity
   else if (k.includes("practice") || k.includes("skill")) Icon = IconBook
 

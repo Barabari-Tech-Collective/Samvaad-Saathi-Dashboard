@@ -10,15 +10,7 @@ import {
 } from "recharts"
 
 import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ChartContainer,
   ChartTooltip,
@@ -30,13 +22,14 @@ import {
   DashboardKpiCardsSkeleton,
   DashboardRecentTableSkeleton,
 } from "@/components/dashboard/analytics-skeletons"
+import { KPI_STAT_GRID_CLASSNAME, KpiStatCard } from "@/components/dashboard/kpi-stat-card"
 import {
   useDifficultyMetrics,
   useInterviewsSummary,
   useInterviewsTable,
 } from "@/lib/api/hooks/analytics"
 import { formatDashboardDateTime } from "@/lib/dashboard-datetime"
-import { formatInterviewListDuration, formatKpiDisplayValue, kpiBadgeLabel } from "@/lib/kpi-format"
+import { formatInterviewListDuration, formatKpiDisplayValue } from "@/lib/kpi-format"
 
 const difficultyConfig = {
   avgScore: { label: "Avg score", color: "var(--primary)" },
@@ -61,8 +54,6 @@ export default function InterviewsPage() {
       key: k.key,
       label: k.label,
       value: formatKpiDisplayValue(k),
-      badge: kpiBadgeLabel(k.unit, k.key),
-      footer: k.key.replace(/_/g, " "),
     }))
   }, [interviewsSummary?.kpis])
 
@@ -92,25 +83,12 @@ export default function InterviewsPage() {
 
   return (
     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-      <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3 dark:*:data-[slot=card]:bg-card">
+      <div className={`${KPI_STAT_GRID_CLASSNAME} px-4 lg:px-6`}>
         {loadingKpis ? (
           <DashboardKpiCardsSkeleton count={6} />
         ) : (
           kpiCards.map((kpi) => (
-            <Card key={kpi.key} className="@container/card">
-              <CardHeader>
-                <CardDescription>{kpi.label}</CardDescription>
-                <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                  {kpi.value}
-                </CardTitle>
-                <CardAction>
-                  <Badge variant="outline" className="capitalize">
-                    {kpi.badge}
-                  </Badge>
-                </CardAction>
-              </CardHeader>
-              <CardFooter className="text-sm text-muted-foreground">{kpi.footer}</CardFooter>
-            </Card>
+            <KpiStatCard key={kpi.key} kpiKey={kpi.key} label={kpi.label} value={kpi.value} />
           ))
         )}
       </div>

@@ -23,7 +23,7 @@ const authInterceptor = createAuthInterceptor({
     const response = await axios.post<{
       accessToken: string
       refreshToken: string
-    }>(`${getBaseUrl()}/auth/refresh`, {
+    }>(`${getBaseUrl()}/api/auth/cognito/refresh`, {
       refresh_token: refreshToken,
     })
     return {
