@@ -69,7 +69,6 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
                 className="h-full"
                 variants={containerVariants}
                 initial={shouldAnimate ? "hidden" : false}
-                animate="visible"
             >
                 {withStaggeredChildren(children)}
             </motion.div>

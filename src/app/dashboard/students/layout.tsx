@@ -1,50 +1,17 @@
-"use client"
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 
-import * as React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-
-import { cn } from "@/lib/utils"
+export const metadata: Metadata = {
+  title: "All students",
+  description: "Browse students, drill into profiles, and compare colleges.",
+}
 
 export default function StudentsLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: ReactNode
 }>) {
-  const pathname = usePathname()
-  const onAllStudents = pathname === "/dashboard/students"
-  const onColleges = pathname === "/dashboard/students/colleges"
-
   return (
-    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-      <nav
-        className="flex flex-wrap gap-2 border-b px-4 pb-3 lg:px-6"
-        aria-label="Students sections"
-      >
-        <Link
-          href="/dashboard/students"
-          className={cn(
-            "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-            onAllStudents
-              ? "bg-primary/10 text-foreground"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          All students
-        </Link>
-        <Link
-          href="/dashboard/students/colleges"
-          className={cn(
-            "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-            onColleges
-              ? "bg-primary/10 text-foreground"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          Colleges
-        </Link>
-      </nav>
-      {children}
-    </div>
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">{children}</div>
   )
 }

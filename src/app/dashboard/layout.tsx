@@ -1,7 +1,17 @@
+import type { Metadata } from "next"
+
 import { AppSidebar } from "@/components/app-sidebar"
 import { PageTransition } from "@/components/page-transition"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+
+export const metadata: Metadata = {
+  title: {
+    default: "Dashboard",
+    template: "%s · Samvaad Saathi",
+  },
+  description: "Interview practice analytics, student progress, and college insights.",
+}
 
 export default function DashboardLayout({
   children,
