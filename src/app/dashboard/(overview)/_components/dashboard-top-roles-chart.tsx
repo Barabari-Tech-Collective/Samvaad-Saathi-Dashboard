@@ -56,13 +56,13 @@ export function DashboardTopRolesChart() {
                 <CardTitle className="text-base">Top roles</CardTitle>
                 <CardDescription>Share of interview volume (top 5)</CardDescription>
             </CardHeader>
-            <CardContent className="pt-0 pb-2">
+            <CardContent className="">
                 {isLoadingTopRoles ? (
-                    <ChartBarSkeleton className="h-[180px] w-full rounded-lg" />
+                    <ChartBarSkeleton className="h-48 w-full rounded-lg" />
                 ) : pieData.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No role data for this range.</p>
                 ) : (
-                    <ChartContainer config={chartConfig} className="mx-auto aspect-auto h-[180px] w-full">
+                    <ChartContainer config={chartConfig} className="mx-auto aspect-auto h-48 w-full">
                         <PieChart margin={{ top: 4, bottom: 4, left: 4, right: 4 }}>
                             <Pie
                                 data={pieData}

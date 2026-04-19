@@ -1,29 +1,24 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function DashboardKpiCardsSkeleton({ count = 6 }: Readonly<{ count?: number }>) {
   return (
-    <>
+    <div className="contents" role="status" aria-label="Loading KPI cards">
       {Array.from({ length: count }).map((_, i) => (
         <Card key={i} className="@container/card">
-          <CardHeader className="gap-2">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-9 w-36 @[250px]/card:h-10" />
-            <div className="flex justify-end">
-              <Skeleton className="h-6 w-16 rounded-full" />
+          <CardHeader className="gap-3">
+            <div className="flex items-center gap-2.5">
+              <Skeleton className="size-5 shrink-0 rounded-md" aria-hidden />
+              <Skeleton className="h-3.5 w-32 max-w-[70%]" aria-hidden />
             </div>
+            <Skeleton
+              className="h-8 w-24 rounded-md @[250px]/card:h-9 @[250px]/card:w-28"
+              aria-hidden
+            />
           </CardHeader>
-          <CardFooter>
-            <Skeleton className="h-3 w-full max-w-[12rem]" />
-          </CardFooter>
         </Card>
       ))}
-    </>
+    </div>
   )
 }
 
