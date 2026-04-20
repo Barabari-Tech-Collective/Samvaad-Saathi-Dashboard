@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 export function StudentsSectionNav() {
     const pathname = usePathname()
     const onAllStudents = pathname === "/dashboard/students"
-    const onColleges = pathname === "/dashboard/students/colleges"
+    const onColleges = pathname.startsWith("/dashboard/students/colleges")
 
     return (
         <nav

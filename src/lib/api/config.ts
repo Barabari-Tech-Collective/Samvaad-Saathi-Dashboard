@@ -21,7 +21,13 @@ const authInterceptor = createAuthInterceptor({
       refreshToken: string
     }>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/cognito/refresh`, {
       refresh_token: refreshToken,
-    })
+    },
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    },
+  )
     return {
       accessToken: response.data.accessToken,
       refreshToken: response.data.refreshToken,

@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { CollegesPageClient } from "./colleges-page-client"
+import { CollegesPageClient } from "./_components/colleges-page-client"
 
 export const metadata: Metadata = {
   title: "Colleges",
