@@ -24,7 +24,9 @@ import {
 import { DashboardRecentTableSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useInterviewsTable, type InterviewTableRow } from "@/lib/api/hooks/analytics"
 import { formatDashboardDateTime } from "@/lib/dashboard-datetime"
+import { isCompletedBatchInterviewStatus } from "@/lib/interview-display"
 import { formatInterviewListDuration } from "@/lib/kpi-format"
+import { cn } from "@/lib/utils"
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100] as const
 
@@ -120,7 +122,14 @@ export function InterviewsTableCard() {
                       ? `/dashboard/students/${encodeURIComponent(String(row.student_id))}`
                       : null
                   return (
-                    <tr key={row.interview_id} className="border-b last:border-0">
+                    <tr
+                      key={row.interview_id}
+                      className={cn(
+                        "border-b last:border-0",
+                        isCompletedBatchInterviewStatus(row.status) &&
+                          "bg-emerald-500/10 dark:bg-emerald-500/15",
+                      )}
+                    >
                       <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">
                         <Link href={interviewHref} className="text-primary underline-offset-4 hover:underline">
                           {row.interview_id}

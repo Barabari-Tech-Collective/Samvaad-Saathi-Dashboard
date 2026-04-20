@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card"
 import { DashboardRecentTableSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useDashboardRecentInterviews } from "@/lib/api/hooks/analytics"
+import { isCompletedBatchInterviewStatus } from "@/lib/interview-display"
+import { cn } from "@/lib/utils"
 
 import { formatDashboardDateTime, formatDurationSeconds } from "./dashboard-format-utils"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
@@ -68,7 +70,14 @@ export function DashboardRecentInterviews() {
               {(recentInterviews?.items ?? []).map((row) => {
                 const interviewHref = `/dashboard/interviews/${encodeURIComponent(String(row.interview_id))}`
                 return (
-                <tr key={row.interview_id} className="border-b last:border-0">
+                <tr
+                  key={row.interview_id}
+                  className={cn(
+                    "border-b last:border-0",
+                    isCompletedBatchInterviewStatus(row.status) &&
+                      "bg-emerald-500/10 dark:bg-emerald-500/15",
+                  )}
+                >
                   <td className="py-2 pr-2 font-mono text-xs text-muted-foreground">
                     <Link href={interviewHref} className="text-primary underline-offset-4 hover:underline">
                       {row.interview_id}

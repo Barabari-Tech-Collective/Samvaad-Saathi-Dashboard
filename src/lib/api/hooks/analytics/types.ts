@@ -318,6 +318,7 @@ export type InterviewTableRow = Readonly<{
   score: number | null
   duration: number | null
   date: string
+  status?: string
 }>
 
 export type InterviewsTableResponse = Readonly<{
