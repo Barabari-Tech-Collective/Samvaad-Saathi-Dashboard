@@ -123,6 +123,7 @@ export type TopCollegesTableResponse = Readonly<{
 
 export type RecentInterviewRow = Readonly<{
   interview_id: number
+  student_id?: number
   student_name: string
   college?: string | null
   role: string
@@ -309,6 +310,7 @@ export type InterviewsSummaryResponse = KpiResponse
 
 export type InterviewTableRow = Readonly<{
   interview_id: number
+  student_id?: number
   student_name: string
   college: string
   role: string
@@ -316,6 +318,7 @@ export type InterviewTableRow = Readonly<{
   score: number | null
   duration: number | null
   date: string
+  status?: string
 }>
 
 export type InterviewsTableResponse = Readonly<{

@@ -2,11 +2,11 @@ import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
 export const metadata: Metadata = {
-  title: "All students",
-  description: "Browse students and drill into learner profiles.",
+  title: "Colleges",
+  description: "Compare institutions by enrollment, interviews, scores, and activity.",
 }
 
-export default function StudentsLayout({
+export default function CollegesLayout({
   children,
 }: Readonly<{
   children: ReactNode

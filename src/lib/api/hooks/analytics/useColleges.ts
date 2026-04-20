@@ -7,9 +7,12 @@ import { compactParams, type QueryParamInput } from "./params"
 import type {
   CollegesSummaryResponse,
   CollegesTableResponse,
+  HistogramResponse,
   KpiResponse,
   LineAreaChartResponse,
   PaginationParams,
+  RolesWeakSkillsResponse,
+  StudentsTableResponse,
 } from "./types"
 
 const summaryPath = "/v2/analytics/colleges/summary" as const
@@ -94,7 +97,7 @@ export function useCollegeScoreTrend(collegeName: string | undefined) {
 
 export function useCollegePracticeMetrics(collegeName: string | undefined) {
   const path = collegeName ? `${collegeBase(collegeName)}/practice-metrics` : "/v2/analytics/colleges/_/practice-metrics"
-  const query = api.useQuery<Record<string, unknown>>({
+  const query = api.useQuery<HistogramResponse>({
     url: path,
     method: "GET",
     key: analyticsKey(path),
@@ -109,7 +112,7 @@ export function useCollegePracticeMetrics(collegeName: string | undefined) {
 
 export function useCollegeWeakSkills(collegeName: string | undefined) {
   const path = collegeName ? `${collegeBase(collegeName)}/weak-skills` : "/v2/analytics/colleges/_/weak-skills"
-  const query = api.useQuery<Record<string, unknown>>({
+  const query = api.useQuery<RolesWeakSkillsResponse>({
     url: path,
     method: "GET",
     key: analyticsKey(path),
@@ -125,7 +128,7 @@ export function useCollegeWeakSkills(collegeName: string | undefined) {
 export function useCollegeStudents(collegeName: string | undefined, params?: PaginationParams) {
   const path = collegeName ? `${collegeBase(collegeName)}/students` : "/v2/analytics/colleges/_/students"
   const p = compactParams(params as QueryParamInput | undefined)
-  const query = api.useQuery<Record<string, unknown>>({
+  const query = api.useQuery<StudentsTableResponse>({
     url: path,
     method: "GET",
     key: analyticsKey(path, p),

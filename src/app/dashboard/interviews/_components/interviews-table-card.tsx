@@ -1,10 +1,10 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
+import { Link } from "next-view-transitions"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 
-import { Badge } from "@/components/ui/badge"
+import { DifficultyBadge } from "@/components/difficulty-badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -24,7 +24,9 @@ import {
 import { DashboardRecentTableSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useInterviewsTable, type InterviewTableRow } from "@/lib/api/hooks/analytics"
 import { formatDashboardDateTime } from "@/lib/dashboard-datetime"
+import { isCompletedBatchInterviewStatus } from "@/lib/interview-display"
 import { formatInterviewListDuration } from "@/lib/kpi-format"
+import { cn } from "@/lib/utils"
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100] as const
 
@@ -114,28 +116,52 @@ export function InterviewsTableCard() {
               <tbody>
                 {rows.map((row) => {
                   const idStr = String(row.interview_id)
-                  const href = `/dashboard/interviews/${encodeURIComponent(idStr)}`
+                  const interviewHref = `/dashboard/interviews/${encodeURIComponent(idStr)}`
+                  const studentHref =
+                    row.student_id != null
+                      ? `/dashboard/students/${encodeURIComponent(String(row.student_id))}`
+                      : null
                   return (
-                    <tr key={row.interview_id} className="border-b last:border-0">
+                    <tr
+                      key={row.interview_id}
+                      className={cn(
+                        "border-b last:border-0",
+                        isCompletedBatchInterviewStatus(row.status) &&
+                          "bg-emerald-500/10 dark:bg-emerald-500/15",
+                      )}
+                    >
                       <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">
-                        <Link href={href} className="text-primary underline-offset-4 hover:underline">
+                        <Link href={interviewHref} className="text-primary underline-offset-4 hover:underline">
                           {row.interview_id}
                         </Link>
                       </td>
                       <td className="py-2 pr-3">
-                        <Link
-                          href={href}
-                          className="font-medium text-foreground underline-offset-4 hover:underline"
-                        >
-                          {row.student_name}
-                        </Link>
+                        {studentHref ? (
+                          <Link
+                            href={studentHref}
+                            className="font-medium text-foreground underline-offset-4 hover:underline"
+                          >
+                            {row.student_name}
+                          </Link>
+                        ) : (
+                          <span className="font-medium">{row.student_name}</span>
+                        )}
                       </td>
-                      <td className="py-2 pr-3 text-muted-foreground">{row.college}</td>
+                      <td className="py-2 pr-3 text-muted-foreground">
+                        {row.college ? (
+                          <Link
+                            href={`/dashboard/colleges/${encodeURIComponent(row.college)}`}
+                            className="text-primary underline-offset-4 hover:underline"
+                          >
+                            {row.college}
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                       <td className="py-2 pr-3">{row.role}</td>
                       <td className="py-2 pr-3">
-                        <Badge variant="outline" className="capitalize">
-                          {row.difficulty}
-                        </Badge>
+                        <DifficultyBadge difficulty={row.difficulty} />
                       </td>
                       <td className="py-2 pr-3 text-right tabular-nums font-medium">
                         {row.score ?? "—"}

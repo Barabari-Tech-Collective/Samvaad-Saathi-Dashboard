@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import { Link } from "next-view-transitions"
 
 import { DashboardRecentStudentsSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { Button } from "@/components/ui/button"
@@ -49,16 +49,29 @@ export function DashboardRecentStudents() {
                     <DashboardRecentStudentsSkeleton rows={5} />
                 ) : (
                     (recentStudents?.items ?? []).map((s) => (
-                        <Link
-                            href={`dashboard/students/${s.student_id}`}
+                        <div
                             key={s.student_id}
                             className="grid gap-1 rounded-md border px-3 py-2 text-sm sm:grid-cols-[1fr_auto] sm:items-center"
                         >
                             <div>
-                                <div className="font-medium">{s.name}</div>
+                                <Link
+                                    href={`/dashboard/students/${encodeURIComponent(String(s.student_id))}`}
+                                    className="font-medium text-foreground underline-offset-4 hover:underline"
+                                >
+                                    {s.name}
+                                </Link>
                                 <div className="text-xs text-muted-foreground">{s.email}</div>
                                 <div className="mt-1 text-muted-foreground">
-                                    <span>{s.college ?? "—"}</span>
+                                    {s.college ? (
+                                        <Link
+                                            href={`/dashboard/colleges/${encodeURIComponent(s.college)}`}
+                                            className="text-primary underline-offset-4 hover:underline"
+                                        >
+                                            {s.college}
+                                        </Link>
+                                    ) : (
+                                        "—"
+                                    )}
                                     {s.target_position ? (
                                         <span className="text-muted-foreground">
                                             {" "}
@@ -70,7 +83,7 @@ export function DashboardRecentStudents() {
                             <div className="text-xs text-muted-foreground sm:text-right">
                                 {formatDashboardDateTime(s.created_at)}
                             </div>
-                        </Link>
+                        </div>
                     ))
                 )}
             </CardContent>

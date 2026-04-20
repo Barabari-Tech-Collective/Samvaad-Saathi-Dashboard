@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Link } from "next-view-transitions"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -52,7 +53,16 @@ export function StudentProfileCard({ studentId }: Readonly<{ studentId: number |
           <span aria-hidden className="text-muted-foreground/80">
             ·
           </span>
-          <span>{studentProfile.college || "—"}</span>
+          {studentProfile.college ? (
+            <Link
+              href={`/dashboard/colleges/${encodeURIComponent(studentProfile.college)}`}
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              {studentProfile.college}
+            </Link>
+          ) : (
+            "—"
+          )}
           <span aria-hidden className="text-muted-foreground/80">
             ·
           </span>

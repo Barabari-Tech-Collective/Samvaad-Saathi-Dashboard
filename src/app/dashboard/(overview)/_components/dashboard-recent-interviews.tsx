@@ -1,7 +1,8 @@
 "use client"
 
-import Link from "next/link"
+import { Link } from "next-view-transitions"
 
+import { DifficultyBadge } from "@/components/difficulty-badge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,6 +14,8 @@ import {
 } from "@/components/ui/card"
 import { DashboardRecentTableSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useDashboardRecentInterviews } from "@/lib/api/hooks/analytics"
+import { isCompletedBatchInterviewStatus } from "@/lib/interview-display"
+import { cn } from "@/lib/utils"
 
 import { formatDashboardDateTime, formatDurationSeconds } from "./dashboard-format-utils"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
@@ -64,15 +67,50 @@ export function DashboardRecentInterviews() {
               </tr>
             </thead>
             <tbody>
-              {(recentInterviews?.items ?? []).map((row) => (
-                <tr key={row.interview_id} className="border-b last:border-0">
+              {(recentInterviews?.items ?? []).map((row) => {
+                const interviewHref = `/dashboard/interviews/${encodeURIComponent(String(row.interview_id))}`
+                return (
+                <tr
+                  key={row.interview_id}
+                  className={cn(
+                    "border-b last:border-0",
+                    isCompletedBatchInterviewStatus(row.status) &&
+                      "bg-emerald-500/10 dark:bg-emerald-500/15",
+                  )}
+                >
                   <td className="py-2 pr-2 font-mono text-xs text-muted-foreground">
-                    {row.interview_id}
+                    <Link href={interviewHref} className="text-primary underline-offset-4 hover:underline">
+                      {row.interview_id}
+                    </Link>
                   </td>
-                  <td className="py-2 pr-2 font-medium">{row.student_name}</td>
-                  <td className="py-2 pr-2 text-muted-foreground">{row.college ?? "—"}</td>
+                  <td className="py-2 pr-2 font-medium">
+                    {row.student_id != null ? (
+                      <Link
+                        href={`/dashboard/students/${encodeURIComponent(String(row.student_id))}`}
+                        className="text-foreground underline-offset-4 hover:underline"
+                      >
+                        {row.student_name}
+                      </Link>
+                    ) : (
+                      row.student_name
+                    )}
+                  </td>
+                  <td className="py-2 pr-2 text-muted-foreground">
+                    {row.college ? (
+                      <Link
+                        href={`/dashboard/colleges/${encodeURIComponent(row.college)}`}
+                        className="text-primary underline-offset-4 hover:underline"
+                      >
+                        {row.college}
+                      </Link>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                   <td className="py-2 pr-2">{row.role}</td>
-                  <td className="py-2 pr-2 capitalize">{row.difficulty}</td>
+                  <td className="py-2 pr-2">
+                    <DifficultyBadge difficulty={row.difficulty} className="text-xs" />
+                  </td>
                   <td className="py-2 pr-2 text-right tabular-nums">
                     {row.score ?? "—"}
                   </td>
@@ -92,7 +130,8 @@ export function DashboardRecentInterviews() {
                     {formatDashboardDateTime(row.date)}
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         )}
