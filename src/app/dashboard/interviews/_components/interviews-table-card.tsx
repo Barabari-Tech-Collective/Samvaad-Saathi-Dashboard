@@ -114,23 +114,42 @@ export function InterviewsTableCard() {
               <tbody>
                 {rows.map((row) => {
                   const idStr = String(row.interview_id)
-                  const href = `/dashboard/interviews/${encodeURIComponent(idStr)}`
+                  const interviewHref = `/dashboard/interviews/${encodeURIComponent(idStr)}`
+                  const studentHref =
+                    row.student_id != null
+                      ? `/dashboard/students/${encodeURIComponent(String(row.student_id))}`
+                      : null
                   return (
                     <tr key={row.interview_id} className="border-b last:border-0">
                       <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">
-                        <Link href={href} className="text-primary underline-offset-4 hover:underline">
+                        <Link href={interviewHref} className="text-primary underline-offset-4 hover:underline">
                           {row.interview_id}
                         </Link>
                       </td>
                       <td className="py-2 pr-3">
-                        <Link
-                          href={href}
-                          className="font-medium text-foreground underline-offset-4 hover:underline"
-                        >
-                          {row.student_name}
-                        </Link>
+                        {studentHref ? (
+                          <Link
+                            href={studentHref}
+                            className="font-medium text-foreground underline-offset-4 hover:underline"
+                          >
+                            {row.student_name}
+                          </Link>
+                        ) : (
+                          <span className="font-medium">{row.student_name}</span>
+                        )}
                       </td>
-                      <td className="py-2 pr-3 text-muted-foreground">{row.college}</td>
+                      <td className="py-2 pr-3 text-muted-foreground">
+                        {row.college ? (
+                          <Link
+                            href={`/dashboard/colleges/${encodeURIComponent(row.college)}`}
+                            className="text-primary underline-offset-4 hover:underline"
+                          >
+                            {row.college}
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                       <td className="py-2 pr-3">{row.role}</td>
                       <td className="py-2 pr-3">
                         <Badge variant="outline" className="capitalize">

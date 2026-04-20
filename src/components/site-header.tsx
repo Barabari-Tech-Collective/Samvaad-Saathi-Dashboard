@@ -8,13 +8,16 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 const titleMap: Record<string, { title: string; subtitle?: string }> = {
   "/dashboard": { title: "Dashboard", subtitle: "Executive overview" },
   "/dashboard/students": { title: "Students", subtitle: "All students" },
-  "/dashboard/students/colleges": { title: "Students", subtitle: "Colleges" },
+  "/dashboard/colleges": { title: "Colleges", subtitle: "All colleges" },
   "/dashboard/interviews": { title: "Interviews", subtitle: "All interviews" },
 }
 
 function resolveHeaderMeta(pathname: string): { title: string; subtitle?: string } {
   if (pathname in titleMap) {
     return titleMap[pathname as keyof typeof titleMap]
+  }
+  if (pathname.startsWith("/dashboard/colleges/")) {
+    return { title: "Colleges", subtitle: "College detail" }
   }
   if (pathname.startsWith("/dashboard/students/")) {
     return { title: "Students", subtitle: "Student detail" }

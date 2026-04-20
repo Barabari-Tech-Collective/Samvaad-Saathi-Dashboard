@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { Bar, BarChart, CartesianGrid, Rectangle, Tooltip, XAxis, YAxis } from "recharts"
 
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
@@ -110,6 +111,12 @@ export function DashboardTopCollegesChart() {
                                                     </span>
                                                 </div>
                                             ) : null}
+                                            <Link
+                                                href={`/dashboard/colleges/${encodeURIComponent(row.college)}`}
+                                                className="text-primary underline-offset-4 hover:underline"
+                                            >
+                                                View college
+                                            </Link>
                                         </div>
                                     )
                                 }}

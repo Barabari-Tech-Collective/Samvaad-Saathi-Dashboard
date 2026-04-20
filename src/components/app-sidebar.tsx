@@ -18,7 +18,8 @@ import {
     IconDashboard,
     IconMessageChatbot,
     IconMicrophone,
-    IconUsers
+    IconSchool,
+    IconUsers,
 } from "@tabler/icons-react"
 import Link from "next/link"
 
@@ -33,6 +34,11 @@ const data = {
             title: "Students",
             url: "/dashboard/students",
             icon: <IconUsers />,
+        },
+        {
+            title: "Colleges",
+            url: "/dashboard/colleges",
+            icon: <IconSchool />,
         },
         {
             title: "Interviews",

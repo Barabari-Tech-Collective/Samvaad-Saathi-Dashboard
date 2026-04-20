@@ -126,7 +126,18 @@ export function StudentsTableCard() {
                         {s.name}
                       </Link>
                     </td>
-                    <td className="py-2 pr-3 text-muted-foreground">{s.college}</td>
+                    <td className="py-2 pr-3 text-muted-foreground">
+                      {s.college ? (
+                        <Link
+                          href={`/dashboard/colleges/${encodeURIComponent(s.college)}`}
+                          className="text-primary underline-offset-4 hover:underline"
+                        >
+                          {s.college}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td className="py-2 pr-3 text-right tabular-nums">{s.average_score ?? "—"}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{s.latest_score ?? "—"}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">

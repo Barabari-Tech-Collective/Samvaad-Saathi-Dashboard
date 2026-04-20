@@ -64,7 +64,7 @@ export function CollegesListCard() {
                   <tr key={row.college_name} className="border-b last:border-0">
                     <td className="py-2 pr-3 font-medium">
                       <Link
-                        href={`/dashboard/students/colleges/${encodeURIComponent(row.college_name)}`}
+                        href={`/dashboard/colleges/${encodeURIComponent(row.college_name)}`}
                         className="text-primary underline-offset-4 hover:underline"
                       >
                         {row.college_name}

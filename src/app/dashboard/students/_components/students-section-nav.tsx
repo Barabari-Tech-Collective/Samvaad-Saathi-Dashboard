@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils"
 export function StudentsSectionNav() {
     const pathname = usePathname()
     const onAllStudents = pathname === "/dashboard/students"
-    const onColleges = pathname.startsWith("/dashboard/students/colleges")
 
     return (
         <nav
@@ -25,17 +24,6 @@ export function StudentsSectionNav() {
                 )}
             >
                 All students
-            </Link>
-            <Link
-                href="/dashboard/students/colleges"
-                className={cn(
-                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                    onColleges
-                        ? "bg-primary/10 text-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-            >
-                Colleges
             </Link>
         </nav>
     )

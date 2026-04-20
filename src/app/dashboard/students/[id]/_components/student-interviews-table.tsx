@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -121,7 +122,12 @@ export function StudentInterviewsTable({ studentId }: Readonly<{ studentId: numb
               {items.map((row) => (
                 <TableRow key={row.interview_id}>
                   <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
-                    #{row.interview_id}
+                    <Link
+                      href={`/dashboard/interviews/${encodeURIComponent(String(row.interview_id))}`}
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
+                      #{row.interview_id}
+                    </Link>
                   </TableCell>
                   <TableCell className="font-medium">{row.role}</TableCell>
                   <TableCell className="capitalize text-muted-foreground">{row.difficulty}</TableCell>
