@@ -1,8 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { Link, useTransitionRouter } from "next-view-transitions"
 import * as React from "react"
 
 import { BlurFade } from "@/components/ui/blur-fade"
@@ -38,7 +37,7 @@ function LandingShell({ children }: Readonly<{ children: React.ReactNode }>) {
 }
 
 export default function Page() {
-    const router = useRouter()
+    const router = useTransitionRouter()
     const [isProcessing, setIsProcessing] = React.useState(false)
 
     React.useEffect(() => {

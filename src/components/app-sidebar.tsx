@@ -5,6 +5,7 @@ import * as React from "react"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { SidebarTransitionLink } from "@/components/sidebar-transition-link"
 import {
     Sidebar,
     SidebarContent,
@@ -21,7 +22,6 @@ import {
     IconSchool,
     IconUsers,
 } from "@tabler/icons-react"
-import Link from "next/link"
 
 const data = {
     navMain: [
@@ -66,10 +66,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             asChild
                             className="data-[slot=sidebar-menu-button]:p-1.5!"
                         >
-                            <Link href="/dashboard">
+                            <SidebarTransitionLink href="/dashboard">
                                 <IconMessageChatbot className="size-5!" />
                                 <span className="text-base font-semibold">Samvaad Saathi</span>
-                            </Link>
+                            </SidebarTransitionLink>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
+import { Link } from "next-view-transitions"
 import { Bar, BarChart, CartesianGrid, Rectangle, Tooltip, XAxis, YAxis } from "recharts"
 
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"

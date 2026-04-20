@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card"
 import { useDashboardAttentionRequired } from "@/lib/api/hooks/analytics"
 
-import Link from "next/link"
+import { Link } from "next-view-transitions"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
 export function DashboardAttentionRequired() {

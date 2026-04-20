@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
-
+import { SidebarTransitionLink } from "@/components/sidebar-transition-link"
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -28,10 +27,10 @@ export function NavSecondary({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>
-                <Link href={item.url}>
+                <SidebarTransitionLink href={item.url}>
                   {item.icon}
                   <span>{item.title}</span>
-                </Link>
+                </SidebarTransitionLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

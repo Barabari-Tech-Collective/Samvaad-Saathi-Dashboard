@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
+import { Link } from "next-view-transitions"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"

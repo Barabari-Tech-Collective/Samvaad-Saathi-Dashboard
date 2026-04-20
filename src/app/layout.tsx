@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Montserrat, Nunito_Sans } from "next/font/google";
+import { Nunito_Sans } from "next/font/google";
+import { ViewTransitions } from "next-view-transitions";
 
 import { QueryProvider } from "@/components/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -7,14 +8,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
-const nunitoSansHeading = Nunito_Sans({ subsets: ['latin'], variable: '--font-heading' });
-
-const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-sans' })
-
-const fontMono = Geist_Mono({
+const nunito = Nunito_Sans({
     subsets: ["latin"],
-    variable: "--font-mono",
-})
+    variable: "--font-nunito",
+});
 
 const siteUrl = "https://master.d30wpikvvj1kc2.amplifyapp.com"
 
@@ -65,21 +62,23 @@ export default function RootLayout({
     children: React.ReactNode
 }>) {
     return (
-        <html
-            lang="en"
-            suppressHydrationWarning
-            className={cn("antialiased", fontMono.variable, "font-sans", montserrat.variable, nunitoSansHeading.variable)}
-        >
-            <body>
+        <ViewTransitions>
+            <html
+                lang="en"
+                suppressHydrationWarning
+                className={cn("antialiased", nunito.variable, "font-sans")}
+            >
+                <body>
 
-                <ThemeProvider>
-                    <QueryProvider>
-                        <TooltipProvider>
-                            {children}
-                        </TooltipProvider>
-                    </QueryProvider>
-                </ThemeProvider>
-            </body>
-        </html>
+                    <ThemeProvider>
+                        <QueryProvider>
+                            <TooltipProvider>
+                                {children}
+                            </TooltipProvider>
+                        </QueryProvider>
+                    </ThemeProvider>
+                </body>
+            </html>
+        </ViewTransitions>
     )
 }
