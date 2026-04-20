@@ -2,6 +2,7 @@
 
 import { Link } from "next-view-transitions"
 
+import { DifficultyBadge } from "@/components/difficulty-badge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -98,7 +99,9 @@ export function DashboardRecentInterviews() {
                     )}
                   </td>
                   <td className="py-2 pr-2">{row.role}</td>
-                  <td className="py-2 pr-2 capitalize">{row.difficulty}</td>
+                  <td className="py-2 pr-2">
+                    <DifficultyBadge difficulty={row.difficulty} className="text-xs" />
+                  </td>
                   <td className="py-2 pr-2 text-right tabular-nums">
                     {row.score ?? "—"}
                   </td>

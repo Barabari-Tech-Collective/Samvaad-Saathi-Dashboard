@@ -4,7 +4,7 @@ import * as React from "react"
 import { Link } from "next-view-transitions"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 
-import { Badge } from "@/components/ui/badge"
+import { DifficultyBadge } from "@/components/difficulty-badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -152,9 +152,7 @@ export function InterviewsTableCard() {
                       </td>
                       <td className="py-2 pr-3">{row.role}</td>
                       <td className="py-2 pr-3">
-                        <Badge variant="outline" className="capitalize">
-                          {row.difficulty}
-                        </Badge>
+                        <DifficultyBadge difficulty={row.difficulty} />
                       </td>
                       <td className="py-2 pr-3 text-right tabular-nums font-medium">
                         {row.score ?? "—"}

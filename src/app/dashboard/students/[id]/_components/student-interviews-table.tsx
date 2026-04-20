@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Link } from "next-view-transitions"
 
+import { DifficultyBadge } from "@/components/difficulty-badge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -130,7 +131,9 @@ export function StudentInterviewsTable({ studentId }: Readonly<{ studentId: numb
                     </Link>
                   </TableCell>
                   <TableCell className="font-medium">{row.role}</TableCell>
-                  <TableCell className="capitalize text-muted-foreground">{row.difficulty}</TableCell>
+                  <TableCell>
+                    <DifficultyBadge difficulty={row.difficulty} />
+                  </TableCell>
                   <TableCell>
                     <Badge variant={statusVariant(row.status)} className="capitalize">
                       {row.status}
