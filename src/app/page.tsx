@@ -107,7 +107,7 @@ export default function Page() {
 
                     <BlurFade delay={0.24}>
                         <RainbowButton size="lg" className="w-full min-w-2xs">
-                            <Link href={loginUrl} className="text-black dark:text-white">Continue with Google</Link>
+                            <Link href={loginUrl} className="text-white dark:text-black">Continue with Google</Link>
                         </RainbowButton>
                     </BlurFade>
                 </div>
