@@ -34,6 +34,7 @@ const authInterceptor = createAuthInterceptor({
     }
   },
   setTokens: (tokens) => {
+    console.log("Token:", tokens)
     setAccessToken(tokens.accessToken)
     if (tokens.refreshToken) {
       setRefreshToken(tokens.refreshToken)

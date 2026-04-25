@@ -1,12 +1,15 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 
 import { DashboardDateRangeTabs } from "@/app/dashboard/(overview)/_components/dashboard-date-range-tabs"
 import {
   DashboardOverviewProvider,
   useDashboardOverviewRange,
 } from "@/app/dashboard/(overview)/_components/dashboard-overview-context"
+import { KPI_STAT_GRID_CLASSNAME, KpiStatCard } from "@/components/dashboard/kpi-stat-card"
+import { SeverityBadge } from "@/components/severity-badge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,7 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { KPI_STAT_GRID_CLASSNAME, KpiStatCard } from "@/components/dashboard/kpi-stat-card"
 import { useAnalyticsAlerts, useDashboardAttentionRequired } from "@/lib/api/hooks/analytics"
 
 const EMPTY = "__all__"
@@ -55,12 +57,10 @@ function AlertsPageContent() {
     ...mergedFilters,
   })
 
-  const studentAlerts = analyticsAlerts?.studentAlerts ?? []
   const systemAlerts = analyticsAlerts?.systemAlerts ?? []
   const attentionItems = attentionRequired?.items ?? []
   const attentionTotalPages = attentionRequired?.total ? Math.ceil(attentionRequired.total / 10) : 1
 
-  const totalAlerts = studentAlerts.length + systemAlerts.length
   const criticalAttention = attentionItems.filter((item) => item.severity === "critical").length
 
   return (
@@ -105,53 +105,16 @@ function AlertsPageContent() {
 
       <div className={`${KPI_STAT_GRID_CLASSNAME} px-4 lg:px-6`}>
         {isLoadingAnalyticsAlerts ? (
-          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-xl" />)
+          Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-xl" />)
         ) : (
           <>
-            <KpiStatCard kpiKey="total_alerts" label="Total alerts" value={totalAlerts} />
-            <KpiStatCard kpiKey="student_alerts" label="Student alerts" value={studentAlerts.length} />
             <KpiStatCard kpiKey="system_alerts" label="System alerts" value={systemAlerts.length} />
             <KpiStatCard kpiKey="attention" label="Critical attention" value={criticalAttention} />
           </>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Student alerts</CardTitle>
-            <CardDescription>Signal-level alerts tied to specific learners.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-2">
-            {isLoadingAnalyticsAlerts ? (
-              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
-            ) : alertsError ? (
-              <p className="text-sm text-destructive">
-                {alertsErrObj instanceof Error ? alertsErrObj.message : "Failed to load alerts."}
-              </p>
-            ) : studentAlerts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No student alerts found for selected filters.</p>
-            ) : (
-              studentAlerts.slice(0, 10).map((alert, index) => (
-                <div
-                  key={`${alert.type}-${String(alert.user_id ?? "na")}-${index}`}
-                  className="rounded-md border px-3 py-2"
-                >
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {alert.type.replaceAll("_", " ")}
-                    </Badge>
-                    {alert.user_id ? (
-                      <span className="text-xs text-muted-foreground">Student #{alert.user_id}</span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{alert.message}</p>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
+ <div className="px-4 lg:px-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">System alerts</CardTitle>
@@ -183,7 +146,7 @@ function AlertsPageContent() {
             )}
           </CardContent>
         </Card>
-      </div>
+           </div>
 
       <div className="px-4 lg:px-6">
         <Card>
@@ -221,12 +184,17 @@ function AlertsPageContent() {
                     {attentionItems.map((item, index) => (
                       <tr key={`${item.type}-${item.user_id}-${index}`} className="border-b last:border-0">
                         <td className="py-2 pr-3">
-                          <Badge variant={item.severity === "critical" ? "destructive" : "secondary"}>
-                            {item.severity}
-                          </Badge>
+                          <SeverityBadge severity={item.severity} />
                         </td>
                         <td className="py-2 pr-3">{item.type.replaceAll("_", " ")}</td>
-                        <td className="py-2 pr-3 font-mono text-xs">{item.user_id}</td>
+                        <td className="py-2 pr-3 font-mono text-xs">
+                          <Link
+                            href={`/dashboard/students/${item.user_id}`}
+                            className="hover:underline text-primary"
+                          >
+                            {item.user_id}
+                          </Link>
+                        </td>
                         <td className="py-2 text-muted-foreground">{item.message}</td>
                       </tr>
                     ))}
