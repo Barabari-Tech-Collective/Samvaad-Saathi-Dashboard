@@ -15,3 +15,11 @@ export function formatChartDayMonth(input: string | number | Date | null | undef
   if (!d.isValid()) return "—"
   return d.format("DD MMM")
 }
+
+/** Tooltip date: day, short month, and year (e.g. `19 Apr 2026`). */
+export function formatTooltipDate(input: string | number | Date | null | undefined): string {
+  if (input === null || input === undefined || input === "") return "—"
+  const d = dayjs(input)
+  if (!d.isValid()) return "—"
+  return d.format("DD MMM, YYYY")
+}

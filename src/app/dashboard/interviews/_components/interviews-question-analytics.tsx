@@ -1,32 +1,27 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { useQuestionsAnalytics } from "@/lib/api/hooks/analytics"
-import { Link } from "next-view-transitions"
-import * as React from "react"
-import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
-export function DashboardQuestionsAnalytics() {
-  const { dateFilters } = useDashboardOverviewRange()
+export function InterviewsQuestionAnalytics() {
+  const [page, setPage] = React.useState(1)
   const { questionsAnalytics, isLoadingQuestionsAnalytics } = useQuestionsAnalytics({ 
-    ...dateFilters,
-    limit: 5 
+    page, 
+    limit: 10 
   })
 
+  const totalPages = questionsAnalytics?.total ? Math.ceil(questionsAnalytics.total / 10) : 1
+
   return (
-    <Card className="flex flex-col @container/card">
-      <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1.5">
-          <CardTitle>Question analytics</CardTitle>
-          <CardDescription>Question-level performance and metadata.</CardDescription>
-        </div>
-        <Button variant="outline" size="sm" className="shrink-0" asChild>
-          <Link href="/dashboard/interviews#question-analytics">View all questions</Link>
-        </Button>
+    <Card id="question-analytics" className="flex flex-col @container/card">
+      <CardHeader>
+        <CardTitle>Question analytics</CardTitle>
+        <CardDescription>Question-level performance and metadata.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col space-y-4">
         {isLoadingQuestionsAnalytics ? (
@@ -37,8 +32,8 @@ export function DashboardQuestionsAnalytics() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]">ID</TableHead>
-                    <TableHead className="min-w-[300px]">Question Text</TableHead>
+                    <TableHead className="w-12.5">ID</TableHead>
+                    <TableHead className="min-w-75">Question Text</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead className="text-right">Attempts</TableHead>
                     <TableHead className="text-right">Avg Score</TableHead>
@@ -69,6 +64,28 @@ export function DashboardQuestionsAnalytics() {
                   )}
                 </TableBody>
               </Table>
+            </div>
+            
+            <div className="flex items-center justify-end space-x-2 pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                Prev
+              </Button>
+              <span className="text-sm text-muted-foreground px-2">
+                Page {page} of {Math.max(1, totalPages)}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                Next
+              </Button>
             </div>
           </>
         )}

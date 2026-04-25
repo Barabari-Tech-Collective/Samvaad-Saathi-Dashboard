@@ -1,24 +1,22 @@
 "use client"
 
 import * as React from "react"
-import { Area, ComposedChart, Line, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Area, CartesianGrid, ComposedChart, Line, Tooltip, XAxis, YAxis } from "recharts"
 
+import { ChartAreaSkeleton } from "@/components/dashboard/analytics-skeletons"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card"
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
+    ChartContainer,
+    type ChartConfig,
 } from "@/components/ui/chart"
-import { ChartAreaSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useForecasting } from "@/lib/api/hooks/analytics"
-import { formatDashboardDateTime } from "./dashboard-format-utils"
+import { formatChartDayMonth } from "./dashboard-format-utils"
 
 const chartConfig = {
   predictedValue: { label: "Predicted", color: "var(--chart-3)" },
@@ -63,15 +61,35 @@ export function DashboardForecasting() {
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={32}
-                tickFormatter={(v) => formatDashboardDateTime(v as string)}
+                tickFormatter={(v) => formatChartDayMonth(v as string)}
               />
               <YAxis tickLine={false} axisLine={false} width={32} />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    labelFormatter={(v) => formatDashboardDateTime(v as string)}
-                  />
-                }
+              <Tooltip
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload
+                    return (
+                      <div className="rounded-lg border bg-background p-3 shadow-lg">
+                        <p className="text-sm font-medium">{formatChartDayMonth(label as string)}</p>
+                        <div className="mt-2 space-y-1">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-xs text-muted-foreground">Confidence Band</span>
+                            <span className="text-xs font-medium">
+                              {data.bounds[0]?.toFixed(2)}, {data.bounds[1]?.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-xs text-muted-foreground">Predicted</span>
+                            <span className="text-xs font-medium">
+                              {data.predictedValue?.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+                  return null
+                }}
               />
               <Area
                 dataKey="bounds"

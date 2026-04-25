@@ -1,7 +1,7 @@
 "use client"
 
 import { DashboardAttentionSkeleton } from "@/components/dashboard/analytics-skeletons"
-import { Badge } from "@/components/ui/badge"
+import { SeverityBadge } from "@/components/severity-badge"
 import {
     Card,
     CardContent,
@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/card"
 import { useDashboardAttentionRequired } from "@/lib/api/hooks/analytics"
 
+import { Button } from "@/components/ui/button"
 import { Link } from "next-view-transitions"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
-import { Button } from "@/components/ui/button"
 
 export function DashboardAttentionRequired() {
     const { dateFilters } = useDashboardOverviewRange()
@@ -47,12 +47,10 @@ export function DashboardAttentionRequired() {
                             className="rounded-md border px-3 py-2 text-sm"
                         >
                             <div className="flex flex-wrap items-center gap-2">
-                                <Badge
-                                    variant={attention.severity === "critical" ? "destructive" : "secondary"}
-                                    className="text-xs capitalize"
-                                >
-                                    {attention.severity}
-                                </Badge>
+                                <SeverityBadge
+                                    severity={attention.severity}
+                                    className="text-xs"
+                                />
                                 <span className="font-medium">{attention.type.replace(/_/g, " ")}</span>
                             </div>
                             <p className="mt-1 text-muted-foreground">{attention.message}</p>

@@ -1,12 +1,12 @@
 "use client"
 
-import * as React from "react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { useBenchmarking } from "@/lib/api/hooks/analytics"
+import * as React from "react"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
 export function DashboardBenchmarking() {
@@ -31,8 +31,7 @@ export function DashboardBenchmarking() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Dimension</TableHead>
-                    <TableHead>Name</TableHead>
+                    <TableHead>Role</TableHead>
                     <TableHead className="text-right">Avg Score</TableHead>
                     <TableHead className="text-right">Platform Avg</TableHead>
                     <TableHead className="text-right">Delta</TableHead>
@@ -41,11 +40,6 @@ export function DashboardBenchmarking() {
                 <TableBody>
                   {(benchmarking?.items ?? []).map((item, i) => (
                     <TableRow key={i}>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {item.dimension}
-                        </Badge>
-                      </TableCell>
                       <TableCell className="capitalize">{item.name}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         {item.avg_score.toFixed(1)}

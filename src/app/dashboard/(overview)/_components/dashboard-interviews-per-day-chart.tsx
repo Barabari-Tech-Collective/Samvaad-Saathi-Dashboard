@@ -2,35 +2,36 @@
 
 import * as React from "react"
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  XAxis,
-  YAxis,
+    Bar,
+    CartesianGrid,
+    Cell,
+    ComposedChart,
+    Line,
+    Tooltip,
+    XAxis,
+    YAxis,
 } from "recharts"
 
+import { ChartAreaSkeleton } from "@/components/dashboard/analytics-skeletons"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card"
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
+    ChartContainer,
+    type ChartConfig,
 } from "@/components/ui/chart"
-import { ChartAreaSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useDashboardInterviewsPerDay } from "@/lib/api/hooks/analytics"
 
-import { formatDashboardDateTime } from "./dashboard-format-utils"
+import { formatChartDayMonth, formatTooltipDate } from "./dashboard-format-utils"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
 const chartConfig = {
   interviewCount: { label: "Interviews", color: "var(--primary)" },
+  interviewLine: { label: "Interviews", color: "var(--chart-3)" },
 } satisfies ChartConfig
 
 export function DashboardInterviewsPerDayChart() {
@@ -62,7 +63,7 @@ export function DashboardInterviewsPerDayChart() {
           <ChartAreaSkeleton />
         ) : (
           <ChartContainer config={chartConfig} className="aspect-auto h-[240px] w-full">
-            <BarChart data={data} margin={{ left: 8, right: 8 }}>
+            <ComposedChart data={data} margin={{ left: 8, right: 8 }}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
@@ -70,15 +71,25 @@ export function DashboardInterviewsPerDayChart() {
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={28}
-                tickFormatter={(v) => formatDashboardDateTime(v as string)}
+                tickFormatter={(v) => formatChartDayMonth(v as string)}
               />
               <YAxis tickLine={false} axisLine={false} width={32} allowDecimals={false} />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    labelFormatter={(v) => formatDashboardDateTime(v as string)}
-                  />
-                }
+              <Tooltip
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length > 0) {
+                    const data = payload[0]
+                    return (
+                      <div className="rounded-lg border bg-background p-2 shadow-lg">
+                        <p className="text-sm font-medium">{formatTooltipDate(label as string)}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                          <span className="text-sm">Interviews: {data.value}</span>
+                        </div>
+                      </div>
+                    )
+                  }
+                  return null
+                }}
               />
               <Bar dataKey="interviewCount" radius={[3, 3, 0, 0]} maxBarSize={28}>
                 {data.map((entry) => (
@@ -92,7 +103,15 @@ export function DashboardInterviewsPerDayChart() {
                   />
                 ))}
               </Bar>
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="interviewCount"
+                stroke="var(--color-interviewLine)"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4 }}
+              />
+            </ComposedChart>
           </ChartContainer>
         )}
       </CardContent>

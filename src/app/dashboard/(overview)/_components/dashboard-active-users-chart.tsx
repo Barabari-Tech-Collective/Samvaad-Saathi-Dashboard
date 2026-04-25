@@ -3,23 +3,23 @@
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
+import { ChartAreaSkeleton } from "@/components/dashboard/analytics-skeletons"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card"
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
+    type ChartConfig,
 } from "@/components/ui/chart"
-import { ChartAreaSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useDashboardActiveUsersTrend } from "@/lib/api/hooks/analytics"
 
-import { formatDashboardDateTime } from "./dashboard-format-utils"
+import { formatChartDayMonth } from "./dashboard-format-utils"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
 const chartConfig = {
@@ -65,13 +65,13 @@ export function DashboardActiveUsersChart() {
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={28}
-                tickFormatter={(v) => formatDashboardDateTime(v as string)}
+                tickFormatter={(v) => formatChartDayMonth(v as string)}
               />
               <YAxis tickLine={false} axisLine={false} width={32} allowDecimals={false} />
               <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    labelFormatter={(v) => formatDashboardDateTime(v as string)}
+                    labelFormatter={(v) => formatChartDayMonth(v as string)}
                   />
                 }
               />
