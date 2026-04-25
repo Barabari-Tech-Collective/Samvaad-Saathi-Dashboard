@@ -13,7 +13,7 @@ const titleMap: Record<string, { title: string; subtitle?: string }> = {
   "/dashboard/alerts": { title: "Alerts", subtitle: "Alerts and attention" },
   "/dashboard/roles": { title: "Roles", subtitle: "Role analytics" },
   "/dashboard/rankings": { title: "Rankings", subtitle: "Student rankings" },
-  "/dashboard/insights": { title: "Insights", subtitle: "Predictive analytics" },
+
   "/dashboard/students/compare": { title: "Students", subtitle: "Compare students" },
 }
 

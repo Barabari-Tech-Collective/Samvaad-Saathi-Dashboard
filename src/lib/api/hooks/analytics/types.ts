@@ -423,9 +423,17 @@ export type DifficultyMetricsResponse = Readonly<{
   items: readonly DifficultyMetricsRow[]
 }>
 
+export type QuestionAnalyticsRow = Readonly<{
+  question_id: number
+  question_text: string
+  question_type: string
+  attempts: number
+  average_score: number | null
+}>
+
 export type QuestionsAnalyticsResponse = Readonly<{
   tableType: "question_analytics"
-  items: readonly Record<string, unknown>[]
+  items: readonly QuestionAnalyticsRow[]
   page: number
   limit: number
   total: number
@@ -448,18 +456,34 @@ export type PredictiveAlertRow = Readonly<{
   reason?: string
   confidence?: number
   type: string
-  user_id: number
+  user_id?: number
+  role?: string
+  drop_off_rate?: number
   message: string
 }>
 
 export type PredictiveAlertsResponse = Readonly<{
   tableType: "predictive_alerts"
   items: readonly PredictiveAlertRow[]
+  page?: number
+  limit?: number
+  total?: number
+}>
+
+export type BenchmarkingRow = Readonly<{
+  dimension: string
+  name: string
+  avg_score: number
+  platform_avg: number
+  delta: number
 }>
 
 export type BenchmarkingResponse = Readonly<{
   tableType: "benchmarking"
-  items: readonly Record<string, unknown>[]
+  items: readonly BenchmarkingRow[]
+  page?: number
+  limit?: number
+  total?: number
 }>
 
 export type ForecastPoint = Readonly<{

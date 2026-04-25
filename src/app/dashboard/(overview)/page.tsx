@@ -11,6 +11,11 @@ import { DashboardRecentStudents } from "./_components/dashboard-recent-students
 import { DashboardScoreDistributionChart } from "./_components/dashboard-score-distribution-chart"
 import { DashboardTopCollegesChart } from "./_components/dashboard-top-colleges-chart"
 import { DashboardTopRolesChart } from "./_components/dashboard-top-roles-chart"
+import { DashboardPredictiveAlerts } from "./_components/dashboard-predictive-alerts"
+import { DashboardBenchmarking } from "./_components/dashboard-benchmarking"
+import { DashboardDropoffFunnel } from "./_components/dashboard-dropoff-funnel"
+import { DashboardForecasting } from "./_components/dashboard-forecasting"
+import { DashboardQuestionsAnalytics } from "./_components/dashboard-questions-analytics"
 
 export default function DashboardPage() {
   return (
@@ -40,6 +45,18 @@ export default function DashboardPage() {
           <DashboardRecentInterviews />
           <DashboardRecentStudents />
           <DashboardAttentionRequired />
+          
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+            <DashboardPredictiveAlerts />
+            <DashboardBenchmarking />
+          </div>
+          
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+            <DashboardDropoffFunnel />
+            <DashboardForecasting />
+          </div>
+          
+          <DashboardQuestionsAnalytics />
         </div>
       </div>
     </DashboardOverviewProvider>

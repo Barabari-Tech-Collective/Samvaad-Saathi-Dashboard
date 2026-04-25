@@ -64,11 +64,6 @@ const data = {
             url: "/dashboard/rankings",
             icon: <IconMedal />,
         },
-        {
-            title: "Insights",
-            url: "/dashboard/insights",
-            icon: <IconSettingsSearch />,
-        },
     ],
     navSecondary: [
         // {

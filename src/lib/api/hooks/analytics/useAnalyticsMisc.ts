@@ -88,7 +88,7 @@ export function useDropoffFunnel(filters?: DateRangeParams) {
   }
 }
 
-export function usePredictiveAlerts(filters?: DateRangeParams) {
+export function usePredictiveAlerts(filters?: PaginationParams & DateRangeParams) {
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<PredictiveAlertsResponse>({
     url: predictiveAlertsPath,
@@ -103,7 +103,7 @@ export function usePredictiveAlerts(filters?: DateRangeParams) {
   }
 }
 
-export function useBenchmarking(filters?: DateRangeParams) {
+export function useBenchmarking(filters?: PaginationParams & DateRangeParams) {
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<BenchmarkingResponse>({
     url: benchmarkingPath,
