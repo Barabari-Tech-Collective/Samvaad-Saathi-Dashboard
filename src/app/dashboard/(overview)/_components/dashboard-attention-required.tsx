@@ -13,29 +13,29 @@ import { useDashboardAttentionRequired } from "@/lib/api/hooks/analytics"
 
 import { Link } from "next-view-transitions"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
+import { Button } from "@/components/ui/button"
 
 export function DashboardAttentionRequired() {
     const { dateFilters } = useDashboardOverviewRange()
     const { attentionRequired, isLoadingAttentionRequired } = useDashboardAttentionRequired({
-        limit: 10,
+        limit: 5,
         ...dateFilters,
     })
 
     const items = attentionRequired?.items ?? []
-    const total = attentionRequired?.total
 
     return (
         <Card className="w-full">
-            <CardHeader>
+            <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1.5">
                 <CardTitle className="text-base">
                     Attention required
-                    {total != null ? (
-                        <span className="ml-2 text-xs font-normal text-muted-foreground">
-                            {items.length} of {total} shown
-                        </span>
-                    ) : null}
                 </CardTitle>
                 <CardDescription>Students who may need follow-up</CardDescription>
+                </div>
+                 <Button variant="outline" size="sm" className="shrink-0" asChild>
+                    <Link href="/dashboard/alerts">View all alerts</Link>
+                </Button>
             </CardHeader>
             <CardContent className="grid gap-3">
                 {isLoadingAttentionRequired ? (
@@ -56,7 +56,7 @@ export function DashboardAttentionRequired() {
                                 <span className="font-medium">{attention.type.replace(/_/g, " ")}</span>
                             </div>
                             <p className="mt-1 text-muted-foreground">{attention.message}</p>
-                            <Link href={`/dashboard/students/${attention.user_id}`} className="mt-1 text-xs text-muted-foreground">User #{attention.user_id}</Link>
+                            <Link href={`/dashboard/students/${attention.user_id}`} className="mt-1 text-xs ">User #{attention.user_id}</Link>
                         </div>
                     ))
                 )}

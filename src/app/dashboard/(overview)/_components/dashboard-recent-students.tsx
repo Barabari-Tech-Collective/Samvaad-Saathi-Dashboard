@@ -19,24 +19,16 @@ import { useDashboardOverviewRange } from "./dashboard-overview-context"
 export function DashboardRecentStudents() {
     const { dateFilters } = useDashboardOverviewRange()
     const { recentStudents, isLoadingRecentStudents } = useDashboardRecentStudents({
-        limit: 10,
+        limit: 5,
         ...dateFilters,
     })
-
-    const total = recentStudents?.total
-    const meta =
-        total != null ? (
-            <span className="text-xs font-normal text-muted-foreground">
-                {recentStudents?.items?.length ?? 0} of {total} shown
-            </span>
-        ) : null
 
     return (
         <Card className="w-full">
             <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-1.5">
                     <CardTitle className="text-base">
-                        Recently added students {meta}
+                        Recently added students
                     </CardTitle>
                     <CardDescription>New registrations in the selected range</CardDescription>
                 </div>

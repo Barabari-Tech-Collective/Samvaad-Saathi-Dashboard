@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-import { Link } from "next-view-transitions"
 import { Bar, BarChart, CartesianGrid, Rectangle, Tooltip, XAxis, YAxis } from "recharts"
 
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
@@ -16,6 +14,7 @@ import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
 import { useDashboardTopColleges } from "@/lib/api/hooks/analytics"
 
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
+import { useMemo } from "react"
 
 const chartConfig = {
     usage: { label: "Usage frequency", color: "var(--chart-3)" },
@@ -25,7 +24,7 @@ export function DashboardTopCollegesChart() {
     const { dateFilters } = useDashboardOverviewRange()
     const { topColleges, isLoadingTopColleges } = useDashboardTopColleges({ ...dateFilters, limit: 5 })
 
-    const data = React.useMemo(
+    const data = useMemo(
         () =>
             (topColleges?.items ?? []).map((c) => ({
                 college: c.college,
@@ -111,12 +110,7 @@ export function DashboardTopCollegesChart() {
                                                     </span>
                                                 </div>
                                             ) : null}
-                                            <Link
-                                                href={`/dashboard/colleges/${encodeURIComponent(row.college)}`}
-                                                className="text-primary underline-offset-4 hover:underline"
-                                            >
-                                                View college
-                                            </Link>
+                                           
                                         </div>
                                     )
                                 }}

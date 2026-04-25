@@ -46,10 +46,9 @@ export default function DashboardPage() {
           <DashboardRecentStudents />
           <DashboardAttentionRequired />
           
-          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
             <DashboardPredictiveAlerts />
             <DashboardBenchmarking />
-          </div>
+         
           
           <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
             <DashboardDropoffFunnel />

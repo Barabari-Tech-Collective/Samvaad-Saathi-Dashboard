@@ -12,6 +12,13 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import { useDashboardTopRoles } from "@/lib/api/hooks/analytics"
 
 import { formatDurationSeconds } from "./dashboard-format-utils"
@@ -37,8 +44,19 @@ export function DashboardTopRolesChart() {
     const { dateFilters } = useDashboardOverviewRange()
     const { topRoles, isLoadingTopRoles } = useDashboardTopRoles({ ...dateFilters, limit: 5 })
 
+    const [selectedRole, setSelectedRole] = React.useState<{
+        name: string
+        fullRole: string
+        value: number
+        avgScore: number | null
+        dropOff: number | null
+        avgTime: number | null
+        color: string
+        commonWeaknesses: readonly string[]
+    } | null>(null)
+
     const pieData = React.useMemo(() => {
-        const items = [...(topRoles?.items ?? [])].sort((a, b) => b.interviews - a.interviews).slice(0, 5)
+        const items = [...(topRoles?.items ?? [])]
         return items.map((r, i) => ({
             name: truncateRole(r.role, 18),
             fullRole: r.role,
@@ -47,6 +65,7 @@ export function DashboardTopRolesChart() {
             dropOff: r.drop_off_rate,
             avgTime: r.avg_time_spent_seconds ?? null,
             color: PIE_COLORS[i % PIE_COLORS.length],
+            commonWeaknesses: r.common_weaknesses || [],
         }))
     }, [topRoles?.items])
 
@@ -76,7 +95,14 @@ export function DashboardTopRolesChart() {
                                 strokeWidth={1}
                             >
                                 {pieData.map((entry) => (
-                                    <Cell key={entry.fullRole} fill={entry.color} stroke="transparent" />
+                                    <Cell
+                                        key={entry.fullRole}
+                                        fill={entry.color}
+                                        stroke="transparent"
+                                        onClick={() => setSelectedRole(entry)}
+                                        className="cursor-pointer hover:opacity-80"
+                                        style={{ cursor: "pointer" }}
+                                    />
                                 ))}
                             </Pie>
                             <Tooltip
@@ -119,6 +145,30 @@ export function DashboardTopRolesChart() {
                     </ChartContainer>
                 )}
             </CardContent>
+
+            <Dialog open={!!selectedRole} onOpenChange={(open) => !open && setSelectedRole(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{selectedRole?.fullRole}</DialogTitle>
+                        <DialogDescription>
+                            Common weaknesses identified for this role
+                        </DialogDescription>
+                    </DialogHeader>
+                    {selectedRole?.commonWeaknesses && selectedRole.commonWeaknesses.length > 0 ? (
+                        <ul className="list-inside list-disc space-y-1.5 text-sm">
+                            {selectedRole.commonWeaknesses.map((w, i) => (
+                                <li key={i} className="text-muted-foreground">
+                                    {w}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            No common weaknesses data available.
+                        </p>
+                    )}
+                </DialogContent>
+            </Dialog>
         </Card>
     )
 }
