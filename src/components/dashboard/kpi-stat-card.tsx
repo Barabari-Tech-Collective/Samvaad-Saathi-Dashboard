@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { KpiIcon } from "./kpi-icon"
 
 export const KPI_STAT_GRID_CLASSNAME =
-  "grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-3 dark:*:data-[slot=card]:bg-card"
+  "grid grid-cols-1 gap-4 *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-3"
 
 export function KpiStatCard({
   kpiKey,

@@ -24,7 +24,12 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { useDebounce } from "@/hooks/use-debounce"
-import { useStudentsTable, type StudentTableRow } from "@/lib/api/hooks/analytics"
+import {
+    useStudentCollegeFilters,
+    useStudentsSearch,
+    useStudentsTable,
+    type StudentTableRow,
+} from "@/lib/api/hooks/analytics"
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100] as const
 
@@ -35,6 +40,7 @@ function isStudentsPageSize(n: number): n is StudentsPageSize {
 }
 
 const SEARCH_DEBOUNCE_MS = 320
+const EMPTY_COLLEGE_FILTER = "__all__"
 
 export function StudentsTableCard() {
     const router = useRouter()
@@ -43,12 +49,13 @@ export function StudentsTableCard() {
 
     const [page, setPage] = React.useState(1)
     const [pageSize, setPageSize] = React.useState<StudentsPageSize>(25)
+    const [collegeFilter, setCollegeFilter] = React.useState(EMPTY_COLLEGE_FILTER)
     const [searchInput, setSearchInput] = React.useState(() => searchParams.get("q") ?? "")
     const debouncedQ = useDebounce(searchInput.trim(), SEARCH_DEBOUNCE_MS)
 
     React.useEffect(() => {
         setPage(1)
-    }, [debouncedQ])
+    }, [debouncedQ, collegeFilter])
 
     React.useEffect(() => {
         const next = new URLSearchParams(searchParams.toString())
@@ -60,17 +67,26 @@ export function StudentsTableCard() {
         router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
     }, [debouncedQ, pathname, router, searchParams])
 
-    const {
-        studentsTable,
-        isLoadingStudentsTable,
-        isFetching,
-        isError,
-        error,
-    } = useStudentsTable({
+    const { collegeFilters, isLoadingCollegeFilters } = useStudentCollegeFilters()
+
+    const tableQuery = useStudentsTable({
         page,
         limit: pageSize,
-        ...(debouncedQ ? { q: debouncedQ } : {}),
+        ...(collegeFilter !== EMPTY_COLLEGE_FILTER ? { college: collegeFilter } : {}),
     })
+    const searchQuery = useStudentsSearch({
+        page,
+        limit: pageSize,
+        q: debouncedQ,
+        ...(collegeFilter !== EMPTY_COLLEGE_FILTER ? { college: collegeFilter } : {}),
+    })
+    const studentsTable = debouncedQ ? searchQuery.studentsSearch : tableQuery.studentsTable
+    const isLoadingStudentsTable = debouncedQ
+        ? searchQuery.isLoadingStudentsSearch
+        : tableQuery.isLoadingStudentsTable
+    const isFetching = debouncedQ ? searchQuery.isFetching : tableQuery.isFetching
+    const isError = debouncedQ ? searchQuery.isError : tableQuery.isError
+    const error = debouncedQ ? searchQuery.error : tableQuery.error
 
     const rows: readonly StudentTableRow[] = studentsTable?.items ?? []
     const [stableTotal, setStableTotal] = React.useState(0)
@@ -129,6 +145,24 @@ export function StudentsTableCard() {
                             aria-label="Search students"
                             autoComplete="off"
                         />
+                    </div>
+                    <div className="w-full sm:max-w-56">
+                        <Select value={collegeFilter} onValueChange={setCollegeFilter}>
+                            <SelectTrigger className="h-9">
+                                <SelectValue placeholder="All colleges" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={EMPTY_COLLEGE_FILTER}>All colleges</SelectItem>
+                                {(collegeFilters?.colleges ?? []).map((college) => (
+                                    <SelectItem key={college} value={college}>
+                                        {college}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {isLoadingCollegeFilters ? (
+                            <p className="mt-1 text-xs text-muted-foreground">Loading colleges...</p>
+                        ) : null}
                     </div>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">

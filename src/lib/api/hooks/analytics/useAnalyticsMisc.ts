@@ -5,6 +5,7 @@ import { api } from "@/lib/api/config"
 import { analyticsKey } from "./query-keys"
 import { compactParams, type QueryParamInput } from "./params"
 import type {
+  AnalyticsAlertsResponse,
   AnalyticsSearchParams,
   BenchmarkingResponse,
   DateRangeParams,
@@ -24,6 +25,7 @@ const dropoffFunnelPath = "/v2/analytics/dropoffs/funnel" as const
 const predictiveAlertsPath = "/v2/analytics/insights/predictive-alerts" as const
 const benchmarkingPath = "/v2/analytics/insights/benchmarking" as const
 const forecastingPath = "/v2/analytics/insights/forecasting" as const
+const analyticsAlertsPath = "/analytics/alerts" as const
 
 export function useAnalyticsSearch(params: AnalyticsSearchParams) {
   const p = compactParams(params as QueryParamInput)
@@ -56,7 +58,7 @@ export function useDifficultyMetrics(filters?: DateRangeParams) {
   }
 }
 
-export function useQuestionsAnalytics(params?: PaginationParams) {
+export function useQuestionsAnalytics(params?: PaginationParams & DateRangeParams) {
   const p = compactParams(params as QueryParamInput | undefined)
   const query = api.useQuery<QuestionsAnalyticsResponse>({
     url: questionsAnalyticsPath,
@@ -86,11 +88,13 @@ export function useDropoffFunnel(filters?: DateRangeParams) {
   }
 }
 
-export function usePredictiveAlerts() {
+export function usePredictiveAlerts(filters?: DateRangeParams) {
+  const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<PredictiveAlertsResponse>({
     url: predictiveAlertsPath,
     method: "GET",
-    key: analyticsKey(predictiveAlertsPath),
+    key: analyticsKey(predictiveAlertsPath, params),
+    params,
   })
   return {
     predictiveAlerts: query.data,
@@ -99,11 +103,13 @@ export function usePredictiveAlerts() {
   }
 }
 
-export function useBenchmarking() {
+export function useBenchmarking(filters?: DateRangeParams) {
+  const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<BenchmarkingResponse>({
     url: benchmarkingPath,
     method: "GET",
-    key: analyticsKey(benchmarkingPath),
+    key: analyticsKey(benchmarkingPath, params),
+    params,
   })
   return {
     benchmarking: query.data,
@@ -123,6 +129,21 @@ export function useForecasting(params?: ForecastingParams) {
   return {
     forecasting: query.data,
     isLoadingForecasting: query.isLoading,
+    ...query,
+  }
+}
+
+export function useAnalyticsAlerts(filters?: DateRangeParams & { user_id?: number | string }) {
+  const params = compactParams(filters as QueryParamInput | undefined)
+  const query = api.useQuery<AnalyticsAlertsResponse>({
+    url: analyticsAlertsPath,
+    method: "GET",
+    key: analyticsKey(analyticsAlertsPath, params),
+    params,
+  })
+  return {
+    analyticsAlerts: query.data,
+    isLoadingAnalyticsAlerts: query.isLoading,
     ...query,
   }
 }

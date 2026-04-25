@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 export function StudentsSectionNav() {
     const pathname = usePathname()
     const onAllStudents = pathname === "/dashboard/students"
+    const onCompare = pathname === "/dashboard/students/compare"
 
     return (
         <nav
@@ -24,6 +25,17 @@ export function StudentsSectionNav() {
                 )}
             >
                 All students
+            </Link>
+            <Link
+                href="/dashboard/students/compare"
+                className={cn(
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                    onCompare
+                        ? "bg-primary/10 text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+            >
+                Compare
             </Link>
         </nav>
     )

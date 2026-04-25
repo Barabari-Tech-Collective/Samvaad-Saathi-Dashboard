@@ -17,9 +17,13 @@ import {
 } from "@/components/ui/sidebar"
 import {
     IconDashboard,
+    IconAlertTriangle,
+    IconMedal,
     IconMessageChatbot,
     IconMicrophone,
+    IconSettingsSearch,
     IconSchool,
+    IconTargetArrow,
     IconUsers,
 } from "@tabler/icons-react"
 
@@ -44,6 +48,26 @@ const data = {
             title: "Interviews",
             url: "/dashboard/interviews",
             icon: <IconMicrophone />,
+        },
+        {
+            title: "Alerts",
+            url: "/dashboard/alerts",
+            icon: <IconAlertTriangle />,
+        },
+        {
+            title: "Roles",
+            url: "/dashboard/roles",
+            icon: <IconTargetArrow />,
+        },
+        {
+            title: "Rankings",
+            url: "/dashboard/rankings",
+            icon: <IconMedal />,
+        },
+        {
+            title: "Insights",
+            url: "/dashboard/insights",
+            icon: <IconSettingsSearch />,
         },
     ],
     navSecondary: [

@@ -16,7 +16,8 @@ export type StudentsTableParams = PaginationParams &
   Readonly<{
     q?: string
     college?: string
-  }>
+  }> &
+  DashboardDateRoleFilter
 
 export type StudentsSearchParams = PaginationParams &
   Readonly<{
@@ -30,6 +31,9 @@ export type InterviewsTableParams = PaginationParams &
 export type DateRangeParams = Readonly<{
   start_date?: string
   end_date?: string
+  role?: string
+  difficulty?: string
+  college?: string
 }>
 
 export type StudentDetailDateParams = DateRangeParams
@@ -45,10 +49,13 @@ export type DashboardTopParams = DashboardDateRoleFilter &
     limit?: number
   }>
 
-export type DashboardAttentionParams = Readonly<{
-  limit?: number
+export type DashboardAttentionParams = PaginationParams & Readonly<{
   start_date?: string
   end_date?: string
+  role?: string
+  difficulty?: string
+  college?: string
+  user_id?: number | string
 }>
 
 export type AnalyticsSearchParams = Readonly<{
@@ -173,6 +180,28 @@ export type AttentionRequiredResponse = Readonly<{
   page?: number
   limit?: number
   total?: number
+}>
+
+export type AnalyticsAlertFilterMeta = Readonly<{
+  startDate: string | null
+  endDate: string | null
+  role: string | null
+  difficulty: string | null
+  college: string | null
+}>
+
+export type AnalyticsAlertItem = Readonly<{
+  type: string
+  user_id?: number
+  role?: string
+  message: string
+  [key: string]: unknown
+}>
+
+export type AnalyticsAlertsResponse = Readonly<{
+  filters: AnalyticsAlertFilterMeta
+  studentAlerts: readonly AnalyticsAlertItem[]
+  systemAlerts: readonly AnalyticsAlertItem[]
 }>
 
 export type StudentsSummaryResponse = KpiResponse & Readonly<{ tableType?: string }>

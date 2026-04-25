@@ -10,6 +10,11 @@ const titleMap: Record<string, { title: string; subtitle?: string }> = {
   "/dashboard/students": { title: "Students", subtitle: "All students" },
   "/dashboard/colleges": { title: "Colleges", subtitle: "All colleges" },
   "/dashboard/interviews": { title: "Interviews", subtitle: "All interviews" },
+  "/dashboard/alerts": { title: "Alerts", subtitle: "Alerts and attention" },
+  "/dashboard/roles": { title: "Roles", subtitle: "Role analytics" },
+  "/dashboard/rankings": { title: "Rankings", subtitle: "Student rankings" },
+  "/dashboard/insights": { title: "Insights", subtitle: "Predictive analytics" },
+  "/dashboard/students/compare": { title: "Students", subtitle: "Compare students" },
 }
 
 function resolveHeaderMeta(pathname: string): { title: string; subtitle?: string } {

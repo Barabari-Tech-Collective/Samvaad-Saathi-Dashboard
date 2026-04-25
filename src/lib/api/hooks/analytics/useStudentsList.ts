@@ -6,6 +6,7 @@ import { analyticsKey } from "./query-keys"
 import { compactParams, type QueryParamInput } from "./params"
 import type {
   CollegeFilterResponse,
+  DateRangeParams,
   StudentsSearchParams,
   StudentsSummaryResponse,
   StudentsTableParams,
@@ -17,11 +18,13 @@ const tablePath = "/v2/analytics/students" as const
 const searchPath = "/v2/analytics/students/search" as const
 const collegeFiltersPath = "/v2/analytics/students/filters/colleges" as const
 
-export function useStudentsSummary() {
+export function useStudentsSummary(filters?: DateRangeParams) {
+  const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<StudentsSummaryResponse>({
     url: summaryPath,
     method: "GET",
-    key: analyticsKey(summaryPath),
+    key: analyticsKey(summaryPath, params),
+    params,
   })
   return {
     studentsSummary: query.data,
