@@ -1,11 +1,14 @@
 "use client"
 
 import * as React from "react"
+import { Link } from "next-view-transitions"
+import { IconPlus } from "@tabler/icons-react"
 
 import { DashboardDateRangeTabs } from "@/app/dashboard/(overview)/_components/dashboard-date-range-tabs"
 import {
   DashboardOverviewProvider,
 } from "@/app/dashboard/(overview)/_components/dashboard-overview-context"
+import { Button } from "@/components/ui/button"
 
 import { RolesSummary } from "./_components/roles-summary"
 import { RolesPerformance } from "./_components/roles-performance"
@@ -22,7 +25,15 @@ function RolesPageContent() {
             Role performance, weak skills, and role-level drill-down.
           </p>
         </div>
-        <DashboardDateRangeTabs className="w-full sm:w-auto sm:min-w-[20rem]" />
+        <div className="flex items-center gap-3">
+          <Button asChild size="sm">
+            <Link href="/dashboard/roles/new">
+              <IconPlus className="size-4" />
+              Add Role
+            </Link>
+          </Button>
+          <DashboardDateRangeTabs className="w-full sm:w-auto sm:min-w-[20rem]" />
+        </div>
       </div>
 
       <RolesSummary />

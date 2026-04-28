@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest add form textarea --yes)",
+      "Bash(npx shadcn@latest add form --yes)",
+      "Bash(node -e \"const r = require\\('@hookform/resolvers/zod'\\); console.log\\(Object.keys\\(r\\)\\)\")",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

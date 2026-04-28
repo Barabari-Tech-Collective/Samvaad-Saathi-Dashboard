@@ -519,3 +519,23 @@ export type InterviewSpeechTimelineResponse = Readonly<{
   chartType: "line"
   points: readonly ChartPoint[]
 }>
+
+export type CreateJobProfileRequest = {
+  jobName: string
+  jobDescription: string
+  companyName: string
+  experienceLevel: string
+  skills: string[]
+  additionalContext?: string
+}
+
+export type CreateJobProfileResponse = {
+  jobProfileId: number
+  jobName: string
+  jobDescription: string
+  companyName: string
+  experienceLevel: string
+  skills: string[]
+  additionalContext?: string | null
+  createdAt: string
+}
