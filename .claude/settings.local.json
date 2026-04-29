@@ -6,7 +6,8 @@
       "Bash(npx shadcn@latest add form textarea --yes)",
       "Bash(npx shadcn@latest add form --yes)",
       "Bash(node -e \"const r = require\\('@hookform/resolvers/zod'\\); console.log\\(Object.keys\\(r\\)\\)\")",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(node -e \"const pkg = require\\('./node_modules/react-query-ease/package.json'\\); console.log\\(pkg.version\\)\")"
     ]
   }
 }

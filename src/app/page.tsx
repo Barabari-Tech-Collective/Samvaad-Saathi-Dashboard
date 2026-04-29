@@ -1,20 +1,18 @@
 "use client"
 
-import { Link, useTransitionRouter } from "next-view-transitions"
+import { useTransitionRouter } from "next-view-transitions"
 import Image from "next/image"
 import * as React from "react"
 
 import { BlurFade } from "@/components/ui/blur-fade"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { LightRays } from "@/components/ui/light-rays"
 import { MagicCard } from "@/components/ui/magic-card"
-import { RainbowButton } from "@/components/ui/rainbow-button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { COGNITO_LOGIN_PATH } from "@/lib/api/auth-paths"
-import {
-    getAccessToken,
-    getRefreshToken,
-    setAuthTokens,
-} from "@/lib/token-cookies.utils"
+import { useLogin } from "@/lib/api/hooks/useLogin"
+import { getAccessToken, getRefreshToken } from "@/lib/token-cookies.utils"
 
 function LandingShell({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
@@ -38,37 +36,27 @@ function LandingShell({ children }: Readonly<{ children: React.ReactNode }>) {
 
 export default function Page() {
     const router = useTransitionRouter()
-    const [isProcessing, setIsProcessing] = React.useState(false)
+    const { login, isLoading } = useLogin()
+    const [isRedirecting, setIsRedirecting] = React.useState(false)
+    const [email, setEmail] = React.useState("")
+    const [password, setPassword] = React.useState("")
 
     React.useEffect(() => {
         const existingToken = getAccessToken()
         const existingRefresh = getRefreshToken()
 
         if (existingToken && existingRefresh) {
+            setIsRedirecting(true)
             router.replace("/dashboard")
-            return
-        }
-
-        if (typeof window === "undefined") {
-            return
-        }
-
-        const params = new URLSearchParams(window.location.search)
-        const token = params.get("token")
-        const refreshToken = params.get("refresh_token")
-
-        if (token && refreshToken) {
-            setIsProcessing(true)
-            setAuthTokens(token, refreshToken)
-            window.history.replaceState({}, document.title, window.location.pathname)
-            router.replace("/dashboard")
-            return
         }
     }, [router])
 
-    const loginUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${COGNITO_LOGIN_PATH}`
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        login({ email, password })
+    }
 
-    if (isProcessing) {
+    if (isRedirecting) {
         return (
             <LandingShell>
                 <div className="flex flex-col items-center gap-6">
@@ -99,16 +87,50 @@ export default function Page() {
                             </div>
                         </div>
                     </BlurFade>
+
                     <BlurFade delay={0.08}>
                         <h2 className="font-heading text-center text-[32px] font-semibold leading-tight text-foreground">
                             Welcome to Samvaad Saathi Dashboard!
                         </h2>
                     </BlurFade>
 
-                    <BlurFade delay={0.24}>
-                        <RainbowButton size="lg" className="w-full min-w-2xs">
-                            <Link href={loginUrl} className="text-white dark:text-black">Continue with Google</Link>
-                        </RainbowButton>
+                    <BlurFade delay={0.16}>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="you@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    disabled={isLoading}
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="password">Password</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    disabled={isLoading}
+                                />
+                            </div>
+
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                size="lg"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? "Signing in…" : "Sign in"}
+                            </Button>
+                        </form>
                     </BlurFade>
                 </div>
             </MagicCard>
