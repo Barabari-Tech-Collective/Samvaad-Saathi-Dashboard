@@ -2,7 +2,6 @@
 
 import { useTransitionRouter } from "next-view-transitions"
 import Image from "next/image"
-import * as React from "react"
 
 import { BlurFade } from "@/components/ui/blur-fade"
 import { Button } from "@/components/ui/button"
@@ -11,8 +10,10 @@ import { Label } from "@/components/ui/label"
 import { LightRays } from "@/components/ui/light-rays"
 import { MagicCard } from "@/components/ui/magic-card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { IconEye, IconEyeOff } from "@tabler/icons-react"
 import { useLogin } from "@/lib/api/hooks/useLogin"
 import { getAccessToken, getRefreshToken } from "@/lib/token-cookies.utils"
+import { useEffect, useState } from "react"
 
 function LandingShell({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
@@ -37,16 +38,15 @@ function LandingShell({ children }: Readonly<{ children: React.ReactNode }>) {
 export default function Page() {
     const router = useTransitionRouter()
     const { login, isLoading } = useLogin()
-    const [isRedirecting, setIsRedirecting] = React.useState(false)
-    const [email, setEmail] = React.useState("")
-    const [password, setPassword] = React.useState("")
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
 
-    React.useEffect(() => {
+    useEffect(() => {
         const existingToken = getAccessToken()
         const existingRefresh = getRefreshToken()
 
         if (existingToken && existingRefresh) {
-            setIsRedirecting(true)
             router.replace("/dashboard")
         }
     }, [router])
@@ -54,19 +54,6 @@ export default function Page() {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         login({ email, password })
-    }
-
-    if (isRedirecting) {
-        return (
-            <LandingShell>
-                <div className="flex flex-col items-center gap-6">
-                    <Skeleton className="h-[110px] w-[116px] rounded-xl" />
-                    <Skeleton className="h-8 w-64" />
-                    <Skeleton className="h-6 w-40" />
-                    <Skeleton className="h-11 w-72 rounded-lg" />
-                </div>
-            </LandingShell>
-        )
     }
 
     return (
@@ -111,15 +98,31 @@ export default function Page() {
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="password">Password</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    disabled={isLoading}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        disabled={isLoading}
+                                        className="pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((v) => !v)}
+                                        disabled={isLoading}
+                                        className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground disabled:opacity-50"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? (
+                                            <IconEyeOff size={18} />
+                                        ) : (
+                                            <IconEye size={18} />
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
                             <Button

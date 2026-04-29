@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type AuthUser, useAuth } from "@/lib/api/hooks/useAuth"
+import { clearAuthCookies } from "@/lib/token-cookies.utils"
 import {
     IconCreditCard,
     IconDotsVertical,
@@ -29,6 +30,7 @@ import {
     IconNotification,
     IconUserCircle,
 } from "@tabler/icons-react"
+import { useTransitionRouter } from "next-view-transitions"
 
 function userDisplayName(user: AuthUser): string {
     const n = user.name?.trim()
@@ -60,6 +62,12 @@ function userInitials(user: AuthUser): string {
 export function NavUser() {
     const { isMobile } = useSidebar()
     const { user, isLoadingUser, isError } = useAuth()
+    const router = useTransitionRouter()
+
+    function handleLogout() {
+        clearAuthCookies()
+        router.replace("/")
+    }
 
     if (isLoadingUser) {
         return (
@@ -137,7 +145,7 @@ export function NavUser() {
                             </div>
                         </DropdownMenuLabel>
 
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleLogout}>
                             <IconLogout />
                             Log out
                         </DropdownMenuItem>
