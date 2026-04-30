@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { LightRays } from "@/components/ui/light-rays"
-import { MagicCard } from "@/components/ui/magic-card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Card } from "@/components/ui/card"
 import { IconEye, IconEyeOff } from "@tabler/icons-react"
 import { useLogin } from "@/lib/api/hooks/useLogin"
 import { getAccessToken, getRefreshToken } from "@/lib/token-cookies.utils"
@@ -58,7 +57,7 @@ export default function Page() {
 
     return (
         <LandingShell>
-            <MagicCard className="w-full max-w-md rounded-2xl border border-border/60 bg-card/90 shadow-xl backdrop-blur-sm">
+            <Card className="w-full max-w-md rounded-2xl border border-border/60 bg-card/90 shadow-xl backdrop-blur-sm">
                 <div className="space-y-6 p-8">
                     <BlurFade delay={0}>
                         <div className="flex justify-center">
@@ -136,7 +135,7 @@ export default function Page() {
                         </form>
                     </BlurFade>
                 </div>
-            </MagicCard>
+            </Card>
         </LandingShell>
     )
 }

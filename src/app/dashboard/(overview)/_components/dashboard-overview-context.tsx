@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
 import dayjs from "dayjs"
+import * as React from "react"
 
-import { useIsMobile } from "@/hooks/use-mobile"
 import type { DashboardDateRoleFilter } from "@/lib/api/hooks/analytics"
 
 export type DashboardRangePreset = "7d" | "30d" | "90d" | "all"
@@ -34,12 +33,7 @@ export function presetToDateFilters(preset: DashboardRangePreset): DashboardDate
 }
 
 export function DashboardOverviewProvider({ children }: { children: React.ReactNode }) {
-  const isMobile = useIsMobile()
   const [preset, setPreset] = React.useState<DashboardRangePreset>("90d")
-
-  React.useEffect(() => {
-    if (isMobile) setPreset("7d")
-  }, [isMobile])
 
   const dateFilters = React.useMemo(() => presetToDateFilters(preset), [preset])
 
