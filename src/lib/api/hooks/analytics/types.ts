@@ -533,9 +533,23 @@ export type CreateJobProfileResponse = {
   jobProfileId: number
   jobName: string
   jobDescription: string
-  companyName: string
-  experienceLevel: string
-  skills: string[]
+  companyName: string | null
+  experienceLevel: string | null
+  skills: string[] | null
   additionalContext?: string | null
+  createdBy: number | null
   createdAt: string
+  updatedAt: string
+}
+
+// JobProfileOut matches the backend JobProfileOut schema exactly
+export type JobProfileItem = CreateJobProfileResponse
+
+export type JobProfilesListResponse = {
+  items: JobProfileItem[]
+}
+
+export type DeleteJobProfileResponse = {
+  deleted: boolean
+  jobProfileId: number
 }

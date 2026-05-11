@@ -14,6 +14,7 @@ import { RolesSummary } from "./_components/roles-summary"
 import { RolesPerformance } from "./_components/roles-performance"
 import { RolesWeakSkillsHeatmap } from "./_components/roles-weak-skills-heatmap"
 import { RoleDetail } from "./_components/role-detail"
+import { JobProfilesList } from "./_components/job-profiles-list"
 
 function RolesPageContent() {
   return (
@@ -40,6 +41,7 @@ function RolesPageContent() {
       <RolesPerformance />
       <RolesWeakSkillsHeatmap />
       <RoleDetail />
+      <JobProfilesList />
     </div>
   )
 }
