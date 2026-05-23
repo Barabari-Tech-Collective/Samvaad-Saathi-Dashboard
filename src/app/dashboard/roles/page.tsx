@@ -31,32 +31,33 @@ import {
 export default function RolesManagementPage() {
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all")
+  const [activeCardIdx, setActiveCardIdx] = React.useState<number>(0)
 
   // Mock summary card counts
   const summaryCards = [
     {
       title: "Total Roles",
       count: "20",
-      isPrimary: true,
-      icon: <IconBriefcase className="size-4 text-blue-600" />,
+      icon: <IconBriefcase className="size-4" />,
+      colorClass: "text-blue-600",
     },
     {
       title: "Pending Review",
       count: "02",
-      isPrimary: false,
-      icon: <IconClock className="size-4 text-amber-600" />,
+      icon: <IconClock className="size-4" />,
+      colorClass: "text-amber-600",
     },
     {
       title: "Approved",
       count: "16",
-      isPrimary: false,
-      icon: <IconCheck className="size-4 text-emerald-600" />,
+      icon: <IconCheck className="size-4" />,
+      colorClass: "text-emerald-600",
     },
     {
       title: "Rejected",
       count: "02",
-      isPrimary: false,
-      icon: <IconX className="size-4 text-rose-600" />,
+      icon: <IconX className="size-4" />,
+      colorClass: "text-rose-600",
     },
   ]
 
@@ -113,37 +114,46 @@ export default function RolesManagementPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {summaryCards.map((card, idx) => (
-          <Card
-            key={idx}
-            className={`border rounded-2xl shadow-sm overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
-              card.isPrimary
-                ? "bg-[#EFF6FF] border-[#BFDBFE]/80"
-                : "bg-white border-slate-200/80"
-            }`}
-          >
-            <CardContent className="p-5 flex items-center justify-between">
-              <div className="space-y-1">
-                <p className={`text-xs font-bold tracking-wider uppercase ${
-                  card.isPrimary ? "text-[#1E40AF]/80" : "text-slate-400"
-                }`}>
-                  {card.title}
-                </p>
-                <h3 className={`text-3xl font-black ${
-                  card.isPrimary ? "text-[#1E40AF]" : "text-slate-800"
-                }`}>
-                  {card.count}
-                </h3>
-              </div>
+        {summaryCards.map((card, idx) => {
+          const isActive = activeCardIdx === idx
+          return (
+            <Card
+              key={idx}
+              onClick={() => {
+                setActiveCardIdx(idx)
+                toast.info(`Active filter set to: ${card.title}`)
+              }}
+              className={`border rounded-2xl shadow-sm overflow-hidden transition-all duration-200 hover:-translate-y-0.5 group cursor-pointer ${
+                isActive
+                  ? "bg-[#EFF6FF] border-[#BFDBFE]/85 shadow-md"
+                  : "bg-white border-slate-200/80 hover:bg-[#EFF6FF]/40 hover:border-[#BFDBFE]/40 hover:shadow-md"
+              }`}
+            >
+              <CardContent className="p-5 flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className={`text-xs font-bold tracking-wider uppercase transition-colors duration-200 ${
+                    isActive ? "text-[#1E40AF]/80" : "text-slate-400 group-hover:text-[#1E40AF]/60"
+                  }`}>
+                    {card.title}
+                  </p>
+                  <h3 className={`text-3xl font-black transition-colors duration-200 ${
+                    isActive ? "text-[#1E40AF]" : "text-slate-800 group-hover:text-[#1E40AF]"
+                  }`}>
+                    {card.count}
+                  </h3>
+                </div>
 
-              <div className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 ${
-                card.isPrimary ? "bg-white" : "bg-slate-50"
-              }`}>
-                {card.icon}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-200 ${
+                  isActive ? "bg-white text-[#1E40AF]" : "bg-slate-50 group-hover:bg-white text-slate-600 group-hover:text-[#1E40AF]"
+                }`}>
+                  {React.cloneElement(card.icon, {
+                    className: `size-4 transition-colors duration-200 ${isActive ? "text-blue-600" : card.colorClass + " group-hover:text-blue-600"}`
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
 
       {/* Quick Actions & Filter Section */}
