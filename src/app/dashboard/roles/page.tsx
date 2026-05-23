@@ -31,7 +31,7 @@ import {
 export default function RolesManagementPage() {
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all")
-  const [activeCardIdx, setActiveCardIdx] = React.useState<number>(0)
+  const [activeCardIdx, setActiveCardIdx] = React.useState<number | null>(null)
 
   // Mock summary card counts
   const summaryCards = [
