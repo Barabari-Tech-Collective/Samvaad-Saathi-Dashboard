@@ -157,7 +157,7 @@ export default function RolesManagementPage() {
       </div>
 
       {/* Quick Actions & Filter Section */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 px-1 py-1">
         <div className="space-y-2.5">
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Quick Actions
