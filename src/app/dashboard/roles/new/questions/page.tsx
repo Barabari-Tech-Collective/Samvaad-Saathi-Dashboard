@@ -25,6 +25,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { StepIndicator } from "../_components/add-role-stepper"
 
 // 50 highly realistic Front-End questions distributed across 4 difficulty levels
 const INITIAL_QUESTIONS = [
@@ -275,31 +276,9 @@ export default function QuestionsConfigurationPage() {
         </div>
       </div>
 
-      {/* Stepper Display (Renders the working 5-step mock for the page context) */}
-      <div className="border border-slate-100 rounded-xl p-4 bg-slate-50/50 flex items-center justify-between select-none">
-        <div className="flex items-center gap-3">
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 px-2.5 py-0.5 font-bold">
-            <IconCheck className="size-3" /> Interview Type
-          </Badge>
-          <div className="h-px w-6 bg-slate-200" />
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 px-2.5 py-0.5 font-bold">
-            <IconCheck className="size-3" /> Role Details
-          </Badge>
-          <div className="h-px w-6 bg-slate-200" />
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 px-2.5 py-0.5 font-bold">
-            <IconCheck className="size-3" /> JD & Configuration
-          </Badge>
-          <div className="h-px w-6 bg-slate-200" />
-          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 px-3 py-1 font-extrabold flex items-center gap-1.5 shadow-sm">
-            <div className="size-1.5 rounded-full bg-blue-600 animate-pulse" />
-            4. Questions
-          </Badge>
-          <div className="h-px w-6 bg-slate-200" />
-          <Badge variant="outline" className="bg-slate-100 text-slate-400 border-slate-200 px-2.5 py-0.5">
-            5. Review & Submit
-          </Badge>
-        </div>
-        <span className="text-xs font-semibold text-slate-400">Step 4 of 5</span>
+      {/* Stepper Display (Renders the exact 5-step stepper using the old design) */}
+      <div className="border border-slate-200 rounded-2xl p-6 bg-white shadow-sm overflow-hidden select-none">
+        <StepIndicator currentStep={3} />
       </div>
 
       {/* Role Draft Card */}
@@ -523,7 +502,7 @@ export default function QuestionsConfigurationPage() {
             className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5"
             onClick={() => {
               toast.success("Role questions successfully reviewed!")
-              router.push("/dashboard/roles")
+              router.push("/dashboard/roles/new?step=4")
             }}
           >
             Final review

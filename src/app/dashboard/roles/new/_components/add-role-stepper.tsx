@@ -62,10 +62,11 @@ const addRoleSchema = z.object({
 
 type AddRoleFormValues = z.infer<typeof addRoleSchema>
 
-const STEPS = [
+export const STEPS = [
   { label: "JD Type", icon: IconSettings },
   { label: "Job Basics", icon: IconBriefcase },
   { label: "Role Details", icon: IconListDetails },
+  { label: "Questions", icon: IconSparkles },
   { label: "Review", icon: IconNotes },
 ]
 
@@ -73,6 +74,7 @@ const STEP_FIELDS: Array<Array<keyof AddRoleFormValues>> = [
   ["jdType"],
   ["jobName", "companyName", "experienceLevel"],
   ["jobDescription", "skills"],
+  [],
   [],
 ]
 
@@ -96,7 +98,7 @@ const slideVariants = {
   }),
 }
 
-function StepIndicator({ currentStep }: { currentStep: number }) {
+export function StepIndicator({ currentStep }: { currentStep: number }) {
   return (
     <div className="flex items-start gap-0">
       {STEPS.map((step, index) => {
@@ -812,6 +814,10 @@ export function AddRoleStepper() {
   }
 
   function goPrev() {
+    if (step === 4) {
+      router.push("/dashboard/roles/new/questions")
+      return
+    }
     setDirection(-1)
     setStep((s) => s - 1)
   }
@@ -888,7 +894,7 @@ export function AddRoleStepper() {
                     setDifficultyLevels={setDifficultyLevels}
                   />
                 )}
-                {step === 3 && <StepReview form={form} />}
+                {step === 4 && <StepReview form={form} />}
               </motion.div>
             </AnimatePresence>
           </CardContent>
