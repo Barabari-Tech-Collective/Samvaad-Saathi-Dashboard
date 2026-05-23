@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/form"
 import { useCreateJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
 import { cn } from "@/lib/utils"
+import { RoleCreationStepper } from "./RoleCreationStepper"
 
 const addRoleSchema = z.object({
   jdType: z.enum(["company", "role"], {
@@ -101,55 +102,7 @@ const slideVariants = {
 }
 
 export function StepIndicator({ currentStep }: { currentStep: number }) {
-  return (
-    <div className="flex items-start gap-0">
-      {STEPS.map((step, index) => {
-        const Icon = step.icon
-        const isDone = index < currentStep
-        const isActive = index === currentStep
-        return (
-          <React.Fragment key={step.label}>
-            <div className="flex flex-col items-center gap-1.5">
-              <div
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all duration-300",
-                  isDone &&
-                  "border-primary bg-primary text-primary-foreground",
-                  isActive &&
-                  "border-primary bg-background text-primary shadow-sm",
-                  !isDone &&
-                  !isActive &&
-                  "border-border bg-background text-muted-foreground",
-                )}
-              >
-                {isDone ? (
-                  <IconCheck className="size-4" />
-                ) : (
-                  <Icon className="size-4" />
-                )}
-              </div>
-              <span
-                className={cn(
-                  "text-xs font-medium whitespace-nowrap",
-                  isActive ? "text-foreground" : "text-muted-foreground",
-                )}
-              >
-                {step.label}
-              </span>
-            </div>
-            {index < STEPS.length - 1 && (
-              <div
-                className={cn(
-                  "mt-4 h-px flex-1 min-w-12 transition-colors duration-300",
-                  index < currentStep ? "bg-primary" : "bg-border",
-                )}
-              />
-            )}
-          </React.Fragment>
-        )
-      })}
-    </div>
-  )
+  return <RoleCreationStepper currentStep={currentStep} />
 }
 
 function StepJDType({ form }: { form: ReturnType<typeof useForm<AddRoleFormValues>> }) {
