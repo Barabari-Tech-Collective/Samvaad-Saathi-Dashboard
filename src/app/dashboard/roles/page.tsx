@@ -21,7 +21,7 @@ function RolesPageContent() {
     <div className="@container/main flex flex-col gap-4 py-4 md:gap-6 md:py-6">
       <div className="flex flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between lg:px-6">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">Roles</h1>
+          <h1 className="text-lg font-semibold tracking-tight">Roles Analytics</h1>
           <p className="text-sm text-muted-foreground">
             Role performance, weak skills, and role-level drill-down.
           </p>

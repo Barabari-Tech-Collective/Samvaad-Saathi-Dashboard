@@ -314,7 +314,7 @@ export default function QuestionsConfigurationPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mb-1 select-none">
-            <span>Roles</span>
+            <span>Roles Analytics</span>
             <span>/</span>
             <span className="text-slate-400">New role</span>
           </div>

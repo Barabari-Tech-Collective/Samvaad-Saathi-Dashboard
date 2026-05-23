@@ -1052,7 +1052,7 @@ export function AddRoleStepper() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 select-none animate-in fade-in duration-200">
             <div className="space-y-1">
               <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                <span>Roles</span>
+                <span>Roles Analytics</span>
                 <span className="text-slate-300 font-normal">/</span>
                 <span className="text-slate-500 font-black">New role</span>
               </div>
