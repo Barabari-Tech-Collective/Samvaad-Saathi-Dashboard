@@ -18,7 +18,7 @@ export const STEP_LABELS = [
 
 export function RoleCreationStepper({ currentStep }: RoleCreationStepperProps) {
   return (
-    <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto w-full pb-2 md:pb-0 scrollbar-none justify-between select-none">
+    <div className="flex items-center justify-start gap-1.5 md:gap-2.5 overflow-x-auto w-full pb-2 md:pb-0 scrollbar-none select-none">
       {STEP_LABELS.map((label, index) => {
         const isCompleted = index < currentStep
         const isActive = index === currentStep
