@@ -17,6 +17,10 @@ import {
   IconAlertCircle,
   IconFileText,
   IconFolder,
+  IconKey,
+  IconBulb,
+  IconChevronUp,
+  IconChevronDown,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
@@ -124,6 +128,60 @@ const INITIAL_QUESTIONS = [
 export default function QuestionsConfigurationPage() {
   const router = useRouter()
 
+  // Expanded question state (only one expanded at a time)
+  const [expandedQuestionId, setExpandedQuestionId] = React.useState<string | null>(null)
+
+  // Details dictionary helper for rich details expanded card
+  const getQuestionDetails = (qText: string) => {
+    const text = qText.toLowerCase()
+    if (text.includes("var, let, and const")) {
+      return {
+        keywords: ["var", "let", "const", "hoisting", "scope", "block scope"],
+        concepts: ["Variable declaration", "Hoisting behavior", "Scope (Function vs Block)", "Re-declaration rules", "Temporal Dead Zone"],
+        expectedAnswer: "Step-by-step explanation covering difference, scope, hoisting and usage scenarios.",
+        exampleOutput: "Explains each keyword with examples and when to use which."
+      }
+    }
+    if (text.includes("react hooks")) {
+      return {
+        keywords: ["hooks", "functional components", "state", "lifecycle", "useState", "useEffect"],
+        concepts: ["Stateful logic sharing", "Class component drawbacks", "Functional programming", "Side effects management", "Rules of Hooks"],
+        expectedAnswer: "React Hooks let functional components use state and lifecycle methods without classes, reducing boilerplate and encouraging reusability.",
+        exampleOutput: "Shows examples of useState, useEffect, and custom hooks compared to traditional class lifecycle methods."
+      }
+    }
+    if (text.includes("event loop")) {
+      return {
+        keywords: ["event loop", "call stack", "callback queue", "microtasks", "macrotasks", "asynchronous"],
+        concepts: ["Single-threaded execution", "Execution stack execution", "Task queue prioritization", "Promise/Microtask scheduling", "Browser rendering cycles"],
+        expectedAnswer: "The Event Loop orchestrates asynchronous JS by monitoring the call stack and pushing callbacks from task queues when the stack is empty.",
+        exampleOutput: "Visualizes code execution order with console.logs of Promises, setTimeouts, and synchronous code."
+      }
+    }
+    if (text.includes("box model")) {
+      return {
+        keywords: ["box model", "content", "padding", "border", "margin", "box-sizing"],
+        concepts: ["Content area dimensions", "Padding interior spacing", "Border separation outline", "Margin exterior spacing", "Content-box vs Border-box sizing"],
+        expectedAnswer: "The CSS box model is a container that wraps HTML elements, consisting of margins, borders, padding, and the actual content.",
+        exampleOutput: "Demonstrates width calculation differences between content-box and border-box sizing models."
+      }
+    }
+    if (text.includes("http request lifecycle")) {
+      return {
+        keywords: ["http", "dns lookup", "tcp handshake", "ssl tls", "http parser", "response"],
+        concepts: ["DNS resolution routing", "TCP connection handshake", "TLS secure negotiation", "HTTP server request handling", "Browser DOM construction"],
+        expectedAnswer: "Explains the journey of a request from browser DNS lookup to server processing, down to receiving the HTTP response packet.",
+        exampleOutput: "Lists each micro-step of standard network handshakes and payload delivery stages."
+      }
+    }
+    return {
+      keywords: ["frontend", "best practices", "performance", "architecture", "optimization"],
+      concepts: ["Core concepts", "Performance optimizations", "Cross-browser compatibility", "Maintainable architecture", "Modern specifications"],
+      expectedAnswer: "A complete explanation addressing the core design, performance implications, and practical implementation details of the topic.",
+      exampleOutput: "Code example illustrating the pattern in production, along with edge case handling and optimization tips."
+    }
+  }
+
   // Local state for full list of questions
   const [questions, setQuestions] = React.useState(INITIAL_QUESTIONS)
   const [activeTab, setActiveTab] = React.useState<number>(1)
@@ -154,6 +212,16 @@ export default function QuestionsConfigurationPage() {
       }
     }
   }, [])
+
+  // Set the first question of the current level expanded by default on tab change
+  React.useEffect(() => {
+    const firstOfLevel = questions.find(q => q.level === activeTab)
+    if (firstOfLevel) {
+      setExpandedQuestionId(firstOfLevel.id)
+    } else {
+      setExpandedQuestionId(null)
+    }
+  }, [activeTab])
 
   // Modals input fields
   const [modalText, setModalText] = React.useState("")
@@ -381,74 +449,182 @@ export default function QuestionsConfigurationPage() {
             <p className="text-xs text-slate-400 mt-1">Try modifying your search or add a custom question.</p>
           </div>
         ) : (
-          filteredQuestions.map((q, idx) => (
-            <div
-              key={q.id}
-              className="border border-slate-200 rounded-xl p-4 bg-white hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-            >
-              {/* Question Left Side */}
-              <div className="flex items-start gap-3.5 flex-1">
-                {/* Number Circle */}
-                <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs">
-                  {idx + 1}
-                </div>
+          filteredQuestions.map((q, idx) => {
+            const isExpanded = expandedQuestionId === q.id
+            const details = getQuestionDetails(q.text)
 
-                {/* Badges & Text */}
-                <div className="space-y-2 flex-1">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <Badge variant="outline" className="bg-[#EFF6FF] text-[#2563EB] border-blue-100 text-[10px] font-bold px-2.5 py-0.5 select-none rounded-full">
-                      {q.category}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[10px] font-bold px-2.5 py-0.5 select-none rounded-full border-none",
-                        q.difficulty === "EASY" && "bg-emerald-50 text-emerald-700",
-                        q.difficulty === "MEDIUM" && "bg-amber-50 text-amber-700",
-                        q.difficulty === "HARD" && "bg-rose-50 text-rose-700"
+            return (
+              <div
+                key={q.id}
+                className={cn(
+                  "border rounded-2xl p-5 bg-white transition-all duration-200 flex flex-col gap-4 shadow-sm",
+                  isExpanded ? "border-[#2563EB]/45 ring-1 ring-blue-500/10 shadow-md" : "border-slate-200 hover:border-blue-200 hover:shadow-md"
+                )}
+              >
+                {/* Top Row: Question content and inline actions */}
+                <div 
+                  className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full cursor-pointer select-none"
+                  onClick={(e) => {
+                    // Prevent toggle if clicking buttons/actions
+                    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('a')) {
+                      return
+                    }
+                    setExpandedQuestionId(prev => prev === q.id ? null : q.id)
+                  }}
+                >
+                  <div className="flex items-start gap-4 flex-1">
+                    {/* Circle number */}
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs mt-0.5 select-none">
+                      {idx + 1}
+                    </div>
+
+                    <div className="space-y-1.5 flex-1">
+                      {/* Show badges ONLY when COLLAPSED */}
+                      {!isExpanded && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge variant="outline" className="bg-[#EFF6FF] text-[#2563EB] border-blue-100 text-[10px] font-bold px-2.5 py-0.5 select-none rounded-full">
+                            {q.category}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[10px] font-bold px-2.5 py-0.5 select-none rounded-full border-none",
+                              q.difficulty === "EASY" && "bg-emerald-50 text-emerald-700",
+                              q.difficulty === "MEDIUM" && "bg-amber-50 text-amber-700",
+                              q.difficulty === "HARD" && "bg-rose-50 text-rose-700"
+                            )}
+                          >
+                            {q.difficulty}
+                          </Badge>
+                          {q.isAiGenerated && (
+                            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-100 text-[10px] font-bold px-2.5 py-0.5 select-none rounded-full flex items-center gap-1">
+                              <IconSparkles className="size-3 text-purple-600" /> AI generated
+                            </Badge>
+                          )}
+                        </div>
                       )}
-                    >
-                      {q.difficulty}
-                    </Badge>
-                    {q.isAiGenerated && (
-                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-100 text-[10px] font-bold px-2.5 py-0.5 select-none rounded-full flex items-center gap-1">
-                        <IconSparkles className="size-3 text-purple-600" /> AI generated
-                      </Badge>
-                    )}
+
+                      <p className="text-sm font-semibold text-slate-800 leading-relaxed pr-6 select-text">
+                        {q.text}
+                      </p>
+                    </div>
                   </div>
 
-                  <p className="text-sm font-semibold text-slate-700 leading-relaxed pr-6">
-                    {q.text}
-                  </p>
-                </div>
-              </div>
+                  {/* Actions on the Right */}
+                  <div className="flex items-center gap-4 shrink-0 self-end md:self-auto border-t md:border-t-0 pt-2 md:pt-0 w-full md:w-auto justify-end md:justify-start">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleOpenEdit(q)
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer py-1 px-1.5 rounded hover:bg-slate-50"
+                    >
+                      <IconPencil className="size-3.5 text-slate-500" />
+                      Edit
+                    </button>
 
-              {/* Actions Right Side */}
-              <div className="flex items-center gap-1 self-end sm:self-auto border-t sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto justify-end">
-                <button
-                  onClick={() => handleOpenEdit(q)}
-                  className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer"
-                  title="Edit question"
-                >
-                  <IconPencil className="size-4" />
-                </button>
-                <button
-                  onClick={() => handleRegenerate(q.id)}
-                  className="p-2 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all cursor-pointer"
-                  title="Regenerate with AI"
-                >
-                  <IconRefresh className="size-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(q.id)}
-                  className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
-                  title="Delete question"
-                >
-                  <IconTrash className="size-4" />
-                </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRegenerate(q.id)
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-purple-600 transition-colors cursor-pointer py-1 px-1.5 rounded hover:bg-slate-50"
+                    >
+                      <IconRefresh className="size-3.5 text-slate-500" />
+                      Regenerate
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(q.id)
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-700 transition-colors cursor-pointer py-1 px-1.5 rounded hover:bg-red-50"
+                    >
+                      <IconTrash className="size-3.5 text-red-500" />
+                      Delete
+                    </button>
+
+                    {/* Arrow Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setExpandedQuestionId(prev => prev === q.id ? null : q.id)
+                      }}
+                      className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors"
+                    >
+                      {isExpanded ? (
+                        <IconChevronUp className="size-4 text-slate-500" />
+                      ) : (
+                        <IconChevronDown className="size-4 text-slate-500" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Expanded details card matching Figma perfectly */}
+                {isExpanded && (
+                  <div className="pt-5 border-t border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-6 animate-in slide-in-from-top-2 duration-200">
+                    {/* Column 1: Keywords */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-1.5 text-[#2563EB] font-bold text-xs uppercase tracking-wider select-none">
+                        <IconKey className="size-4 text-[#2563EB]" />
+                        Keywords
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {details.keywords.map(kw => (
+                          <Badge 
+                            key={kw} 
+                            variant="outline" 
+                            className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-2.5 py-0.5 rounded-md"
+                          >
+                            {kw}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Column 2: Concepts Covered */}
+                    <div className="space-y-3 pl-0 md:pl-6 border-l-0 md:border-l border-slate-100">
+                      <div className="flex items-center gap-1.5 text-[#7C3AED] font-bold text-xs uppercase tracking-wider select-none">
+                        <IconBulb className="size-4 text-[#7C3AED]" />
+                        Concepts Covered
+                      </div>
+                      <ul className="space-y-1.5 text-slate-600 text-xs font-semibold leading-relaxed list-disc pl-4">
+                        {details.concepts.map(concept => (
+                          <li key={concept} className="hover:text-slate-800 transition-colors">
+                            {concept}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Column 3: Expected Answer */}
+                    <div className="space-y-3 pl-0 md:pl-6 border-l-0 md:border-l border-slate-100">
+                      <div className="flex items-center gap-1.5 text-[#D97706] font-bold text-xs uppercase tracking-wider select-none">
+                        <IconFileText className="size-4 text-[#D97706]" />
+                        Expected Answer
+                      </div>
+                      <p className="text-slate-600 text-xs font-semibold leading-relaxed select-text">
+                        {details.expectedAnswer}
+                      </p>
+                    </div>
+
+                    {/* Column 4: Example / Expected Output */}
+                    <div className="space-y-3 pl-0 md:pl-6 border-l-0 md:border-l border-slate-100">
+                      <div className="flex items-center gap-1.5 text-[#059669] font-bold text-xs uppercase tracking-wider select-none">
+                        <IconCheck className="size-4 text-[#059669]" />
+                        Example / Expected Output
+                      </div>
+                      <p className="text-slate-600 text-xs font-semibold leading-relaxed select-text">
+                        {details.exampleOutput}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 
