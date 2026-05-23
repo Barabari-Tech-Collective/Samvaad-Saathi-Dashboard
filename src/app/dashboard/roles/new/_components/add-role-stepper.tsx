@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -729,10 +729,21 @@ function ReviewRow({
 
 export function AddRoleStepper() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [step, setStep] = React.useState(0)
   const [direction, setDirection] = React.useState(1)
   const [skillInput, setSkillInput] = React.useState("")
   const { createJobProfileAsync, isCreatingJobProfile } = useCreateJobProfile()
+
+  React.useEffect(() => {
+    const stepParam = searchParams.get("step")
+    if (stepParam !== null) {
+      const parsed = parseInt(stepParam, 10)
+      if (parsed >= 0 && parsed <= 3) {
+        setStep(parsed)
+      }
+    }
+  }, [searchParams])
 
   const [difficultyLevels, setDifficultyLevels] = React.useState([
     {
@@ -787,6 +798,15 @@ export function AddRoleStepper() {
     const fields = STEP_FIELDS[step]
     const valid = fields.length === 0 || (await form.trigger(fields))
     if (!valid) return
+
+    if (step === 2) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
+      }
+      router.push("/dashboard/roles/new/questions")
+      return
+    }
+
     setDirection(1)
     setStep((s) => s + 1)
   }
