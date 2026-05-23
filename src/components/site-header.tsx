@@ -11,7 +11,8 @@ const titleMap: Record<string, { title: string; subtitle?: string }> = {
   "/dashboard/colleges": { title: "Colleges", subtitle: "All colleges" },
   "/dashboard/interviews": { title: "Interviews", subtitle: "All interviews" },
   "/dashboard/alerts": { title: "Alerts", subtitle: "Alerts and attention" },
-  "/dashboard/roles": { title: "Roles Analytics", subtitle: "Role analytics" },
+  "/dashboard/roles": { title: "Roles", subtitle: "Role management" },
+  "/dashboard/roles-analytics": { title: "Roles Analytics", subtitle: "Role analytics" },
   "/dashboard/rankings": { title: "Rankings", subtitle: "Student rankings" },
 
   "/dashboard/students/compare": { title: "Students", subtitle: "Compare students" },

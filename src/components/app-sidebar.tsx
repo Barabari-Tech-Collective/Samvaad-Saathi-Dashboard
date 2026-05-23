@@ -55,8 +55,13 @@ const data = {
             icon: <IconAlertTriangle />,
         },
         {
-            title: "Roles Analytics",
+            title: "Roles",
             url: "/dashboard/roles",
+            icon: <IconTargetArrow />,
+        },
+        {
+            title: "Roles Analytics",
+            url: "/dashboard/roles-analytics",
             icon: <IconTargetArrow />,
         },
         {
