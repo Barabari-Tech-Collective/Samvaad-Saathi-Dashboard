@@ -365,7 +365,7 @@ export default function QuestionsConfigurationPage() {
       "Explain how closures create private scopes in Javascript modules."
     ]
     const randomText = newOptions[Math.floor(Math.random() * newOptions.length)]
-    
+
     setQuestions(prev => prev.map(q => q.id === id ? {
       ...q,
       text: randomText,
@@ -403,13 +403,7 @@ export default function QuestionsConfigurationPage() {
           <Button
             variant="ghost"
             className="hover:bg-slate-100 text-slate-600 font-semibold rounded-lg px-4 py-2 h-9 text-xs transition-colors"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                localStorage.removeItem("samvaad_saathi_draft_role")
-                localStorage.removeItem("samvaad_saathi_difficulty_levels")
-              }
-              router.push("/dashboard/roles")
-            }}
+            onClick={() => router.push("/dashboard/roles")}
           >
             Cancel
           </Button>
@@ -532,7 +526,7 @@ export default function QuestionsConfigurationPage() {
                 )}
               >
                 {/* Top Row: Question content and inline actions */}
-                <div 
+                <div
                   className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full cursor-pointer select-none"
                   onClick={(e) => {
                     // Prevent toggle if clicking buttons/actions
@@ -643,9 +637,9 @@ export default function QuestionsConfigurationPage() {
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {details.keywords.map(kw => (
-                          <Badge 
-                            key={kw} 
-                            variant="outline" 
+                          <Badge
+                            key={kw}
+                            variant="outline"
                             className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-2.5 py-0.5 rounded-md"
                           >
                             {kw}

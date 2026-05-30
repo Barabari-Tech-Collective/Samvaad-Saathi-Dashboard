@@ -371,7 +371,7 @@ function StepRoleDetails({
     setTimeout(() => {
       const matches: string[] = []
       const text = jdText.toLowerCase()
-      
+
       const skillKeywords = [
         "React", "Next.js", "TypeScript", "JavaScript", "HTML", "CSS", "Tailwind CSS",
         "Node.js", "Python", "Django", "FastAPI", "PostgreSQL", "MongoDB", "Docker",
@@ -386,9 +386,9 @@ function StepRoleDetails({
       })
 
       const finalSkills = matches.length >= 2 ? matches : ["React", "TypeScript", "Next.js", "Tailwind CSS", "RESTful APIs"]
-      
+
       form.setValue("skills", finalSkills, { shouldValidate: true })
-      
+
       toast.dismiss(toastId)
       toast.success(`Successfully extracted ${finalSkills.length} key skills!`)
     }, 1000)
@@ -399,7 +399,7 @@ function StepRoleDetails({
     if (file) {
       toast.success(`"${file.name}" uploaded successfully. Auto-populating Job Description...`)
       form.setValue("jobDescription", `Role: Senior Software Engineer\n\nWe are looking for a highly skilled Senior Software Engineer to join our team. You will lead the design and development of complex frontend architectures, drive code quality and design system adoption, and mentor junior engineers.\n\nRequired Skills:\n- Strong experience with React, Next.js, and TypeScript\n- Excellent understanding of RESTful APIs, GraphQL, and modern state management\n- Passion for performance optimization and clean, maintainable code.`, { shouldValidate: true })
-      
+
       // Auto populate a default set of skills
       form.setValue("skills", ["React", "Next.js", "TypeScript", "GraphQL", "Performance"], { shouldValidate: true })
       setIsExtractorOpen(true)
@@ -420,19 +420,19 @@ function StepRoleDetails({
   return (
     <div className="space-y-8 select-none">
       {/* Hidden inputs for uploads */}
-      <input 
-        type="file" 
-        ref={jdFileInputRef} 
-        onChange={handleJDFileUpload} 
-        accept=".pdf,.doc,.docx" 
-        className="hidden" 
+      <input
+        type="file"
+        ref={jdFileInputRef}
+        onChange={handleJDFileUpload}
+        accept=".pdf,.doc,.docx"
+        className="hidden"
       />
-      <input 
-        type="file" 
-        ref={syllabusFileInputRef} 
-        onChange={handleSyllabusFileUpload} 
-        accept=".pdf,.doc,.docx" 
-        className="hidden" 
+      <input
+        type="file"
+        ref={syllabusFileInputRef}
+        onChange={handleSyllabusFileUpload}
+        accept=".pdf,.doc,.docx"
+        className="hidden"
       />
 
       {/* JOB DESCRIPTION SECTION CONTAINER */}
@@ -480,7 +480,7 @@ function StepRoleDetails({
             <IconUpload className="size-4 text-slate-400" />
             Upload JD PDF
           </Button>
-          
+
           <Button
             type="button"
             variant="outline"
@@ -607,8 +607,8 @@ function StepRoleDetails({
                 }}
                 className={cn(
                   "border rounded-2xl p-5 transition-all duration-200 bg-white cursor-pointer relative flex flex-col gap-4 select-none group shadow-sm",
-                  isSelected 
-                    ? "border-[#2563EB] ring-1 ring-blue-500/10" 
+                  isSelected
+                    ? "border-[#2563EB] ring-1 ring-blue-500/10"
                     : "border-slate-200/80 hover:border-slate-300 opacity-80"
                 )}
               >
@@ -626,7 +626,7 @@ function StepRoleDetails({
                   <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase">
                     {level.badge}
                   </span>
-                  
+
                   <span className={cn(
                     "text-[9px] font-extrabold px-2 py-0.5 rounded-full select-none",
                     isSelected ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-500"
@@ -642,7 +642,7 @@ function StepRoleDetails({
                 </div>
 
                 {/* Example Instruction Input Block */}
-                <div 
+                <div
                   onClick={(e) => e.stopPropagation()}
                   className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-3 flex flex-col gap-1"
                 >
@@ -666,14 +666,14 @@ function StepRoleDetails({
                 </div>
 
                 {/* Questions Counter Row */}
-                <div 
+                <div
                   className="flex items-center justify-between pt-2.5 mt-auto border-t border-slate-50"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                     Questions
                   </span>
-                  
+
                   <div className="flex flex-col items-end gap-0.5">
                     <div className="flex items-center gap-2">
                       <button
@@ -686,16 +686,16 @@ function StepRoleDetails({
                         }}
                         className={cn(
                           "size-7 rounded-lg border flex items-center justify-center text-xs font-bold transition-all shadow-sm",
-                          level.count <= 10 
-                            ? "border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed" 
+                          level.count <= 10
+                            ? "border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed"
                             : "border-slate-200 hover:border-blue-300 hover:bg-slate-50 text-slate-500 cursor-pointer"
                         )}
                       >
                         <IconMinus className="size-3.5" />
                       </button>
-                      
+
                       <span className="w-8 text-center text-xs font-black text-slate-800">{level.count}</span>
-                      
+
                       <button
                         type="button"
                         disabled={level.count >= 50}
@@ -735,7 +735,7 @@ function StepRoleDetails({
                 {totalQuestions}
               </h4>
             </div>
-            
+
             <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-100 text-xs font-bold">
               <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{selectedCount} levels active</span>
@@ -766,7 +766,7 @@ function StepRoleDetails({
             <IconUpload className="size-4 text-slate-400" />
             Upload PDF
           </Button>
-          
+
           <div className="text-center space-y-1">
             <h4 className="text-xs font-extrabold text-slate-600">
               Drag & drop instruction file or click to browse
@@ -786,7 +786,7 @@ function StepRoleDetails({
             <div>Topic 1 - JavaScript</div>
             <div className="pl-4 text-slate-400">1. What is var?</div>
             <div className="pl-4 text-slate-400">2. Difference between let and const ?</div>
-            
+
             <div className="mt-2.5">Topic 2 - React</div>
             <div className="pl-4 text-slate-400">1. What are props and state ?</div>
             <div className="pl-4 text-slate-400">2. How does UseEffect work ?</div>
@@ -797,10 +797,10 @@ function StepRoleDetails({
   )
 }
 
-function StepReview({ 
+function StepReview({
   form,
   difficultyLevels
-}: { 
+}: {
   form: ReturnType<typeof useForm<AddRoleFormValues>>
   difficultyLevels: Array<{
     level: number
@@ -824,7 +824,7 @@ function StepReview({
   const category = values.jdType === "company" ? "Company Specific" : "Engineering"
   const experienceRange = expLabel === "Senior" ? "4–6 years" : expLabel
   const jobDescription = values.jobDescription || "Own end-to-end frontend architecture for the customer experience surface. Drive performance, design-system adoption and mentorship across squads."
-  
+
   const skillsList = values.skills && values.skills.length > 0 ? values.skills : ["React", "TypeScript", "GraphQL", "Performance"]
   const competenciesList = ["Systems thinking", "Stakeholder comms", "Production ownership"]
 
@@ -881,7 +881,7 @@ function StepReview({
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
           Role Details
         </h3>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
           <div className="space-y-1">
             <div className="text-xs font-bold text-slate-400">ROLE NAME</div>
@@ -921,9 +921,9 @@ function StepReview({
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Extracted skills</div>
             <div className="flex flex-wrap gap-1.5">
               {skillsList.map(skill => (
-                <Badge 
-                  key={skill} 
-                  variant="outline" 
+                <Badge
+                  key={skill}
+                  variant="outline"
                   className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-3 py-1 rounded-md"
                 >
                   {skill}
@@ -937,9 +937,9 @@ function StepReview({
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Competencies</div>
             <div className="flex flex-wrap gap-1.5">
               {competenciesList.map(comp => (
-                <Badge 
-                  key={comp} 
-                  variant="outline" 
+                <Badge
+                  key={comp}
+                  variant="outline"
                   className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-3 py-1 rounded-md"
                 >
                   {comp}
@@ -967,7 +967,7 @@ function StepReview({
             const isLevelExpanded = activeLevel === level.id
 
             return (
-              <div 
+              <div
                 key={level.id}
                 className={cn(
                   "border rounded-xl bg-white overflow-hidden transition-all duration-200",
@@ -975,7 +975,7 @@ function StepReview({
                 )}
               >
                 {/* Accordion Level Header */}
-                <div 
+                <div
                   onClick={() => setActiveLevel(isLevelExpanded ? null : level.id)}
                   className="flex items-center justify-between p-4 cursor-pointer select-none"
                 >
@@ -1004,7 +1004,7 @@ function StepReview({
                   <div className="px-4 pb-4 pt-1 border-t border-slate-50 space-y-3 animate-in fade-in duration-200">
                     <div className="space-y-2">
                       {level.questions.map((qText, qIdx) => (
-                        <div 
+                        <div
                           key={qIdx}
                           className="p-3 bg-slate-50/50 hover:bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 transition-colors border border-slate-100"
                         >
@@ -1147,6 +1147,16 @@ export function AddRoleStepper() {
         } catch (e) {
           console.error("Failed to restore draft role from localStorage:", e)
         }
+      } else {
+        form.reset({
+          jdType: undefined,
+          jobName: "",
+          companyName: "",
+          experienceLevel: undefined,
+          jobDescription: "",
+          skills: [],
+          additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
+        })
       }
     }
   }, [])
@@ -1160,7 +1170,7 @@ export function AddRoleStepper() {
       if (typeof window !== "undefined") {
         localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
         localStorage.setItem("samvaad_saathi_difficulty_levels", JSON.stringify(difficultyLevels))
-        
+
         // Log the expected backend generate questions API request payload
         const levelsPayload = difficultyLevels.map(l => ({
           level: l.level,
@@ -1217,18 +1227,10 @@ export function AddRoleStepper() {
       } catch (apiError) {
         console.warn("Backend API not connected/available, proceeding with frontend mock flow:", apiError)
       }
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("samvaad_saathi_draft_role")
-        localStorage.removeItem("samvaad_saathi_difficulty_levels")
-      }
       toast.success("Role created successfully")
       router.push("/dashboard/roles/new/success")
     } catch (error) {
       console.error("Submission Error:", error);
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("samvaad_saathi_draft_role")
-        localStorage.removeItem("samvaad_saathi_difficulty_levels")
-      }
       toast.success("Role created successfully (Mock Flow)")
       router.push("/dashboard/roles/new/success")
     }
@@ -1272,13 +1274,7 @@ export function AddRoleStepper() {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => {
-                  if (typeof window !== "undefined") {
-                    localStorage.removeItem("samvaad_saathi_draft_role")
-                    localStorage.removeItem("samvaad_saathi_difficulty_levels")
-                  }
-                  router.push("/dashboard/roles")
-                }}
+                onClick={() => router.push("/dashboard/roles")}
                 className="text-slate-500 hover:bg-slate-100 font-semibold rounded-lg px-4 h-9 text-xs transition-colors"
               >
                 Cancel
@@ -1350,7 +1346,7 @@ export function AddRoleStepper() {
                 >
                   Save as draft
                 </Button>
-                
+
                 <Button
                   type="button"
                   disabled={isCreatingJobProfile}
@@ -1385,7 +1381,13 @@ export function AddRoleStepper() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={step === 0 ? () => router.push("/dashboard/roles") : goPrev}
+                onClick={step === 0 ? () => {
+                  if (typeof window !== "undefined") {
+                    localStorage.removeItem("samvaad_saathi_draft_role")
+                    localStorage.removeItem("samvaad_saathi_difficulty_levels")
+                  }
+                  router.push("/dashboard/roles")
+                } : goPrev}
                 className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5 select-none"
               >
                 {step === 0 ? null : <IconChevronLeft className="size-4" />}

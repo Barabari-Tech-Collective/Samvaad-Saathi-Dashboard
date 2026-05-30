@@ -15,6 +15,13 @@ import { Button } from "@/components/ui/button"
 export default function RoleSubmittedSuccessPage() {
   const router = useRouter()
 
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("samvaad_saathi_draft_role")
+      localStorage.removeItem("samvaad_saathi_difficulty_levels")
+    }
+  }, [])
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center min-h-[calc(100vh-140px)] p-4 sm:p-6 bg-slate-50/30 select-none animate-in fade-in duration-300">
       {/* Premium Centered Success Card */}
