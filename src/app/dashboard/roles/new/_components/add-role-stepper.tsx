@@ -1079,7 +1079,7 @@ export function AddRoleStepper() {
   const [difficultyLevels, setDifficultyLevels] = React.useState([
     {
       level: 1,
-      selected: true,
+      selected: false,
       badge: "LEVEL 1",
       badgeLabel: "Foundational",
       title: "General Fundamentals",
@@ -1090,7 +1090,7 @@ export function AddRoleStepper() {
     },
     {
       level: 2,
-      selected: true,
+      selected: false,
       badge: "LEVEL 2",
       badgeLabel: "Intermediate",
       title: "Project & Resume Based",
@@ -1101,7 +1101,7 @@ export function AddRoleStepper() {
     },
     {
       level: 3,
-      selected: true,
+      selected: false,
       badge: "LEVEL 3",
       badgeLabel: "Advanced",
       title: "Production & Scenario Based",
@@ -1112,7 +1112,7 @@ export function AddRoleStepper() {
     },
     {
       level: 4,
-      selected: true,
+      selected: false,
       badge: "LEVEL 4",
       badgeLabel: "Expert",
       title: "Advanced / Pressure Scenarios",
