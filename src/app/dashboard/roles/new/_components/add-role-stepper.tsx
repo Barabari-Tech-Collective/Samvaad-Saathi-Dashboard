@@ -1139,25 +1139,18 @@ export function AddRoleStepper() {
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
-      const draft = localStorage.getItem("samvaad_saathi_draft_role")
-      if (draft) {
-        try {
-          const parsed = JSON.parse(draft)
-          form.reset(parsed)
-        } catch (e) {
-          console.error("Failed to restore draft role from localStorage:", e)
-        }
-      } else {
-        form.reset({
-          jdType: undefined,
-          jobName: "",
-          companyName: "",
-          experienceLevel: undefined,
-          jobDescription: "",
-          skills: [],
-          additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
-        })
-      }
+      localStorage.removeItem("samvaad_saathi_draft_role")
+      localStorage.removeItem("samvaad_saathi_difficulty_levels")
+      
+      form.reset({
+        jdType: undefined,
+        jobName: "",
+        companyName: "",
+        experienceLevel: undefined,
+        jobDescription: "",
+        skills: [],
+        additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
+      })
     }
   }, [])
 
