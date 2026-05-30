@@ -1217,10 +1217,18 @@ export function AddRoleStepper() {
       } catch (apiError) {
         console.warn("Backend API not connected/available, proceeding with frontend mock flow:", apiError)
       }
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("samvaad_saathi_draft_role")
+        localStorage.removeItem("samvaad_saathi_difficulty_levels")
+      }
       toast.success("Role created successfully")
       router.push("/dashboard/roles/new/success")
     } catch (error) {
       console.error("Submission Error:", error);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("samvaad_saathi_draft_role")
+        localStorage.removeItem("samvaad_saathi_difficulty_levels")
+      }
       toast.success("Role created successfully (Mock Flow)")
       router.push("/dashboard/roles/new/success")
     }
@@ -1264,7 +1272,13 @@ export function AddRoleStepper() {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => router.push("/dashboard/roles")}
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    localStorage.removeItem("samvaad_saathi_draft_role")
+                    localStorage.removeItem("samvaad_saathi_difficulty_levels")
+                  }
+                  router.push("/dashboard/roles")
+                }}
                 className="text-slate-500 hover:bg-slate-100 font-semibold rounded-lg px-4 h-9 text-xs transition-colors"
               >
                 Cancel
