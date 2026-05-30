@@ -21,6 +21,10 @@ import {
   IconSparkles,
   IconChevronUp,
   IconChevronDown,
+  IconUpload,
+  IconPlus,
+  IconMinus,
+  IconFileText,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
@@ -274,21 +278,30 @@ function StepRoleDetails({
   difficultyLevels: Array<{
     level: number
     selected: boolean
+    badge: string
+    badgeLabel: string
     title: string
     description: string
     exampleQuestion: string
     placeholder: string
+    count: number
   }>
   setDifficultyLevels: React.Dispatch<React.SetStateAction<Array<{
     level: number
     selected: boolean
+    badge: string
+    badgeLabel: string
     title: string
     description: string
     exampleQuestion: string
     placeholder: string
+    count: number
   }>>>
 }) {
-  const skills = form.watch("skills")
+  const jdFileInputRef = React.useRef<HTMLInputElement>(null)
+  const syllabusFileInputRef = React.useRef<HTMLInputElement>(null)
+
+  const skills = form.watch("skills") || []
   const [isExtractorOpen, setIsExtractorOpen] = React.useState(false)
 
   const suggestedSkills = [
@@ -298,14 +311,15 @@ function StepRoleDetails({
   ]
 
   function toggleExtractor() {
-    setIsExtractorOpen((prev) => !prev)
-    if (!isExtractorOpen) {
-      toast.success("Skills suggested from description")
+    const nextState = !isExtractorOpen
+    setIsExtractorOpen(nextState)
+    if (nextState) {
+      handleExtractSkills()
     }
   }
 
   function toggleSkillSelection(skill: string) {
-    const current = form.getValues("skills")
+    const current = form.getValues("skills") || []
     if (current.includes(skill)) {
       form.setValue("skills", current.filter((s) => s !== skill), { shouldValidate: true })
     } else {
@@ -316,7 +330,7 @@ function StepRoleDetails({
   function addSkill(raw: string) {
     const trimmed = raw.trim().replace(/,$/, "").trim()
     if (!trimmed) return
-    const current = form.getValues("skills")
+    const current = form.getValues("skills") || []
     if (current.includes(trimmed)) {
       setSkillInput("")
       return
@@ -326,9 +340,10 @@ function StepRoleDetails({
   }
 
   function removeSkill(skill: string) {
+    const current = form.getValues("skills") || []
     form.setValue(
       "skills",
-      form.getValues("skills").filter((s) => s !== skill),
+      current.filter((s) => s !== skill),
       { shouldValidate: true },
     )
   }
@@ -343,227 +358,102 @@ function StepRoleDetails({
     }
   }
 
+  // Auto extraction mechanism
+  function handleExtractSkills() {
+    const jdText = form.getValues("jobDescription")
+    if (!jdText || jdText.length < 10) {
+      toast.error("Please enter a job description of at least 10 characters first.")
+      return
+    }
+
+    const toastId = toast.loading("Analyzing job description and extracting key skills...")
+
+    setTimeout(() => {
+      const matches: string[] = []
+      const text = jdText.toLowerCase()
+      
+      const skillKeywords = [
+        "React", "Next.js", "TypeScript", "JavaScript", "HTML", "CSS", "Tailwind CSS",
+        "Node.js", "Python", "Django", "FastAPI", "PostgreSQL", "MongoDB", "Docker",
+        "AWS", "Git", "GraphQL", "Redux", "RESTful APIs", "Java", "Spring Boot",
+        "SQL", "Kubernetes", "Linux", "CI/CD", "Testing", "Jest"
+      ]
+
+      skillKeywords.forEach(skill => {
+        if (text.includes(skill.toLowerCase())) {
+          matches.push(skill)
+        }
+      })
+
+      const finalSkills = matches.length >= 2 ? matches : ["React", "TypeScript", "Next.js", "Tailwind CSS", "RESTful APIs"]
+      
+      form.setValue("skills", finalSkills, { shouldValidate: true })
+      
+      toast.dismiss(toastId)
+      toast.success(`Successfully extracted ${finalSkills.length} key skills!`)
+    }, 1000)
+  }
+
+  function handleJDFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) {
+      toast.success(`"${file.name}" uploaded successfully. Auto-populating Job Description...`)
+      form.setValue("jobDescription", `Role: Senior Software Engineer\n\nWe are looking for a highly skilled Senior Software Engineer to join our team. You will lead the design and development of complex frontend architectures, drive code quality and design system adoption, and mentor junior engineers.\n\nRequired Skills:\n- Strong experience with React, Next.js, and TypeScript\n- Excellent understanding of RESTful APIs, GraphQL, and modern state management\n- Passion for performance optimization and clean, maintainable code.`, { shouldValidate: true })
+      
+      // Auto populate a default set of skills
+      form.setValue("skills", ["React", "Next.js", "TypeScript", "GraphQL", "Performance"], { shouldValidate: true })
+      setIsExtractorOpen(true)
+    }
+  }
+
+  function handleSyllabusFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) {
+      toast.success(`"${file.name}" uploaded successfully as custom Knowledge Set!`)
+      form.setValue("additionalContext", `Topic 1 - JavaScript\n1. What is var?\n2. Difference between let and const ?\n\nTopic 2 - React\n1. What are props and state ?\n2. How does UseEffect work ?`, { shouldValidate: true })
+    }
+  }
+
+  const selectedCount = difficultyLevels.filter(l => l.selected).length
+  const totalQuestions = difficultyLevels.filter(l => l.selected).reduce((acc, curr) => acc + curr.count, 0)
+
   return (
-    <div className="space-y-6">
-      {/* Title */}
-      <div className="pb-4 border-b border-slate-100">
-        <h2 className="text-xl font-bold tracking-tight text-slate-800">
-          Step - 3 Job Description & Set Difficulty Levels
-        </h2>
-      </div>
-
-      {/* Job Description Textarea */}
-      <FormField
-        control={form.control}
-        name="jobDescription"
-        render={({ field }) => (
-          <FormItem className="space-y-1.5">
-            <FormLabel className="text-sm font-semibold text-slate-800">
-              Job Description <span className="text-red-500">*</span>
-            </FormLabel>
-            <FormControl>
-              <div className="space-y-2">
-                <Textarea
-                  placeholder="e.g., Frontend Developer"
-                  className="min-h-36 w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none shadow-sm placeholder:text-slate-400 leading-relaxed bg-white transition-all"
-                  {...field}
-                />
-                
-                {/* Error message placed directly below the textarea and above Extract Skills */}
-                <FormMessage />
-
-                {/* Extract Skills Button/Link */}
-                <div className="flex items-center gap-1 pt-1">
-                  <Button
-                    type="button"
-                    variant="link"
-                    size="sm"
-                    className="h-auto p-0 text-[#2563EB] hover:text-blue-700 font-semibold text-xs flex items-center gap-1.5 cursor-pointer"
-                    onClick={toggleExtractor}
-                  >
-                    <IconSparkles className="size-3.5 text-blue-600 animate-pulse" />
-                    Extract Skills
-                  </Button>
-                </div>
-              </div>
-            </FormControl>
-          </FormItem>
-        )}
+    <div className="space-y-8 select-none">
+      {/* Hidden inputs for uploads */}
+      <input 
+        type="file" 
+        ref={jdFileInputRef} 
+        onChange={handleJDFileUpload} 
+        accept=".pdf,.doc,.docx" 
+        className="hidden" 
+      />
+      <input 
+        type="file" 
+        ref={syllabusFileInputRef} 
+        onChange={handleSyllabusFileUpload} 
+        accept=".pdf,.doc,.docx" 
+        className="hidden" 
       />
 
-      {/* Job Description Upload Button (Directly below JD section, styled exactly like the Knowledge Base one) */}
-      <div className="pt-1">
-        <button
-          type="button"
-          onClick={() => {
-            toast.success("Job Description PDF/DOC uploaded successfully!")
-          }}
-          className="inline-flex items-center gap-2 border border-[#2563EB] hover:bg-blue-50 text-[#2563EB] text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm cursor-pointer transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-4 h-4 text-[#2563EB]"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
-            />
-          </svg>
-          Upload Job Description (PDF/DOC)
-        </button>
-      </div>
-
-      {/* Suggested & Extracted Skills Section */}
-      {isExtractorOpen && (
-        <div className="space-y-6 pt-4 border-t border-slate-100 animate-in fade-in duration-300">
-          {/* 1. Suggested Skills */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Suggested Skills <span className="text-[10px] text-slate-400 font-normal lowercase">(click to select)</span>
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {suggestedSkills.map((skill) => {
-                const isSelected = skills.includes(skill)
-                return (
-                  <Badge
-                    key={skill}
-                    variant="outline"
-                    className={cn(
-                      "cursor-pointer transition-all duration-200 px-3 py-1 text-xs font-semibold rounded-full border-none",
-                      isSelected
-                        ? "bg-blue-100 text-blue-700 ring-1 ring-blue-300"
-                        : "bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 hover:ring-1 hover:ring-blue-200"
-                    )}
-                    onClick={() => toggleSkillSelection(skill)}
-                  >
-                    {skill}
-                  </Badge>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* 2. Extracted Skills & Custom Input */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Extracted Skills <span className="text-[10px] text-slate-400 font-normal lowercase">(click cross to remove)</span>
-            </h3>
-            <FormField
-              control={form.control}
-              name="skills"
-              render={() => (
-                <FormItem>
-                  <FormControl>
-                    <div className={cn(
-                      "flex min-h-[56px] flex-wrap items-center gap-2 rounded-xl border px-3.5 py-3 transition-all duration-200 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white border-slate-200 shadow-sm"
-                    )}>
-                      {skills.map((skill) => (
-                        <Badge
-                          key={skill}
-                          variant="secondary"
-                          onClick={() => removeSkill(skill)}
-                          className="bg-[#EFF6FF] text-[#2563EB] hover:bg-blue-100 border border-blue-100 px-3 py-1 rounded-full text-xs font-semibold cursor-pointer select-none transition-colors flex items-center gap-1.5"
-                        >
-                          {skill}
-                          <IconX className="size-3 text-blue-500" />
-                        </Badge>
-                      ))}
-
-                      <input
-                        value={skillInput}
-                        onChange={(e) => setSkillInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder={skills.length === 0 ? "Add skill + Enter" : "Add skill..."}
-                        className="min-w-[150px] flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 border-none ring-0 p-0"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Set Difficulty Levels Section */}
-      <div className="space-y-4 pt-4 border-t border-slate-100">
-        <div>
-          <h3 className="text-base font-extrabold text-slate-800">Set Difficulty Levels</h3>
-          <p className="text-xs text-slate-400">
-            Select which difficulty levels to include in this assessment.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3.5">
-          {difficultyLevels.map((level, index) => {
-            const isSelected = level.selected
-            return (
-              <div
-                key={level.level}
-                className={cn(
-                  "border rounded-xl p-4 transition-all duration-200 bg-white border-slate-200 shadow-sm"
-                )}
-              >
-                {/* Title & Checkbox */}
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={(checked) => {
-                      const updated = [...difficultyLevels]
-                      updated[index] = { ...updated[index], selected: checked as boolean }
-                      setDifficultyLevels(updated)
-                    }}
-                    className="mt-1.5 h-4.5 w-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <div className="flex-1 space-y-0.5">
-                    <div className="font-bold text-slate-800 text-sm">{level.title}</div>
-                    <div className="text-xs text-slate-500 leading-normal">{level.description}</div>
-                  </div>
-                </div>
-
-                {/* Custom Input (Always Visible) */}
-                <div className="mt-3">
-                  <input
-                    type="text"
-                    value={level.exampleQuestion}
-                    onChange={(e) => {
-                      const updated = [...difficultyLevels]
-                      updated[index] = { ...updated[index], exampleQuestion: e.target.value }
-                      if (e.target.value.trim() !== "") {
-                        updated[index].selected = true
-                      }
-                      setDifficultyLevels(updated)
-                    }}
-                    placeholder={level.placeholder}
-                    className="w-full bg-[#EFF6FF] border border-[#E0EEFF] text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm placeholder:text-slate-400 font-medium"
-                  />
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Knowledge Set Questions Section */}
-      <div className="space-y-4 pt-4 border-t border-slate-100">
+      {/* JOB DESCRIPTION SECTION CONTAINER */}
+      <div className="border border-slate-200/80 rounded-3xl p-6 bg-white space-y-6 shadow-sm">
         <FormField
           control={form.control}
-          name="additionalContext"
+          name="jobDescription"
           render={({ field }) => (
-            <FormItem className="space-y-1.5">
-              <FormLabel className="text-sm font-semibold text-slate-800">
-                Knowledge Set Questions <span className="text-red-500">*</span>
-              </FormLabel>
+            <FormItem className="space-y-2">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base font-extrabold text-slate-800">
+                  Job description
+                </FormLabel>
+                <FormDescription className="text-xs text-slate-400 font-medium">
+                  Paste the JD or upload a file — AI will extract the right skills
+                </FormDescription>
+              </div>
               <FormControl>
                 <Textarea
-                  placeholder="e.g. Topic-1 Javascript"
-                  className="min-h-[140px] w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none shadow-sm font-mono text-xs text-slate-700 bg-slate-50/20 leading-relaxed"
+                  placeholder="Paste job description here..."
+                  className="min-h-36 w-full border border-slate-200 rounded-2xl p-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none shadow-sm placeholder:text-slate-300 leading-relaxed bg-white transition-all font-medium select-text"
                   {...field}
                 />
               </FormControl>
@@ -571,39 +461,359 @@ function StepRoleDetails({
             </FormItem>
           )}
         />
+
+        {/* Gray Divider with Center or text */}
+        <div className="flex items-center gap-4 my-2 select-none">
+          <div className="h-[1px] bg-slate-100 flex-1" />
+          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">or</span>
+          <div className="h-[1px] bg-slate-100 flex-1" />
+        </div>
+
+        {/* Upload Buttons Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => jdFileInputRef.current?.click()}
+            className="flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 rounded-xl h-11 text-xs font-bold text-slate-600 shadow-sm transition-all cursor-pointer select-none"
+          >
+            <IconUpload className="size-4 text-slate-400" />
+            Upload JD PDF
+          </Button>
+          
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => jdFileInputRef.current?.click()}
+            className="flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 rounded-xl h-11 text-xs font-bold text-slate-600 shadow-sm transition-all cursor-pointer select-none"
+          >
+            <IconUpload className="size-4 text-slate-400" />
+            Upload Document
+          </Button>
+        </div>
+
+        {/* Extract Skills Button */}
+        <div className="pt-1">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={toggleExtractor}
+            className="border border-[#2563EB]/30 hover:bg-blue-50/50 text-[#2563EB] hover:text-blue-700 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+          >
+            <IconSparkles className="size-4" />
+            Extract skills
+          </Button>
+        </div>
+
+        {/* Suggested & Extracted Skills Section (Collapsible) */}
+        {isExtractorOpen && (
+          <div className="space-y-6 pt-4 border-t border-slate-100 animate-in fade-in duration-300">
+            {/* 1. Suggested Skills */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+                Suggested Skills <span className="text-[10px] text-slate-400 font-normal lowercase">(click to select)</span>
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {suggestedSkills.map((skill) => {
+                  const isSelected = skills.includes(skill)
+                  return (
+                    <Badge
+                      key={skill}
+                      variant="outline"
+                      className={cn(
+                        "cursor-pointer transition-all duration-200 px-3 py-1 text-xs font-semibold rounded-full border-none select-none",
+                        isSelected
+                          ? "bg-[#2563EB] text-white ring-1 ring-blue-300"
+                          : "bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 hover:ring-1 hover:ring-blue-200"
+                      )}
+                      onClick={() => toggleSkillSelection(skill)}
+                    >
+                      {skill}
+                    </Badge>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* 2. Extracted Skills & Custom Input */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+                Extracted Skills <span className="text-[10px] text-slate-400 font-normal lowercase">(click cross to remove)</span>
+              </h3>
+              <FormField
+                control={form.control}
+                name="skills"
+                render={() => (
+                  <FormItem>
+                    <FormControl>
+                      <div className={cn(
+                        "flex min-h-[56px] flex-wrap items-center gap-2 rounded-xl border px-3.5 py-3 transition-all duration-200 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white border-slate-200 shadow-sm"
+                      )}>
+                        {skills.map((skill: string) => (
+                          <Badge
+                            key={skill}
+                            variant="secondary"
+                            onClick={() => removeSkill(skill)}
+                            className="bg-[#EFF6FF] text-[#2563EB] hover:bg-blue-100 border border-blue-100 px-3 py-1 rounded-full text-xs font-semibold cursor-pointer select-none transition-colors flex items-center gap-1.5"
+                          >
+                            {skill}
+                            <IconX className="size-3 text-blue-500" />
+                          </Badge>
+                        ))}
+
+                        <input
+                          value={skillInput}
+                          onChange={(e) => setSkillInput(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder={skills.length === 0 ? "Add skill + Enter" : "Add skill..."}
+                          className="min-w-[150px] flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 border-none ring-0 p-0 select-text"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Knowledge Set Questions Upload Button */}
-      <div className="pt-1">
-        <button
-          type="button"
-          onClick={() => {
-            toast.success("Knowledge Set Questions PDF/DOC uploaded successfully!")
-          }}
-          className="inline-flex items-center gap-2 border border-[#2563EB] hover:bg-blue-50 text-[#2563EB] text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm cursor-pointer transition-colors"
+      {/* DIFFICULTY LEVELS SECTION CONTAINER */}
+      <div className="border border-slate-200/80 rounded-3xl p-6 bg-white space-y-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <h3 className="text-base font-extrabold text-slate-800">Set difficulty levels</h3>
+            <p className="text-xs text-slate-400 font-medium leading-relaxed">
+              Enable the levels you want and configure how many questions AI should generate per level.
+            </p>
+          </div>
+          <span className="text-xs font-extrabold text-slate-400 select-none">
+            {selectedCount} of 4 selected
+          </span>
+        </div>
+
+        {/* 2x2 Grid of Difficulty Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {difficultyLevels.map((level, index) => {
+            const isSelected = level.selected
+            return (
+              <div
+                key={level.level}
+                onClick={() => {
+                  const updated = [...difficultyLevels]
+                  updated[index].selected = !updated[index].selected
+                  setDifficultyLevels(updated)
+                }}
+                className={cn(
+                  "border rounded-2xl p-5 transition-all duration-200 bg-white cursor-pointer relative flex flex-col gap-4 select-none group shadow-sm",
+                  isSelected 
+                    ? "border-[#2563EB] ring-1 ring-blue-500/10" 
+                    : "border-slate-200/80 hover:border-slate-300 opacity-80"
+                )}
+              >
+                {/* Custom Checkbox + Level label row */}
+                <div className="flex items-center gap-2.5">
+                  {/* Selection Checkmark Circle */}
+                  {isSelected ? (
+                    <div className="size-4.5 rounded-full bg-[#2563EB] flex items-center justify-center text-white transition-all shadow-sm">
+                      <IconCheck className="size-3 stroke-[3.5]" />
+                    </div>
+                  ) : (
+                    <div className="size-4.5 rounded-full border-2 border-slate-200 bg-white group-hover:border-slate-300 transition-all" />
+                  )}
+
+                  <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase">
+                    {level.badge}
+                  </span>
+                  
+                  <span className={cn(
+                    "text-[9px] font-extrabold px-2 py-0.5 rounded-full select-none",
+                    isSelected ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-500"
+                  )}>
+                    {level.badgeLabel}
+                  </span>
+                </div>
+
+                {/* Title & Description */}
+                <div className="space-y-1">
+                  <h4 className="font-extrabold text-slate-800 text-sm leading-tight">{level.title}</h4>
+                  <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">{level.description}</p>
+                </div>
+
+                {/* Example Instruction Input Block */}
+                <div 
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-3 flex flex-col gap-1"
+                >
+                  <span className="text-[9px] font-black text-slate-400 tracking-widest">
+                    EXAMPLE QUESTION
+                  </span>
+                  <input
+                    type="text"
+                    value={level.exampleQuestion}
+                    onChange={(e) => {
+                      const updated = [...difficultyLevels]
+                      updated[index].exampleQuestion = e.target.value
+                      if (e.target.value.trim() !== "") {
+                        updated[index].selected = true
+                      }
+                      setDifficultyLevels(updated)
+                    }}
+                    placeholder={level.placeholder}
+                    className="w-full bg-transparent text-slate-700 outline-none border-none p-0 text-xs font-semibold placeholder:text-slate-300 italic select-text"
+                  />
+                </div>
+
+                {/* Questions Counter Row */}
+                <div 
+                  className="flex items-center justify-between pt-2.5 mt-auto border-t border-slate-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Questions
+                  </span>
+                  
+                  <div className="flex flex-col items-end gap-0.5">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={level.count <= 10}
+                        onClick={() => {
+                          const updated = [...difficultyLevels]
+                          updated[index].count = Math.max(10, updated[index].count - 1)
+                          setDifficultyLevels(updated)
+                        }}
+                        className={cn(
+                          "size-7 rounded-lg border flex items-center justify-center text-xs font-bold transition-all shadow-sm",
+                          level.count <= 10 
+                            ? "border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed" 
+                            : "border-slate-200 hover:border-blue-300 hover:bg-slate-50 text-slate-500 cursor-pointer"
+                        )}
+                      >
+                        <IconMinus className="size-3.5" />
+                      </button>
+                      
+                      <span className="w-8 text-center text-xs font-black text-slate-800">{level.count}</span>
+                      
+                      <button
+                        type="button"
+                        disabled={level.count >= 50}
+                        onClick={() => {
+                          const updated = [...difficultyLevels]
+                          updated[index].count = Math.min(50, updated[index].count + 1)
+                          setDifficultyLevels(updated)
+                        }}
+                        className={cn(
+                          "size-7 rounded-lg border flex items-center justify-center text-xs font-bold transition-all shadow-sm",
+                          level.count >= 50
+                            ? "border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed"
+                            : "border-slate-200 hover:border-blue-300 hover:bg-slate-50 text-slate-500 cursor-pointer"
+                        )}
+                      >
+                        <IconPlus className="size-3.5" />
+                      </button>
+                    </div>
+                    <span className="text-[9px] font-bold text-slate-400 tracking-wide uppercase">
+                      Min 10 - Max 50
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Wide total question banner at bottom of set difficulty box */}
+        <div className="pt-2 select-none">
+          <div className="border border-slate-200/60 rounded-2xl p-5 bg-[#F8FAFC] flex items-center justify-between shadow-sm">
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Total questions to be generated
+              </span>
+              <h4 className="text-3xl font-black text-slate-800 tracking-tight">
+                {totalQuestions}
+              </h4>
+            </div>
+            
+            <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-100 text-xs font-bold">
+              <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{selectedCount} levels active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* KNOWLEDGE SET QUESTIONS CONTAINER */}
+      <div className="border border-slate-200/80 rounded-3xl p-6 bg-white space-y-6 shadow-sm">
+        <div className="space-y-0.5">
+          <h3 className="text-base font-extrabold text-slate-800">Knowledge Set Questions</h3>
+          <p className="text-xs text-slate-400 font-medium leading-relaxed">
+            Upload custom topic wise Reference Questions to guide AI generated interview Quality and Structure
+          </p>
+        </div>
+
+        {/* Dashed Dropzone */}
+        <div
+          onClick={() => syllabusFileInputRef.current?.click()}
+          className="border-2 border-dashed border-[#2563EB]/20 bg-blue-50/5 hover:bg-blue-50/15 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group select-none shadow-sm"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-4 h-4 text-[#2563EB]"
+          <Button
+            type="button"
+            variant="outline"
+            className="flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all cursor-pointer"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
-            />
-          </svg>
-          Upload Knowledge Set Questions (PDF/DOC)
-        </button>
+            <IconUpload className="size-4 text-slate-400" />
+            Upload PDF
+          </Button>
+          
+          <div className="text-center space-y-1">
+            <h4 className="text-xs font-extrabold text-slate-600">
+              Drag & drop instruction file or click to browse
+            </h4>
+            <p className="text-[10px] font-bold text-slate-400">
+              Supports PDF, DOCX, TXT
+            </p>
+          </div>
+        </div>
+
+        {/* Recommended Format block */}
+        <div className="space-y-2 mt-4 select-none">
+          <h4 className="text-xs font-extrabold text-slate-600">
+            Recommended Format
+          </h4>
+          <div className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-4 text-xs font-semibold text-slate-500 leading-relaxed font-mono shadow-inner select-text">
+            <div>Topic 1 - JavaScript</div>
+            <div className="pl-4 text-slate-400">1. What is var?</div>
+            <div className="pl-4 text-slate-400">2. Difference between let and const ?</div>
+            
+            <div className="mt-2.5">Topic 2 - React</div>
+            <div className="pl-4 text-slate-400">1. What are props and state ?</div>
+            <div className="pl-4 text-slate-400">2. How does UseEffect work ?</div>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
-function StepReview({ form }: { form: ReturnType<typeof useForm<AddRoleFormValues>> }) {
+function StepReview({ 
+  form,
+  difficultyLevels
+}: { 
+  form: ReturnType<typeof useForm<AddRoleFormValues>>
+  difficultyLevels: Array<{
+    level: number
+    selected: boolean
+    badge: string
+    badgeLabel: string
+    title: string
+    description: string
+    exampleQuestion: string
+    placeholder: string
+    count: number
+  }>
+}) {
   const values = form.watch()
   const expLabel =
     EXPERIENCE_LEVELS.find((l) => l.value === values.experienceLevel)?.label ??
@@ -621,61 +831,48 @@ function StepReview({ form }: { form: ReturnType<typeof useForm<AddRoleFormValue
   // Accordion active level state
   const [activeLevel, setActiveLevel] = React.useState<number | null>(1)
 
-  const levels = [
-    {
-      id: 1,
-      badge: "L1",
-      title: "General Fundamentals",
-      description: "Basic concepts and foundational knowledge questions.",
-      countText: "15 questions",
-      questions: [
+  const activeLevels = difficultyLevels.filter(l => l.selected)
+  const totalQuestions = activeLevels.reduce((acc, curr) => acc + curr.count, 0)
+
+  const levels = activeLevels.map(level => {
+    let mockQuestions: string[] = []
+    if (level.level === 1) {
+      mockQuestions = [
         "Q1. Explain the difference between var, let, and const in JavaScript.",
         "Q2. What are React hooks and why were they introduced?",
         "Q3. How does the browser event loop work?"
-      ],
-      hasMoreLink: true,
-      hasMoreText: "View all 15 questions"
-    },
-    {
-      id: 2,
-      badge: "L2",
-      title: "Project & Resume Based",
-      description: "Questions based on resume, projects and practical implementation.",
-      countText: "15 questions",
-      questions: [
+      ]
+    } else if (level.level === 2) {
+      mockQuestions = [
         "Q1. Tell me about a challenging React project where you optimized rendering.",
         "Q2. How did you structure GraphQL schema mutations in your last application?",
         "Q3. Describe your experience leading architectural decisions across front-end squads."
-      ],
-      hasMoreLink: false
-    },
-    {
-      id: 3,
-      badge: "L3",
-      title: "Production & Scenario Based",
-      description: "Production-level debugging and real-world problem-solving questions.",
-      countText: "10 questions",
-      questions: [
+      ]
+    } else if (level.level === 3) {
+      mockQuestions = [
         "Q1. How would you handle state synchronization across multiple browser tabs?",
         "Q2. What strategies do you use for real-time monitoring of runtime JavaScript errors?",
         "Q3. Explain how to implement incremental migration from legacy SPA to modern SSR."
-      ],
-      hasMoreLink: false
-    },
-    {
-      id: 4,
-      badge: "L4",
-      title: "Advanced / Pressure Scenarios",
-      description: "High-pressure and advanced real-world interview situations.",
-      countText: "10 questions",
-      questions: [
+      ]
+    } else if (level.level === 4) {
+      mockQuestions = [
         "Q1. How would you explain browser rendering cycles under intense performance constraints?",
-        "Design a thread-safe frontend cache architecture utilizing Web Workers.",
-        "What actions do you take when your production frontend experiences a sudden memory leak?"
-      ],
-      hasMoreLink: false
+        "Q2. Design a thread-safe frontend cache architecture utilizing Web Workers.",
+        "Q3. What actions do you take when your production frontend experiences a sudden memory leak?"
+      ]
     }
-  ]
+
+    return {
+      id: level.level,
+      badge: `L${level.level}`,
+      title: level.title,
+      description: level.description,
+      countText: `${level.count} questions`,
+      questions: mockQuestions,
+      hasMoreLink: true,
+      hasMoreText: `View all ${level.count} questions`
+    }
+  })
 
   return (
     <div className="space-y-6">
@@ -882,35 +1079,47 @@ export function AddRoleStepper() {
   const [difficultyLevels, setDifficultyLevels] = React.useState([
     {
       level: 1,
-      selected: false,
-      title: "Level - 1 General Fundamentals",
-      description: "Easy conceptual questions to assess basic understanding",
-      exampleQuestion: "",
+      selected: true,
+      badge: "LEVEL 1",
+      badgeLabel: "Foundational",
+      title: "General Fundamentals",
+      description: "Basic concepts and foundational knowledge questions.",
+      exampleQuestion: "What is the difference between let and const in JavaScript?",
       placeholder: "e.g., What is the difference between let and const in JS?",
+      count: 15,
     },
     {
       level: 2,
-      selected: false,
-      title: "Level - 2 Project & Resume Based",
-      description: "Scenario driven questions with follow ups on past work",
-      exampleQuestion: "",
+      selected: true,
+      badge: "LEVEL 2",
+      badgeLabel: "Intermediate",
+      title: "Project & Resume Based",
+      description: "Questions based on resume, projects and practical implementation.",
+      exampleQuestion: "Explain a challenging frontend project you worked on.",
       placeholder: "e.g., Tell me about a challenging project you worked on?",
+      count: 15,
     },
     {
       level: 3,
-      selected: false,
-      title: "Level - 3 Production & Scenario Based",
-      description: "Real world implementation & problem solving",
-      exampleQuestion: "",
+      selected: true,
+      badge: "LEVEL 3",
+      badgeLabel: "Advanced",
+      title: "Production & Scenario Based",
+      description: "Production-level debugging and real-world problem-solving questions.",
+      exampleQuestion: "How would you optimize a slow React production application?",
       placeholder: "e.g., How would you optimize a slow loading REACT component?",
+      count: 10,
     },
     {
       level: 4,
-      selected: false,
-      title: "Level - 4 Advanced",
-      description: "Complex Production decision-making under constraints",
-      exampleQuestion: "",
-      placeholder: "e.g., How would you optimize a slow loading REACT component?",
+      selected: true,
+      badge: "LEVEL 4",
+      badgeLabel: "Expert",
+      title: "Advanced / Pressure Scenarios",
+      description: "High-pressure and advanced real-world interview situations.",
+      exampleQuestion: "What would you do if production breaks during deployment?",
+      placeholder: "e.g., What do you do when production is down during a deploy?",
+      count: 10,
     },
   ])
 
@@ -950,6 +1159,16 @@ export function AddRoleStepper() {
     if (step === 2) {
       if (typeof window !== "undefined") {
         localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
+        localStorage.setItem("samvaad_saathi_difficulty_levels", JSON.stringify(difficultyLevels))
+        
+        // Log the expected backend generate questions API request payload
+        const levelsPayload = difficultyLevels.map(l => ({
+          level: l.level,
+          count: l.selected ? l.count : 0
+        }))
+        console.log("Backend generate questions API request payload:", {
+          levels: levelsPayload
+        })
       }
       router.push("/dashboard/roles/new/questions")
       return
@@ -1079,13 +1298,13 @@ export function AddRoleStepper() {
                     setDifficultyLevels={setDifficultyLevels}
                   />
                 )}
-                {step === 4 && <StepReview form={form} />}
+                {step === 4 && <StepReview form={form} difficultyLevels={difficultyLevels} />}
               </motion.div>
             </AnimatePresence>
           </CardContent>
         </Card>
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between pt-2 relative">
           {step === 4 ? (
             <>
               {/* Back Button */}
@@ -1153,11 +1372,16 @@ export function AddRoleStepper() {
                 type="button"
                 variant="outline"
                 onClick={step === 0 ? () => router.push("/dashboard/roles") : goPrev}
-                className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5"
+                className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5 select-none"
               >
-                <IconChevronLeft className="size-4" />
+                {step === 0 ? null : <IconChevronLeft className="size-4" />}
                 {step === 0 ? "Cancel" : "Back"}
               </Button>
+
+              {/* Center Step Indicator Label */}
+              <span className="text-xs font-bold text-slate-400 select-none absolute left-1/2 -translate-x-1/2">
+                Step {step + 1} of 5
+              </span>
 
               {isLastStep ? (
                 <Button
@@ -1186,6 +1410,15 @@ export function AddRoleStepper() {
                       Confirm and Create
                     </>
                   )}
+                </Button>
+              ) : step === 2 ? (
+                <Button
+                  type="button"
+                  onClick={goNext}
+                  className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-2 select-none shadow-sm cursor-pointer"
+                >
+                  <IconSparkles className="size-4" />
+                  Generate questions
                 </Button>
               ) : (
                 <Button

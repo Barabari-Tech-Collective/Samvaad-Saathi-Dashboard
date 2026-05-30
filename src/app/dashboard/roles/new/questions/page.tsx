@@ -182,8 +182,16 @@ export default function QuestionsConfigurationPage() {
     }
   }
 
+  // Load difficulty levels from localStorage or fallback to default
+  const [difficultyLevels, setDifficultyLevels] = React.useState([
+    { level: 1, selected: true, count: 15, badgeLabel: "Foundational", title: "General Fundamentals" },
+    { level: 2, selected: true, count: 15, badgeLabel: "Intermediate", title: "Project & Resume Based" },
+    { level: 3, selected: true, count: 10, badgeLabel: "Advanced", title: "Production & Scenario Based" },
+    { level: 4, selected: true, count: 10, badgeLabel: "Expert", title: "Advanced / Pressure Scenarios" }
+  ])
+
   // Local state for full list of questions
-  const [questions, setQuestions] = React.useState(INITIAL_QUESTIONS)
+  const [questions, setQuestions] = React.useState<any[]>([])
   const [activeTab, setActiveTab] = React.useState<number>(1)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [draftTitle, setDraftTitle] = React.useState("Senior Front-End Developer - Engineering")
@@ -196,9 +204,30 @@ export default function QuestionsConfigurationPage() {
   // Floating Toast state
   const [showToast, setShowToast] = React.useState(true)
 
-  // Load draft title from localStorage if available
+  // Sync effect to load levels and mock simulated Backend Generate Questions API Request
   React.useEffect(() => {
     if (typeof window !== "undefined") {
+      const savedLevels = localStorage.getItem("samvaad_saathi_difficulty_levels")
+      if (savedLevels) {
+        try {
+          const parsed = JSON.parse(savedLevels)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setDifficultyLevels(parsed)
+
+            // Dynamic question counting sync log for API Parity
+            const levelsPayload = parsed.map(l => ({
+              level: l.level,
+              count: l.selected ? l.count : 0
+            }))
+            console.log("Simulating Backend Generate Questions API Request payload:", {
+              levels: levelsPayload
+            })
+          }
+        } catch (e) {
+          console.error("Failed to parse difficulty levels:", e)
+        }
+      }
+
       const saved = localStorage.getItem("samvaad_saathi_draft_role")
       if (saved) {
         try {
@@ -212,6 +241,43 @@ export default function QuestionsConfigurationPage() {
       }
     }
   }, [])
+
+  // Sync questions array counts to match custom selected difficulty levels
+  React.useEffect(() => {
+    const activeQuestionsList: any[] = []
+    difficultyLevels.forEach((level) => {
+      if (level.selected) {
+        const levelPool = INITIAL_QUESTIONS.filter(q => q.level === level.level)
+        const count = level.count
+        if (levelPool.length >= count) {
+          activeQuestionsList.push(...levelPool.slice(0, count))
+        } else {
+          activeQuestionsList.push(...levelPool)
+          const remaining = count - levelPool.length
+          for (let i = 0; i < remaining; i++) {
+            activeQuestionsList.push({
+              id: `q-extra-${level.level}-${i}-${Date.now()}`,
+              level: level.level,
+              category: level.level > 2 ? "PRACTICAL" : "THEORETICAL",
+              difficulty: level.level === 1 ? "EASY" : level.level === 4 ? "HARD" : "MEDIUM",
+              text: `AI generated instruction question for ${level.title} #${i + 1}`,
+              isAiGenerated: true
+            })
+          }
+        }
+      }
+    })
+    setQuestions(activeQuestionsList)
+  }, [difficultyLevels])
+
+  const activeLevels = difficultyLevels.filter(l => l.selected)
+  const totalQuestions = activeLevels.reduce((acc, curr) => acc + curr.count, 0)
+
+  React.useEffect(() => {
+    if (activeLevels.length > 0 && !activeLevels.some(l => l.level === activeTab)) {
+      setActiveTab(activeLevels[0].level)
+    }
+  }, [difficultyLevels, activeTab])
 
   // Set the first question of the current level expanded by default on tab change
   React.useEffect(() => {
@@ -369,7 +435,7 @@ export default function QuestionsConfigurationPage() {
 
           <div className="flex items-center gap-2 bg-[#EFF6FF] border border-blue-100 rounded-lg px-3 py-1.5">
             <IconSparkles className="size-4 text-blue-600" />
-            <span className="text-xs font-bold text-blue-700">50 questions generated</span>
+            <span className="text-xs font-bold text-blue-700">{totalQuestions} questions generated</span>
           </div>
         </CardContent>
       </Card>
@@ -378,28 +444,26 @@ export default function QuestionsConfigurationPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2 border-b border-slate-100 pb-3">
         {/* Level Tabs */}
         <div className="flex flex-wrap gap-2">
-          {[
-            { id: 1, label: "Level 1", count: countL1 },
-            { id: 2, label: "Level 2", count: countL2 },
-            { id: 3, label: "Level 3", count: countL3 },
-            { id: 4, label: "Level 4", count: countL4 },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm",
-                activeTab === tab.id
-                  ? "bg-[#2563EB] text-white ring-1 ring-blue-500 font-extrabold"
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200"
-              )}
-            >
-              {tab.label} <span className={cn(
-                "ml-1 text-[10px] px-1.5 py-0.2 rounded-full",
-                activeTab === tab.id ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"
-              )}>{tab.count}</span>
-            </button>
-          ))}
+          {activeLevels.map((level) => {
+            const levelQuestionsCount = questions.filter(q => q.level === level.level).length
+            return (
+              <button
+                key={level.level}
+                onClick={() => setActiveTab(level.level)}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm",
+                  activeTab === level.level
+                    ? "bg-[#2563EB] text-white ring-1 ring-blue-500 font-extrabold"
+                    : "bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200"
+                )}
+              >
+                LEVEL {level.level} <span className={cn(
+                  "ml-1 text-[10px] px-1.5 py-0.2 rounded-full",
+                  activeTab === level.level ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"
+                )}>{levelQuestionsCount}</span>
+              </button>
+            )
+          })}
         </div>
 
         {/* Right Side Actions / Search */}
@@ -426,7 +490,7 @@ export default function QuestionsConfigurationPage() {
           <Button
             variant="outline"
             className="border border-slate-300 hover:bg-slate-50 text-slate-600 text-xs font-semibold px-3 py-1.5 h-8 rounded-lg shadow-sm"
-            onClick={() => toast.info("Preview of all 50 questions is open!")}
+            onClick={() => toast.info(`Preview of all ${totalQuestions} questions is open!`)}
           >
             Preview all
           </Button>
@@ -635,7 +699,7 @@ export default function QuestionsConfigurationPage() {
             <IconCheck className="size-4 font-bold" />
           </div>
           <div>
-            <p className="text-xs font-extrabold text-blue-800">50 questions generated successfully</p>
+            <p className="text-xs font-extrabold text-blue-800">{totalQuestions} questions generated successfully</p>
           </div>
           <button
             onClick={() => setShowToast(false)}

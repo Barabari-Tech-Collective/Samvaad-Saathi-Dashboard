@@ -18,8 +18,26 @@ export function useJobProfilesList() {
     method: "GET",
     key: analyticsKey(jobProfilesPath),
   })
+
+  const rawItems = query.data?.items ?? []
+  
+  // Robust mapping to support both backend fields (id, title, description) and frontend camelCase schemas
+  const jobProfiles = rawItems.map((item: any) => ({
+    ...item,
+    jobProfileId: item.jobProfileId ?? item.job_profile_id ?? item.id,
+    jobName: item.jobName ?? item.job_name ?? item.title ?? "Unnamed Role",
+    jobDescription: item.jobDescription ?? item.job_description ?? item.description ?? "",
+    companyName: item.companyName ?? item.company_name ?? item.company ?? "General Role",
+    experienceLevel: item.experienceLevel ?? item.experience_level ?? "fresher",
+    skills: item.skills ?? [],
+    additionalContext: item.additionalContext ?? item.additional_context ?? "",
+    createdBy: item.createdBy ?? item.created_by ?? null,
+    createdAt: item.createdAt ?? item.created_at ?? new Date().toISOString(),
+    updatedAt: item.updatedAt ?? item.updated_at ?? new Date().toISOString(),
+  }))
+
   return {
-    jobProfiles: query.data?.items ?? [],
+    jobProfiles,
     isLoadingJobProfiles: query.isLoading,
     ...query,
   }
