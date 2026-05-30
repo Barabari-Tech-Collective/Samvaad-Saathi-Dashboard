@@ -1140,7 +1140,15 @@ export function AddRoleStepper() {
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       const stepParam = searchParams.get("step")
-      const isNewRole = !stepParam || stepParam === "0"
+      
+      // If the query parameter is not present yet during Next.js hydration, do nothing
+      // to avoid accidentally wiping drafts due to a hydration race condition.
+      if (stepParam === null && window.location.search.includes("step=")) {
+        return
+      }
+
+      const parsedStep = stepParam ? parseInt(stepParam, 10) : 0
+      const isNewRole = parsedStep === 0
 
       if (isNewRole) {
         // Brand new start or refresh at Step 1: clear draft storage and initialize clean form
