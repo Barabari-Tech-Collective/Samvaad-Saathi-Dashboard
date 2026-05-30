@@ -1235,6 +1235,28 @@ export function AddRoleStepper() {
         difficultyText ? `Difficulty Levels:\n${difficultyText}` : ""
       ].filter(Boolean).join("\n\n")
 
+      // Compute stats for Success Page binding
+      const activeLevelsCount = difficultyLevels.filter(l => l.selected).length;
+      const totalQuestionsCount = difficultyLevels
+        .filter(l => l.selected)
+        .reduce((sum, l) => sum + l.count, 0);
+
+      const submissionInfo = {
+        roleName: values.jobName,
+        totalQuestions: totalQuestionsCount,
+        activeLevels: activeLevelsCount,
+        submittedDate: new Date().toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        }),
+        status: "Under Review"
+      };
+
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("samvaad_saathi_last_submission", JSON.stringify(submissionInfo));
+      }
+
       try {
         await createJobProfileAsync({
           jobName: values.jobName,

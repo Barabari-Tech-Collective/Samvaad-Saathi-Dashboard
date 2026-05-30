@@ -12,13 +12,48 @@ import {
 } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 
+interface SubmissionDetails {
+  roleName: string
+  totalQuestions: number
+  activeLevels: number
+  submittedDate: string
+  status: string
+}
+
 export default function RoleSubmittedSuccessPage() {
   const router = useRouter()
+  const [submission, setSubmission] = React.useState<SubmissionDetails>(() => {
+    // Generate default fallback state instantly
+    const today = new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    })
+    return {
+      roleName: "",
+      totalQuestions: 0,
+      activeLevels: 0,
+      submittedDate: today,
+      status: "Under Review"
+    }
+  })
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
+      // Clean draft values to prevent stale recovers
       localStorage.removeItem("samvaad_saathi_draft_role")
       localStorage.removeItem("samvaad_saathi_difficulty_levels")
+
+      // Fetch dynamic details
+      const saved = sessionStorage.getItem("samvaad_saathi_last_submission")
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          setSubmission(parsed)
+        } catch (e) {
+          console.error("Failed to parse last submission details:", e)
+        }
+      }
     }
   }, [])
 
@@ -57,7 +92,7 @@ export default function RoleSubmittedSuccessPage() {
                 <span>Role</span>
               </div>
               <span className="font-extrabold text-slate-800 text-right">
-                Senior Backend Engineer
+                {submission.roleName || "Unnamed Role"}
               </span>
             </div>
 
@@ -68,7 +103,7 @@ export default function RoleSubmittedSuccessPage() {
                 <span>Total questions</span>
               </div>
               <span className="font-extrabold text-slate-800 text-right">
-                48 across 4 levels
+                {submission.totalQuestions} across {submission.activeLevels} {submission.activeLevels === 1 ? "level" : "levels"}
               </span>
             </div>
 
@@ -79,7 +114,7 @@ export default function RoleSubmittedSuccessPage() {
                 <span>Submitted</span>
               </div>
               <span className="font-extrabold text-slate-800 text-right">
-                May 14, 2026
+                {submission.submittedDate}
               </span>
             </div>
 
@@ -90,7 +125,7 @@ export default function RoleSubmittedSuccessPage() {
                 <span>Current status</span>
               </div>
               <span className="font-extrabold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full text-[11px] border border-amber-100/50">
-                Under Review
+                {submission.status || "Under Review"}
               </span>
             </div>
 
