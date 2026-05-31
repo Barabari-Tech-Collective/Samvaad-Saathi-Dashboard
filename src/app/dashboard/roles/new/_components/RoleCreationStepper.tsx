@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 
 export interface RoleCreationStepperProps {
   currentStep: number // 0-indexed (0 to 4)
+  onStepClick?: (stepIndex: number) => void
 }
 
 export const STEP_LABELS = [
@@ -16,23 +17,54 @@ export const STEP_LABELS = [
   "Review & Submit",
 ]
 
-export function RoleCreationStepper({ currentStep }: RoleCreationStepperProps) {
+export function RoleCreationStepper({ currentStep, onStepClick }: RoleCreationStepperProps) {
+  const [maxStep, setMaxStep] = React.useState(currentStep)
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("samvaad_saathi_max_step_reached")
+      let reached = currentStep
+      if (saved) {
+        const parsed = parseInt(saved, 10)
+        if (!isNaN(parsed)) reached = Math.max(reached, parsed)
+      }
+      if (localStorage.getItem("samvaad_saathi_draft_role")) {
+        reached = Math.max(reached, 2)
+      }
+      setMaxStep(reached)
+      
+      // Update local storage to keep it up to date
+      const currentSaved = localStorage.getItem("samvaad_saathi_max_step_reached")
+      const currentSavedParsed = currentSaved ? parseInt(currentSaved, 10) : 0
+      if (isNaN(currentSavedParsed) || reached > currentSavedParsed) {
+        localStorage.setItem("samvaad_saathi_max_step_reached", reached.toString())
+      }
+    }
+  }, [currentStep])
+
   return (
     <div className="flex items-center justify-start gap-1.5 md:gap-2.5 overflow-x-auto w-full pb-2 md:pb-0 scrollbar-none select-none">
       {STEP_LABELS.map((label, index) => {
         const isCompleted = index < currentStep
         const isActive = index === currentStep
         const isUpcoming = index > currentStep
+        const isAllowed = index <= maxStep
 
         return (
           <React.Fragment key={label}>
             {/* Step Pill */}
             <div
+              onClick={() => {
+                if (isAllowed && onStepClick) {
+                  onStepClick(index)
+                }
+              }}
               className={cn(
                 "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 shrink-0",
                 isCompleted && "bg-[#ECFDF5] border-[#10B981] text-[#065F46]",
                 isActive && "bg-[#2563EB] border-[#2563EB] text-white shadow-sm shadow-blue-500/10",
-                isUpcoming && "bg-white border-slate-200 text-slate-400"
+                isUpcoming && "bg-white border-slate-200 text-slate-400",
+                isAllowed ? "cursor-pointer hover:opacity-90 active:scale-95" : "cursor-not-allowed opacity-60"
               )}
             >
               {/* Left Circle Badge */}

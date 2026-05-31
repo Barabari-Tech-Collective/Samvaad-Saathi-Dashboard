@@ -66,7 +66,7 @@ export default function RoleSubmittedSuccessPage() {
 
         {/* Card Content wrapper */}
         <div className="relative p-6 sm:p-8 flex flex-col items-center">
-          
+
           {/* Success Icon */}
           <div className="mt-4 flex size-12 items-center justify-center rounded-full bg-[#E6F4EA] border border-[#A7F3D0]/50 shadow-sm animate-bounce-short">
             <IconCheck className="size-6 text-[#10B981] stroke-[3]" />
@@ -84,7 +84,7 @@ export default function RoleSubmittedSuccessPage() {
 
           {/* Submission Details List */}
           <div className="mt-8 w-full border border-slate-100/80 rounded-2xl bg-white p-4.5 space-y-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
-            
+
             {/* Row 1: Role */}
             <div className="flex items-center justify-between text-xs sm:text-sm">
               <div className="flex items-center gap-2.5 text-slate-400 font-bold uppercase tracking-wider text-[10px] sm:text-xs">
@@ -133,7 +133,7 @@ export default function RoleSubmittedSuccessPage() {
 
           {/* Action Buttons */}
           <div className="mt-8 flex items-center justify-between w-full gap-4">
-            
+
             {/* Back Button */}
             <Button
               type="button"

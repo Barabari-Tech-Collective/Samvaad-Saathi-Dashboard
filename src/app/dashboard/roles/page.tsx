@@ -123,29 +123,25 @@ export default function RolesManagementPage() {
                 setActiveCardIdx(idx)
                 toast.info(`Active filter set to: ${card.title}`)
               }}
-              className={`border rounded-2xl shadow-sm overflow-hidden transition-all duration-200 hover:-translate-y-0.5 group cursor-pointer ${
-                isActive
+              className={`border rounded-2xl shadow-sm overflow-hidden transition-all duration-200 hover:-translate-y-0.5 group cursor-pointer ${isActive
                   ? "bg-[#EFF6FF] border-[#BFDBFE]/85 shadow-md"
                   : "bg-white border-slate-200/80 hover:bg-[#EFF6FF]/40 hover:border-[#BFDBFE]/40 hover:shadow-md"
-              }`}
+                }`}
             >
               <CardContent className="p-5 flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className={`text-xs font-bold tracking-wider uppercase transition-colors duration-200 ${
-                    isActive ? "text-[#1E40AF]/80" : "text-slate-400 group-hover:text-[#1E40AF]/60"
-                  }`}>
+                  <p className={`text-xs font-bold tracking-wider uppercase transition-colors duration-200 ${isActive ? "text-[#1E40AF]/80" : "text-slate-400 group-hover:text-[#1E40AF]/60"
+                    }`}>
                     {card.title}
                   </p>
-                  <h3 className={`text-3xl font-black transition-colors duration-200 ${
-                    isActive ? "text-[#1E40AF]" : "text-slate-800 group-hover:text-[#1E40AF]"
-                  }`}>
+                  <h3 className={`text-3xl font-black transition-colors duration-200 ${isActive ? "text-[#1E40AF]" : "text-slate-800 group-hover:text-[#1E40AF]"
+                    }`}>
                     {card.count}
                   </h3>
                 </div>
 
-                <div className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-200 ${
-                  isActive ? "bg-white text-[#1E40AF]" : "bg-slate-50 group-hover:bg-white text-slate-600 group-hover:text-[#1E40AF]"
-                }`}>
+                <div className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-200 ${isActive ? "bg-white text-[#1E40AF]" : "bg-slate-50 group-hover:bg-white text-slate-600 group-hover:text-[#1E40AF]"
+                  }`}>
                   {React.cloneElement(card.icon, {
                     className: `size-4 transition-colors duration-200 ${isActive ? "text-blue-600" : card.colorClass + " group-hover:text-blue-600"}`
                   })}

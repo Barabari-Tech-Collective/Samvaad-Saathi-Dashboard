@@ -412,7 +412,16 @@ export default function QuestionsConfigurationPage() {
 
       {/* Stepper Display (Renders the exact 5-step stepper using the old design) */}
       <div className="border border-slate-200 rounded-2xl p-6 bg-white shadow-sm overflow-hidden select-none">
-        <StepIndicator currentStep={3} />
+        <StepIndicator
+          currentStep={3}
+          onStepClick={(targetStep) => {
+            if (targetStep === 3) {
+              router.push("/dashboard/roles/new/questions")
+            } else {
+              router.push(`/dashboard/roles/new?step=${targetStep}`)
+            }
+          }}
+        />
       </div>
 
       {/* Role Draft Card */}

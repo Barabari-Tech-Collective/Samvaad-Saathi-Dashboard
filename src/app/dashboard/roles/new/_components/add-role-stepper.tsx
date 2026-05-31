@@ -105,8 +105,14 @@ const slideVariants = {
   }),
 }
 
-export function StepIndicator({ currentStep }: { currentStep: number }) {
-  return <RoleCreationStepper currentStep={currentStep} />
+export function StepIndicator({
+  currentStep,
+  onStepClick,
+}: {
+  currentStep: number
+  onStepClick?: (stepIndex: number) => void
+}) {
+  return <RoleCreationStepper currentStep={currentStep} onStepClick={onStepClick} />
 }
 
 function StepJDType({ form }: { form: ReturnType<typeof useForm<AddRoleFormValues>> }) {
@@ -1140,7 +1146,7 @@ export function AddRoleStepper() {
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       const stepParam = searchParams.get("step")
-      
+
       // If the query parameter is not present yet during Next.js hydration, do nothing
       // to avoid accidentally wiping drafts due to a hydration race condition.
       if (stepParam === null && window.location.search.includes("step=")) {
@@ -1154,7 +1160,7 @@ export function AddRoleStepper() {
         // Brand new start or refresh at Step 1: clear draft storage and initialize clean form
         localStorage.removeItem("samvaad_saathi_draft_role")
         localStorage.removeItem("samvaad_saathi_difficulty_levels")
-        
+
         form.reset({
           jdType: undefined,
           jobName: "",
@@ -1333,7 +1339,39 @@ export function AddRoleStepper() {
           </div>
         )}
 
-        <StepIndicator currentStep={step} />
+        <StepIndicator
+          currentStep={step}
+          onStepClick={async (targetStep) => {
+            if (targetStep === step) return
+
+            // If navigating forward, validate all intermediate steps first
+            if (targetStep > step) {
+              const fieldsToValidate: Array<keyof AddRoleFormValues> = []
+              for (let i = step; i < targetStep; i++) {
+                if (i < STEP_FIELDS.length) {
+                  fieldsToValidate.push(...STEP_FIELDS[i])
+                }
+              }
+
+              const valid = fieldsToValidate.length === 0 || (await form.trigger(fieldsToValidate))
+              if (!valid) {
+                toast.error("Please complete all required fields on the current step first")
+                return
+              }
+            }
+
+            // Save form draft progress before navigating
+            if (typeof window !== "undefined") {
+              localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
+              localStorage.setItem("samvaad_saathi_difficulty_levels", JSON.stringify(difficultyLevels))
+            }
+            if (targetStep === 3) {
+              router.push("/dashboard/roles/new/questions")
+            } else {
+              router.push(`/dashboard/roles/new?step=${targetStep}`)
+            }
+          }}
+        />
 
         <Card className="border border-slate-200 rounded-2xl shadow-sm bg-white overflow-hidden">
           <CardContent className="pt-6 px-6 md:px-8 pb-8 overflow-hidden">
