@@ -2,11 +2,11 @@ import axios from "axios"
 import { createApiClient, createAuthInterceptor } from "react-query-ease"
 
 import {
-    clearAuthCookies,
-    getAccessToken,
-    getRefreshToken,
-    setAccessToken,
-    setRefreshToken,
+  clearAuthCookies,
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+  setRefreshToken,
 } from "@/lib/token-cookies.utils"
 
 const authInterceptor = createAuthInterceptor({
@@ -22,12 +22,12 @@ const authInterceptor = createAuthInterceptor({
     }>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/cognito/refresh`, {
       refresh_token: refreshToken,
     },
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
       },
-    },
-  )
+    )
     return {
       accessToken: response.data.accessToken,
       refreshToken: response.data.refreshToken,
@@ -42,7 +42,7 @@ const authInterceptor = createAuthInterceptor({
   },
   onRefreshFailure: () => {
     clearAuthCookies()
-window.location.assign("/")
+    window.location.assign("/")
   },
 })
 
