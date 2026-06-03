@@ -124,8 +124,8 @@ export default function RolesManagementPage() {
                 toast.info(`Active filter set to: ${card.title}`)
               }}
               className={`border rounded-2xl shadow-sm overflow-hidden transition-all duration-200 hover:-translate-y-0.5 group cursor-pointer ${isActive
-                  ? "bg-[#EFF6FF] border-[#BFDBFE]/85 shadow-md"
-                  : "bg-white border-slate-200/80 hover:bg-[#EFF6FF]/40 hover:border-[#BFDBFE]/40 hover:shadow-md"
+                ? "bg-[#EFF6FF] border-[#BFDBFE]/85 shadow-md"
+                : "bg-white border-slate-200/80 hover:bg-[#EFF6FF]/40 hover:border-[#BFDBFE]/40 hover:shadow-md"
                 }`}
             >
               <CardContent className="p-5 flex items-center justify-between">
@@ -175,17 +175,21 @@ export default function RolesManagementPage() {
             value={selectedCategory}
             onValueChange={(val) => {
               setSelectedCategory(val)
-              toast.info(`Filtered category to: ${val === "all" ? "All Categories" : val}`)
+              toast.info(`Filtered category to: ${val === "all" ? "All Categories" : val.toUpperCase()}`)
             }}
           >
             <SelectTrigger className="w-full sm:w-[220px] bg-white border border-slate-200 text-slate-700 h-10 text-xs font-medium rounded-lg px-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm">
-              <SelectValue placeholder="Create New Role" />
+              <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent className="bg-white border border-slate-100 rounded-lg shadow-md text-xs font-semibold text-slate-700">
-              <SelectItem value="all" className="hover:bg-slate-50 cursor-pointer">Create New Role</SelectItem>
-              <SelectItem value="engineering" className="hover:bg-slate-50 cursor-pointer">Engineering</SelectItem>
+              <SelectItem value="all" className="hover:bg-slate-50 cursor-pointer">All Categories</SelectItem>
+              <SelectItem value="it" className="hover:bg-slate-50 cursor-pointer">IT</SelectItem>
               <SelectItem value="design" className="hover:bg-slate-50 cursor-pointer">Design</SelectItem>
-              <SelectItem value="product" className="hover:bg-slate-50 cursor-pointer">Product Management</SelectItem>
+              <SelectItem value="sales" className="hover:bg-slate-50 cursor-pointer">Sales</SelectItem>
+              <SelectItem value="marketing" className="hover:bg-slate-50 cursor-pointer">Marketing</SelectItem>
+              <SelectItem value="hr" className="hover:bg-slate-50 cursor-pointer">HR</SelectItem>
+              <SelectItem value="operations" className="hover:bg-slate-50 cursor-pointer">Operations</SelectItem>
+              <SelectItem value="data" className="hover:bg-slate-50 cursor-pointer">Data</SelectItem>
             </SelectContent>
           </Select>
         </div>

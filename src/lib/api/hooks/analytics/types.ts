@@ -527,6 +527,8 @@ export type CreateJobProfileRequest = {
   experienceLevel: string
   skills: string[]
   additionalContext?: string
+  category?: string
+  employmentType?: string
 }
 
 export type CreateJobProfileResponse = {
@@ -537,6 +539,8 @@ export type CreateJobProfileResponse = {
   experienceLevel: string | null
   skills: string[] | null
   additionalContext?: string | null
+  category?: string | null
+  employmentType?: string | null
   createdBy: number | null
   createdAt: string
   updatedAt: string

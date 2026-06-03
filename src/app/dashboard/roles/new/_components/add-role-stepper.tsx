@@ -57,11 +57,11 @@ const addRoleSchema = z.object({
   jdType: z.enum(["company", "role"], {
     message: "Please select a JD type",
   }),
-  jobName: z.string().min(2, "Job name must be at least 2 characters"),
-  companyName: z.string().optional(), // Now optional depending on type
-  experienceLevel: z.enum(["fresher", "junior", "mid", "senior", "expert"], {
-    message: "Select an experience level",
-  }),
+  jobName: z.string().min(2, "Role name must be at least 2 characters"),
+  companyName: z.string().optional(),
+  category: z.string().min(1, "Please select a category"),
+  experienceLevel: z.string().min(1, "Please select an experience level"),
+  employmentType: z.string().min(1, "Please select an employment type"),
   jobDescription: z.string().min(10, "Description must be at least 10 characters"),
   skills: z.array(z.string().min(1)).min(1, "Add at least one skill"),
   additionalContext: z.string().optional(),
@@ -79,18 +79,37 @@ export const STEPS = [
 
 const STEP_FIELDS: Array<Array<keyof AddRoleFormValues>> = [
   ["jdType"],
-  ["jobName", "companyName", "experienceLevel"],
+  ["jobName", "companyName", "category", "experienceLevel", "employmentType"],
   ["jobDescription", "skills"],
   [],
   [],
 ]
 
-const EXPERIENCE_LEVELS = [
-  { value: "fresher", label: "Fresher" },
-  { value: "junior", label: "Junior" },
-  { value: "mid", label: "Mid-level" },
-  { value: "senior", label: "Senior" },
-  { value: "expert", label: "Expert" },
+const CATEGORY_OPTIONS = [
+  { value: "all", label: "All Categories" },
+  { value: "it", label: "IT" },
+  { value: "design", label: "Design" },
+  { value: "sales", label: "Sales" },
+  { value: "marketing", label: "Marketing" },
+  { value: "hr", label: "HR" },
+  { value: "operations", label: "Operations" },
+  { value: "data", label: "Data" },
+]
+
+const EXPERIENCE_OPTIONS = [
+  { value: "1-2", label: "1–2 Years" },
+  { value: "2-3", label: "2–3 Years" },
+  { value: "3-4", label: "3–4 Years" },
+  { value: "4-5", label: "4–5 Years" },
+  { value: "5+", label: "5+ Years" },
+]
+
+const EMPLOYMENT_OPTIONS = [
+  { value: "full-time", label: "Full-time" },
+  { value: "part-time", label: "Part-time" },
+  { value: "contract", label: "Contract" },
+  { value: "internship", label: "Internship" },
+  { value: "freelance", label: "Freelance" },
 ]
 
 const slideVariants = {
@@ -200,7 +219,7 @@ function StepJDType({ form }: { form: ReturnType<typeof useForm<AddRoleFormValue
 function StepJobBasics({ form }: { form: ReturnType<typeof useForm<AddRoleFormValues>> }) {
   const jdType = form.watch("jdType")
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex items-center gap-3 pb-2 mb-2 border-b">
         <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize px-2 py-0.5">
           {jdType === "company" ? "Company Specific" : "Role Specific"}
@@ -208,20 +227,22 @@ function StepJobBasics({ form }: { form: ReturnType<typeof useForm<AddRoleFormVa
         <span className="text-xs text-muted-foreground">Type selected</span>
       </div>
       <div>
-        <h2 className="text-base font-semibold">Job Basics</h2>
+        <h2 className="text-base font-semibold">Role Details</h2>
         <p className="text-sm text-muted-foreground">
           Core details about the role and company.
         </p>
       </div>
-      <div className={cn("grid gap-4", jdType === "company" ? "sm:grid-cols-2" : "grid-cols-1")}>
+
+      {/* Row 1: Role Name (and Company Name if Company specific) */}
+      <div className={cn("grid gap-4", jdType === "company" ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1")}>
         <FormField
           control={form.control}
           name="jobName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Job Name</FormLabel>
+              <FormLabel>Role Name</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. HR and Communications Interview" className="h-12 px-4 text-base" {...field} />
+                <Input placeholder="e.g. Senior Backend Engineer" className="h-12 px-4 text-base" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -243,30 +264,89 @@ function StepJobBasics({ form }: { form: ReturnType<typeof useForm<AddRoleFormVa
           />
         )}
       </div>
-      <FormField
-        control={form.control}
-        name="experienceLevel"
-        render={({ field }) => (
-          <FormItem className="max-w-sm">
-            <FormLabel>Experience Level</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
-              <FormControl>
-                <SelectTrigger className="h-12 px-4 text-base">
-                  <SelectValue placeholder="Select level" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {EXPERIENCE_LEVELS.map((level) => (
-                  <SelectItem key={level.value} value={level.value}>
-                    {level.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+
+      {/* Row 2: Category | Experience Level */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Category Dropdown */}
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || undefined}>
+                <FormControl>
+                  <SelectTrigger size="custom" className="w-full h-12 px-4 text-base font-normal text-left">
+                    <SelectValue placeholder="Select Category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {CATEGORY_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Experience Level Dropdown */}
+        <FormField
+          control={form.control}
+          name="experienceLevel"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Experience Level</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || undefined}>
+                <FormControl>
+                  <SelectTrigger size="custom" className="w-full h-12 px-4 text-base font-normal text-left">
+                    <SelectValue placeholder="Select Experience Level" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {EXPERIENCE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {/* Row 3: Employment Type */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="employmentType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Employment Type</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || undefined}>
+                <FormControl>
+                  <SelectTrigger size="custom" className="w-full h-12 px-4 text-base font-normal text-left">
+                    <SelectValue placeholder="Select Employment Type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {EMPLOYMENT_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   )
 }
@@ -822,13 +902,20 @@ function StepReview({
 }) {
   const values = form.watch()
   const expLabel =
-    EXPERIENCE_LEVELS.find((l) => l.value === values.experienceLevel)?.label ??
-    "Senior"
+    EXPERIENCE_OPTIONS.find((l) => l.value === values.experienceLevel)?.label ??
+    "3–4 Years"
+  const catLabel =
+    CATEGORY_OPTIONS.find((l) => l.value === values.category)?.label ??
+    "Engineering"
+  const empLabel =
+    EMPLOYMENT_OPTIONS.find((l) => l.value === values.employmentType)?.label ??
+    "Full-time"
 
   // Make mock data fallbacks match the Figma screenshot exactly
   const jobName = values.jobName || "Senior Front-End Developer"
-  const category = values.jdType === "company" ? "Company Specific" : "Engineering"
-  const experienceRange = expLabel === "Senior" ? "4–6 years" : expLabel
+  const category = catLabel
+  const experienceRange = expLabel
+  const employmentType = empLabel
   const jobDescription = values.jobDescription || "Own end-to-end frontend architecture for the customer experience surface. Drive performance, design-system adoption and mentorship across squads."
 
   const skillsList = values.skills && values.skills.length > 0 ? values.skills : ["React", "TypeScript", "GraphQL", "Performance"]
@@ -903,7 +990,7 @@ function StepReview({
           </div>
           <div className="space-y-1">
             <div className="text-xs font-bold text-slate-400">EMPLOYMENT</div>
-            <div className="text-sm font-semibold text-slate-800">Full-time</div>
+            <div className="text-sm font-semibold text-slate-800">{employmentType}</div>
           </div>
         </div>
 
@@ -1135,7 +1222,9 @@ export function AddRoleStepper() {
       jdType: undefined,
       jobName: "",
       companyName: "",
-      experienceLevel: undefined,
+      category: "",
+      experienceLevel: "",
+      employmentType: "",
       jobDescription: "",
       skills: [],
       additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
@@ -1165,7 +1254,9 @@ export function AddRoleStepper() {
           jdType: undefined,
           jobName: "",
           companyName: "",
-          experienceLevel: undefined,
+          category: "",
+          experienceLevel: "",
+          employmentType: "",
           jobDescription: "",
           skills: [],
           additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
@@ -1279,6 +1370,8 @@ export function AddRoleStepper() {
           experienceLevel: values.experienceLevel,
           skills: values.skills,
           additionalContext: finalContext || undefined,
+          category: values.category,
+          employmentType: values.employmentType,
         })
       } catch (apiError) {
         console.warn("Backend API not connected/available, proceeding with frontend mock flow:", apiError)

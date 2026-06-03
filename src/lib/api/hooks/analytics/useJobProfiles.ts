@@ -29,6 +29,8 @@ export function useJobProfilesList() {
     jobDescription: item.jobDescription ?? item.job_description ?? item.description ?? "",
     companyName: item.companyName ?? item.company_name ?? item.company ?? "General Role",
     experienceLevel: item.experienceLevel ?? item.experience_level ?? "fresher",
+    category: item.category ?? null,
+    employmentType: item.employmentType ?? item.employment_type ?? null,
     skills: item.skills ?? [],
     additionalContext: item.additionalContext ?? item.additional_context ?? "",
     createdBy: item.createdBy ?? item.created_by ?? null,
