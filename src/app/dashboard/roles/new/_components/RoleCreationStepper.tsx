@@ -13,6 +13,7 @@ export const STEP_LABELS = [
   "Interview Type",
   "Role Details",
   "JD & Configuration",
+  "Reference Questions Preview",
   "Questions",
   "Review & Submit",
 ]

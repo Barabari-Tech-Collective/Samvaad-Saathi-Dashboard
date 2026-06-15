@@ -25,6 +25,7 @@ import {
   IconPlus,
   IconMinus,
   IconFileText,
+  IconAlertCircle,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
@@ -49,6 +50,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { useCreateJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
 import { cn } from "@/lib/utils"
 import { RoleCreationStepper } from "./RoleCreationStepper"
@@ -70,19 +78,21 @@ const addRoleSchema = z.object({
 type AddRoleFormValues = z.infer<typeof addRoleSchema>
 
 export const STEPS = [
-  { label: "JD Type", icon: IconSettings },
-  { label: "Job Basics", icon: IconBriefcase },
-  { label: "Role Details", icon: IconListDetails },
+  { label: "Interview Type", icon: IconSettings },
+  { label: "Role Details", icon: IconBriefcase },
+  { label: "JD & Configuration", icon: IconListDetails },
+  { label: "Reference Questions Preview", icon: IconFileText },
   { label: "Questions", icon: IconSparkles },
-  { label: "Review", icon: IconNotes },
+  { label: "Review & Submit", icon: IconCheck },
 ]
 
 const STEP_FIELDS: Array<Array<keyof AddRoleFormValues>> = [
   ["jdType"],
   ["jobName", "companyName", "category", "experienceLevel", "employmentType"],
   ["jobDescription", "skills"],
-  [],
-  [],
+  [], // Reference Questions Preview
+  [], // Questions
+  [], // Review & Submit
 ]
 
 const CATEGORY_OPTIONS = [
@@ -357,6 +367,8 @@ function StepRoleDetails({
   setSkillInput,
   difficultyLevels,
   setDifficultyLevels,
+  knowledgeQuestions,
+  setKnowledgeQuestions,
 }: {
   form: ReturnType<typeof useForm<AddRoleFormValues>>
   skillInput: string
@@ -383,12 +395,15 @@ function StepRoleDetails({
     placeholder: string
     count: number
   }>>>
+  knowledgeQuestions: any
+  setKnowledgeQuestions: React.Dispatch<React.SetStateAction<any>>
 }) {
   const jdFileInputRef = React.useRef<HTMLInputElement>(null)
   const syllabusFileInputRef = React.useRef<HTMLInputElement>(null)
 
   const skills = form.watch("skills") || []
   const [isExtractorOpen, setIsExtractorOpen] = React.useState(false)
+  const [isFormatModalOpen, setIsFormatModalOpen] = React.useState(false)
 
   const suggestedSkills = [
     "Full Stack Development", "React.js", "Next.js", "PostgreSQL", "MongoDB",
@@ -496,7 +511,45 @@ function StepRoleDetails({
     const file = e.target.files?.[0]
     if (file) {
       toast.success(`"${file.name}" uploaded successfully as custom Knowledge Set!`)
-      form.setValue("additionalContext", `Topic 1 - JavaScript\n1. What is var?\n2. Difference between let and const ?\n\nTopic 2 - React\n1. What are props and state ?\n2. How does UseEffect work ?`, { shouldValidate: true })
+      const mockParsed = {
+        topics: [
+          {
+            topicName: "JavaScript",
+            levels: [
+              {
+                level: 1,
+                questions: [
+                  "What is var?",
+                  "Difference between var, let and const?"
+                ]
+              },
+              {
+                level: 2,
+                questions: [
+                  "Explain closures in JavaScript.",
+                  "What is event bubbling?"
+                ]
+              }
+            ]
+          },
+          {
+            topicName: "React",
+            levels: [
+              {
+                level: 1,
+                questions: [
+                  "What are props?",
+                  "What is JSX?"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+      setKnowledgeQuestions(mockParsed)
+      if (typeof window !== "undefined") {
+        localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(mockParsed))
+      }
     }
   }
 
@@ -833,7 +886,16 @@ function StepRoleDetails({
       {/* KNOWLEDGE SET QUESTIONS CONTAINER */}
       <div className="border border-slate-200/80 rounded-3xl p-6 bg-white space-y-6 shadow-sm">
         <div className="space-y-0.5">
-          <h3 className="text-base font-extrabold text-slate-800">Knowledge Set Questions</h3>
+          <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-1.5 flex-wrap">
+            <span>Knowledge Set Questions</span>
+            <button
+              type="button"
+              onClick={() => setIsFormatModalOpen(true)}
+              className="text-xs font-bold text-[#2563EB] hover:text-blue-700 hover:underline cursor-pointer transition-colors normal-case"
+            >
+              (Follow This Format)
+            </button>
+          </h3>
           <p className="text-xs text-slate-400 font-medium leading-relaxed">
             Upload custom topic wise Reference Questions to guide AI generated interview Quality and Structure
           </p>
@@ -863,21 +925,517 @@ function StepRoleDetails({
           </div>
         </div>
 
-        {/* Recommended Format block */}
-        <div className="space-y-2 mt-4 select-none">
-          <h4 className="text-xs font-extrabold text-slate-600">
-            Recommended Format
-          </h4>
-          <div className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-4 text-xs font-semibold text-slate-500 leading-relaxed font-mono shadow-inner select-text">
-            <div>Topic 1 - JavaScript</div>
-            <div className="pl-4 text-slate-400">1. What is var?</div>
-            <div className="pl-4 text-slate-400">2. Difference between let and const ?</div>
+        {/* Modal for Follow This Format */}
+        <Dialog open={isFormatModalOpen} onOpenChange={setIsFormatModalOpen}>
+          <DialogContent className="sm:max-w-2xl md:max-w-3xl max-h-[85vh] overflow-y-auto p-6 bg-white rounded-2xl border border-slate-100 shadow-2xl flex flex-col gap-6">
+            <DialogHeader className="border-b border-slate-100 pb-4">
+              <DialogTitle className="text-lg font-black text-slate-800 tracking-tight">
+                Recommended Question Format
+              </DialogTitle>
+              <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                Structure your uploaded document or custom questions following this format to guide AI generation.
+              </p>
+            </DialogHeader>
 
-            <div className="mt-2.5">Topic 2 - React</div>
-            <div className="pl-4 text-slate-400">1. What are props and state ?</div>
-            <div className="pl-4 text-slate-400">2. How does UseEffect work ?</div>
+            {/* Modal Content Scrollable Area */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto pr-1">
+              {/* JavaScript Column */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <span className="flex size-6 items-center justify-center rounded-lg bg-amber-50 text-amber-600 font-black text-[10px]">
+                    JS
+                  </span>
+                  <h4 className="text-sm font-extrabold text-slate-800">JavaScript</h4>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    {
+                      level: "Level-1",
+                      questions: [
+                        "What is a variable in JavaScript?",
+                        "Difference between var, let, and const?",
+                        "What are primitive data types?",
+                        "What is the use of console.log()?"
+                      ]
+                    },
+                    {
+                      level: "Level-2",
+                      questions: [
+                        "What is hoisting in JavaScript?",
+                        "Explain scope and block scope.",
+                        "What is the difference between == and ===?",
+                        "What are template literals?"
+                      ]
+                    },
+                    {
+                      level: "Level-3",
+                      questions: [
+                        "What are closures in JavaScript?",
+                        "Explain callback functions with an example.",
+                        "What is event bubbling?",
+                        "Explain synchronous vs asynchronous JavaScript."
+                      ]
+                    },
+                    {
+                      level: "Level-4",
+                      questions: [
+                        "How does the JavaScript event loop work?",
+                        "Explain promises and async/await.",
+                        "How would you optimize JavaScript performance?",
+                        "Explain memory leaks in JavaScript."
+                      ]
+                    }
+                  ].map((item, index) => (
+                    <div key={index} className="bg-slate-50 border border-slate-100/60 rounded-xl p-3.5 space-y-2">
+                      <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase">
+                        {item.level}
+                      </span>
+                      <ol className="list-decimal pl-4 text-xs font-semibold text-slate-600 space-y-1">
+                        {item.questions.map((q, idx) => (
+                          <li key={idx} className="leading-relaxed">
+                            {q}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* React Column */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <span className="flex size-6 items-center justify-center rounded-lg bg-blue-50 text-blue-600 font-black text-[10px]">
+                    RE
+                  </span>
+                  <h4 className="text-sm font-extrabold text-slate-800">React</h4>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    {
+                      level: "Level-1",
+                      questions: [
+                        "What is React?",
+                        "What are components in React?",
+                        "What are props?",
+                        "What is JSX?"
+                      ]
+                    },
+                    {
+                      level: "Level-2",
+                      questions: [
+                        "Difference between props and state?",
+                        "What is useState?",
+                        "What is useEffect?",
+                        "What is conditional rendering?"
+                      ]
+                    },
+                    {
+                      level: "Level-3",
+                      questions: [
+                        "Explain controlled and uncontrolled components.",
+                        "What is prop drilling?",
+                        "How does React Router work?",
+                        "What are React hooks?"
+                      ]
+                    },
+                    {
+                      level: "Level-4",
+                      questions: [
+                        "How would you optimize a React application?",
+                        "Explain useMemo and useCallback.",
+                        "How do you handle API errors in React?",
+                        "Explain React reconciliation."
+                      ]
+                    }
+                  ].map((item, index) => (
+                    <div key={index} className="bg-slate-50 border border-slate-100/60 rounded-xl p-3.5 space-y-2">
+                      <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase">
+                        {item.level}
+                      </span>
+                      <ol className="list-decimal pl-4 text-xs font-semibold text-slate-600 space-y-1">
+                        {item.questions.map((q, idx) => (
+                          <li key={idx} className="leading-relaxed">
+                            {q}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <button
+                type="button"
+                onClick={() => setIsFormatModalOpen(false)}
+                className="w-full sm:w-auto px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  )
+}
+
+const defaultTopics = [
+  {
+    topicName: "JavaScript",
+    levels: [
+      {
+        level: 1,
+        questions: [
+          "What is a variable in JavaScript?",
+          "Difference between var, let, and const?",
+          "What are primitive data types?",
+          "What is the use of console.log()?"
+        ]
+      },
+      {
+        level: 2,
+        questions: [
+          "What is hoisting in JavaScript?",
+          "Explain scope and block scope.",
+          "What is the difference between == and ===?",
+          "What are template literals?"
+        ]
+      },
+      {
+        level: 3,
+        questions: [
+          "What are closures in JavaScript?",
+          "Explain callback functions with an example.",
+          "What is event bubbling?",
+          "Explain synchronous vs asynchronous JavaScript."
+        ]
+      },
+      {
+        level: 4,
+        questions: [
+          "How does the JavaScript event loop work?",
+          "Explain promises and async/await.",
+          "How would you optimize JavaScript performance?",
+          "Explain memory leaks in JavaScript."
+        ]
+      }
+    ]
+  },
+  {
+    topicName: "React",
+    levels: [
+      {
+        level: 1,
+        questions: [
+          "What is React?",
+          "What are components in React?",
+          "What are props?",
+          "What is JSX?"
+        ]
+      },
+      {
+        level: 2,
+        questions: [
+          "Difference between props and state?",
+          "What is useState?",
+          "What is useEffect?",
+          "What is conditional rendering?"
+        ]
+      },
+      {
+        level: 3,
+        questions: [
+          "Explain controlled and uncontrolled components.",
+          "What is prop drilling?",
+          "How does React Router work?",
+          "What are React hooks?"
+        ]
+      },
+      {
+        level: 4,
+        questions: [
+          "How would you optimize a React application?",
+          "Explain useMemo and useCallback.",
+          "How do you handle API errors in React?",
+          "Explain React reconciliation."
+        ]
+      }
+    ]
+  }
+]
+
+function StepReferenceQuestionsPreview({
+  knowledgeQuestions
+}: {
+  knowledgeQuestions: any
+}) {
+  const router = useRouter()
+  const [selectedLevel, setSelectedLevel] = React.useState<number>(1)
+  
+  const activeQuestionsData = knowledgeQuestions?.topics || defaultTopics
+
+  // Filter topics that have questions for the selectedLevel
+  const filteredTopics = activeQuestionsData.filter((topic: any) => {
+    const levelData = topic.levels?.find((l: any) => l.level === selectedLevel)
+    return levelData && levelData.questions && levelData.questions.length > 0
+  })
+
+  const [expandedTopic, setExpandedTopic] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (filteredTopics.length > 0) {
+      setExpandedTopic(filteredTopics[0].topicName.toLowerCase())
+    } else {
+      setExpandedTopic(null)
+    }
+  }, [selectedLevel])
+
+  return (
+    <div className="space-y-6 select-none animate-in fade-in duration-200">
+      {/* Cards Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left Card: Role Summary */}
+        <Card className="border border-slate-200/80 rounded-3xl p-6 bg-white space-y-5 shadow-sm">
+          <div className="flex items-center gap-2 text-slate-800 font-extrabold text-sm border-b border-slate-100 pb-3">
+            <IconBriefcase className="size-4.5 text-slate-400" />
+            <span>ROLE SUMMARY</span>
           </div>
+          <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
+            <div>
+              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ROLE NAME</div>
+              <div className="text-sm font-extrabold text-slate-800 mt-1">Senior Front-End Developer</div>
+            </div>
+            <div>
+              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">CATEGORY</div>
+              <div className="text-sm font-extrabold text-slate-800 mt-1">Engineering</div>
+            </div>
+            <div className="mt-2">
+              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">EXPERIENCE</div>
+              <div className="text-sm font-extrabold text-slate-800 mt-1">4–6 Years</div>
+            </div>
+            <div className="mt-2">
+              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">LEVELS SELECTED</div>
+              <div className="text-sm font-extrabold text-slate-800 mt-1">4 levels</div>
+            </div>
+          </div>
+          
+          <div className="space-y-3 pt-4 border-t border-slate-100">
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">LEVELS CONFIGURED</div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { id: "L1", name: "Level 1", count: 15, lvlVal: 1 },
+                { id: "L2", name: "Level 2", count: 15, lvlVal: 2 },
+                { id: "L3", name: "Level 3", count: 10, lvlVal: 3 },
+                { id: "L4", name: "Level 4", count: 10, lvlVal: 4 },
+              ].map((lvl) => {
+                const isSelected = selectedLevel === lvl.lvlVal
+                return (
+                  <div
+                    key={lvl.id}
+                    onClick={() => setSelectedLevel(lvl.lvlVal)}
+                    className={cn(
+                      "flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer select-none",
+                      isSelected
+                        ? "bg-blue-50/50 border-blue-500 ring-1 ring-blue-500/20"
+                        : "bg-[#F8FAFC] border-slate-100 hover:border-slate-200"
+                    )}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn(
+                        "text-[10px] font-black px-1.5 py-0.5 rounded transition-colors",
+                        isSelected ? "text-white bg-[#2563EB]" : "text-blue-600 bg-blue-50"
+                      )}>
+                        {lvl.id}
+                      </span>
+                      <span className="text-xs font-bold text-slate-700">{lvl.name}</span>
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-500">{lvl.count} Questions</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </Card>
+
+        {/* Right Card: Knowledge Set Source */}
+        <Card className="border border-slate-200/80 rounded-3xl p-6 bg-white space-y-5 shadow-sm">
+          <div className="flex items-center gap-2 text-slate-800 font-extrabold text-sm border-b border-slate-100 pb-3">
+            <IconFileText className="size-4.5 text-slate-400" />
+            <span>KNOWLEDGE SET SOURCE</span>
+          </div>
+          
+          <div className="flex items-center gap-3 p-4 bg-[#F8FAFC]/60 border border-slate-200/60 rounded-2xl">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
+              <IconFileText className="size-5.5 text-blue-600" />
+            </div>
+            <div>
+              <h4 className="text-xs font-extrabold text-slate-800">Frontend_Question_Bank.pdf</h4>
+              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Uploaded today, 2:45 PM</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">TOPICS DETECTED</div>
+            <div className="flex flex-wrap gap-1.5">
+              {["JavaScript", "React", "TypeScript", "Performance Optimization", "System Design"].map((t) => (
+                <Badge key={t} variant="outline" className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-semibold px-3 py-1 rounded-full">
+                  {t}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-600">
+            <span>Question count</span>
+            <span className="text-[#2563EB] font-black"># 42 Reference Questions</span>
+          </div>
+        </Card>
+      </div>
+
+      {/* Main Section Card */}
+      <Card className="border border-slate-200 rounded-3xl p-6 bg-white shadow-sm space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <h3 className="text-base font-extrabold text-slate-800">Reference questions by topic</h3>
+            <p className="text-xs text-slate-400 font-medium mt-0.5">
+              Preview the question bank grouped by topic detected in the uploaded document.
+            </p>
+          </div>
+          <Badge className="bg-[#EFF6FF] hover:bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-3 py-1 rounded-full shrink-0">
+            {filteredTopics.length} topic{filteredTopics.length !== 1 ? "s" : ""}
+          </Badge>
         </div>
+
+        <div className="space-y-3">
+          {filteredTopics.length === 0 ? (
+            <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-2xl select-none">
+              <IconAlertCircle className="size-8 text-slate-300 mx-auto mb-2" />
+              <p className="text-xs text-slate-400 font-semibold">
+                No questions available for Level {selectedLevel}
+              </p>
+            </div>
+          ) : (
+            filteredTopics.map((topic: any) => {
+              const levelData = topic.levels?.find((l: any) => l.level === selectedLevel)
+              const questionsList = levelData?.questions || []
+              const totalQuestions = questionsList.length
+              const previewCount = Math.min(5, totalQuestions)
+              const previewQuestions = questionsList.slice(0, 5)
+              
+              const topicId = topic.topicName.toLowerCase()
+              const isExpanded = expandedTopic === topicId
+
+              return (
+                <div
+                  key={topic.topicName}
+                  className={cn(
+                    "border rounded-2xl bg-white overflow-hidden transition-all duration-200",
+                    isExpanded ? "border-[#2563EB]/40 ring-1 ring-blue-500/5 shadow-sm" : "border-slate-200 hover:border-blue-200"
+                  )}
+                >
+                  {/* Accordion Row Header */}
+                  <div
+                    onClick={() => setExpandedTopic(isExpanded ? null : topicId)}
+                    className="flex items-center justify-between p-4 cursor-pointer select-none"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs uppercase">
+                        {topic.topicName.charAt(0)}
+                      </div>
+                      <div className="space-y-0.5">
+                        <h4 className="text-sm font-extrabold text-slate-800">{topic.topicName}</h4>
+                        <p className="text-[11px] font-semibold text-slate-400">
+                          Preview of {previewCount} of {totalQuestions} questions
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="bg-[#EFF6FF] text-[#2563EB] border-none text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {totalQuestions} Question{totalQuestions !== 1 ? "s" : ""}
+                      </Badge>
+                      {isExpanded ? (
+                        <IconChevronUp className="size-4 text-slate-400" />
+                      ) : (
+                        <IconChevronDown className="size-4 text-slate-400" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Questions list when expanded */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4 pt-1 border-t border-slate-50 space-y-3 animate-in fade-in duration-200">
+                      <div className="space-y-2">
+                        {previewQuestions.map((qText: string, qIdx: number) => (
+                          <div
+                            key={qIdx}
+                            className="p-3 bg-slate-50/50 hover:bg-slate-50 rounded-xl text-xs font-semibold text-slate-700 transition-colors border border-slate-100 flex items-center gap-3"
+                          >
+                            <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold">
+                              {qIdx + 1}
+                            </span>
+                            <span>{qText}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {totalQuestions > 0 && (
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              toast.info(
+                                `Questions for ${topic.topicName} (Level ${selectedLevel}):\n\n` +
+                                  questionsList.map((q: string, i: number) => `${i + 1}. ${q}`).join("\n")
+                              )
+                            }}
+                            className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors cursor-pointer flex items-center gap-1"
+                          >
+                            View all {totalQuestions} question{totalQuestions !== 1 ? "s" : ""} →
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })
+          )}
+        </div>
+      </Card>
+
+      {/* Bottom Info Section */}
+      <Card className="border border-amber-100 bg-amber-50/60 rounded-3xl p-6 flex flex-col justify-center space-y-3 shadow-sm select-none">
+        <div className="flex items-center gap-2 text-amber-800">
+          <IconAlertCircle className="size-5 shrink-0 text-amber-600" />
+          <h4 className="font-extrabold text-sm">Reference only</h4>
+        </div>
+        <p className="text-xs font-bold text-amber-700 leading-relaxed">
+          Reference questions will not appear directly in interviews. They are only used as guidance for AI question generation.
+        </p>
+      </Card>
+
+      {/* Skip/Back Links */}
+      <div className="flex items-center justify-between px-1 pt-2 select-none">
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard/roles/new?step=2")}
+          className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors flex items-center gap-1"
+        >
+          <span>&lt; Back to JD & Configuration</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard/roles/new/questions")}
+          className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors flex items-center gap-1"
+        >
+          <span>Skip to generation &gt;</span>
+        </button>
       </div>
     </div>
   )
@@ -1157,13 +1715,14 @@ export function AddRoleStepper() {
   const [step, setStep] = React.useState(0)
   const [direction, setDirection] = React.useState(1)
   const [skillInput, setSkillInput] = React.useState("")
+  const [knowledgeQuestions, setKnowledgeQuestions] = React.useState<any>(null)
   const { createJobProfileAsync, isCreatingJobProfile } = useCreateJobProfile()
 
   React.useEffect(() => {
     const stepParam = searchParams.get("step")
     if (stepParam !== null) {
       const parsed = parseInt(stepParam, 10)
-      if (parsed >= 0 && parsed <= 4) {
+      if (parsed >= 0 && parsed <= 5) {
         setStep(parsed)
       }
     }
@@ -1249,6 +1808,8 @@ export function AddRoleStepper() {
         // Brand new start or refresh at Step 1: clear draft storage and initialize clean form
         localStorage.removeItem("samvaad_saathi_draft_role")
         localStorage.removeItem("samvaad_saathi_difficulty_levels")
+        localStorage.removeItem("samvaad_saathi_knowledge_questions")
+        setKnowledgeQuestions(null)
 
         form.reset({
           jdType: undefined,
@@ -1282,6 +1843,15 @@ export function AddRoleStepper() {
             console.error("Failed to restore difficulty levels state:", e)
           }
         }
+        // Restore knowledge questions
+        const savedQuestions = localStorage.getItem("samvaad_saathi_knowledge_questions")
+        if (savedQuestions) {
+          try {
+            setKnowledgeQuestions(JSON.parse(savedQuestions))
+          } catch (e) {
+            console.error("Failed to restore knowledge questions state:", e)
+          }
+        }
       }
     }
   }, [searchParams])
@@ -1295,6 +1865,7 @@ export function AddRoleStepper() {
       if (typeof window !== "undefined") {
         localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
         localStorage.setItem("samvaad_saathi_difficulty_levels", JSON.stringify(difficultyLevels))
+        localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(knowledgeQuestions))
 
         // Log the expected backend generate questions API request payload
         const levelsPayload = difficultyLevels.map(l => ({
@@ -1305,6 +1876,12 @@ export function AddRoleStepper() {
           levels: levelsPayload
         })
       }
+      setDirection(1)
+      setStep(3)
+      return
+    }
+
+    if (step === 3) {
       router.push("/dashboard/roles/new/questions")
       return
     }
@@ -1314,7 +1891,7 @@ export function AddRoleStepper() {
   }
 
   function goPrev() {
-    if (step === 4) {
+    if (step === 5) {
       router.push("/dashboard/roles/new/questions")
       return
     }
@@ -1398,7 +1975,7 @@ export function AddRoleStepper() {
           }
         }}
       >
-        {step === 4 && (
+        {step === 5 && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 select-none animate-in fade-in duration-200">
             <div className="space-y-1">
               <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -1458,7 +2035,7 @@ export function AddRoleStepper() {
               localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
               localStorage.setItem("samvaad_saathi_difficulty_levels", JSON.stringify(difficultyLevels))
             }
-            if (targetStep === 3) {
+            if (targetStep === 4) {
               router.push("/dashboard/roles/new/questions")
             } else {
               router.push(`/dashboard/roles/new?step=${targetStep}`)
@@ -1487,16 +2064,19 @@ export function AddRoleStepper() {
                     setSkillInput={setSkillInput}
                     difficultyLevels={difficultyLevels}
                     setDifficultyLevels={setDifficultyLevels}
+                    knowledgeQuestions={knowledgeQuestions}
+                    setKnowledgeQuestions={setKnowledgeQuestions}
                   />
                 )}
-                {step === 4 && <StepReview form={form} difficultyLevels={difficultyLevels} />}
+                {step === 3 && <StepReferenceQuestionsPreview knowledgeQuestions={knowledgeQuestions} />}
+                {step === 5 && <StepReview form={form} difficultyLevels={difficultyLevels} />}
               </motion.div>
             </AnimatePresence>
           </CardContent>
         </Card>
 
         <div className="flex items-center justify-between pt-2 relative">
-          {step === 4 ? (
+          {step === 5 ? (
             <>
               {/* Back Button */}
               <Button
@@ -1511,7 +2091,7 @@ export function AddRoleStepper() {
 
               {/* Step indicator text */}
               <span className="text-xs font-semibold text-slate-400 select-none">
-                Step 5 of 5
+                Step 6 of 6
               </span>
 
               {/* Right Side Buttons */}
@@ -1557,6 +2137,47 @@ export function AddRoleStepper() {
                 </Button>
               </div>
             </>
+          ) : step === 3 ? (
+            <>
+              {/* Back Button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={goPrev}
+                className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5 select-none"
+              >
+                <IconChevronLeft className="size-4" />
+                Back
+              </Button>
+
+              {/* Center Step Indicator Label */}
+              <span className="text-xs font-bold text-slate-400 select-none absolute left-1/2 -translate-x-1/2">
+                Step 4 of 6
+              </span>
+
+              {/* Right Side Buttons */}
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    toast.success("Opening file uploader to edit Knowledge Set...")
+                  }}
+                  className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors"
+                >
+                  Edit Knowledge Set
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={() => router.push("/dashboard/roles/new/questions")}
+                  className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors flex items-center gap-1.5"
+                >
+                  <IconSparkles className="size-4" />
+                  Generate AI Questions
+                </Button>
+              </div>
+            </>
           ) : (
             <>
               <Button
@@ -1577,7 +2198,7 @@ export function AddRoleStepper() {
 
               {/* Center Step Indicator Label */}
               <span className="text-xs font-bold text-slate-400 select-none absolute left-1/2 -translate-x-1/2">
-                Step {step + 1} of 5
+                Step {step + 1} of 6
               </span>
 
               {isLastStep ? (

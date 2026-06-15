@@ -410,12 +410,12 @@ export default function QuestionsConfigurationPage() {
         </div>
       </div>
 
-      {/* Stepper Display (Renders the exact 5-step stepper using the old design) */}
+      {/* Stepper Display (Renders the exact 6-step stepper using the old design) */}
       <div className="border border-slate-200 rounded-2xl p-6 bg-white shadow-sm overflow-hidden select-none">
         <StepIndicator
-          currentStep={3}
+          currentStep={4}
           onStepClick={(targetStep) => {
-            if (targetStep === 3) {
+            if (targetStep === 4) {
               router.push("/dashboard/roles/new/questions")
             } else {
               router.push(`/dashboard/roles/new?step=${targetStep}`)
@@ -724,7 +724,7 @@ export default function QuestionsConfigurationPage() {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/dashboard/roles/new?step=2")}
+          onClick={() => router.push("/dashboard/roles/new?step=3")}
           className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5"
         >
           <IconChevronLeft className="size-4" />
@@ -732,7 +732,7 @@ export default function QuestionsConfigurationPage() {
         </Button>
 
         <span className="text-xs font-bold text-slate-400 select-none hidden md:inline">
-          Step 4 of 5
+          Step 5 of 6
         </span>
 
         <div className="flex items-center gap-2">
@@ -751,7 +751,7 @@ export default function QuestionsConfigurationPage() {
             className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5"
             onClick={() => {
               toast.success("Role questions successfully reviewed!")
-              router.push("/dashboard/roles/new?step=4")
+              router.push("/dashboard/roles/new?step=5")
             }}
           >
             Final review
