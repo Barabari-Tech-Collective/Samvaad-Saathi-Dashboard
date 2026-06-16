@@ -4,19 +4,12 @@ import { toast } from "sonner"
 import {
   IconSearch,
   IconPlus,
-  IconPencil,
-  IconRefresh,
-  IconTrash,
-  IconCheck,
   IconX,
   IconSparkles,
   IconChevronLeft,
   IconAlertCircle,
   IconFileText,
-  IconKey,
-  IconBulb,
-  IconChevronUp,
-  IconChevronDown,
+  IconCheck,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
@@ -25,6 +18,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { StepIndicator } from "./add-role-stepper"
+import { QuestionLevelTabs } from "./QuestionLevelTabs"
+import { QuestionCard } from "./QuestionCard"
 
 // 50 highly realistic Front-End questions distributed across 4 difficulty levels
 const INITIAL_QUESTIONS = [
@@ -440,29 +435,12 @@ export function QuestionsStep() {
 
       {/* Level Tabs and Filter Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2 border-b border-slate-100 pb-3">
-        {/* Level Tabs */}
-        <div className="flex flex-wrap gap-2">
-          {activeLevels.map((level) => {
-            const levelQuestionsCount = questions.filter(q => q.level === level.level).length
-            return (
-              <button
-                key={level.level}
-                onClick={() => setActiveTab(level.level)}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm",
-                  activeTab === level.level
-                    ? "bg-[#2563EB] text-white ring-1 ring-blue-500 font-extrabold"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200"
-                )}
-              >
-                LEVEL {level.level} <span className={cn(
-                  "ml-1 text-[10px] px-1.5 py-0.2 rounded-full",
-                  activeTab === level.level ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"
-                )}>{levelQuestionsCount}</span>
-              </button>
-            )
-          })}
-        </div>
+        <QuestionLevelTabs
+          activeLevels={activeLevels}
+          questions={questions}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
 
         {/* Right Side Actions / Search */}
         <div className="flex flex-wrap items-center gap-2 md:self-end">
@@ -477,6 +455,7 @@ export function QuestionsStep() {
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery("")}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
@@ -516,175 +495,17 @@ export function QuestionsStep() {
             const details = getQuestionDetails(q.text)
 
             return (
-              <div
+              <QuestionCard
                 key={q.id}
-                className={cn(
-                  "border rounded-2xl p-5 bg-white transition-all duration-200 flex flex-col gap-4 shadow-sm",
-                  isExpanded ? "border-[#2563EB]/45 ring-1 ring-blue-500/10 shadow-md" : "border-slate-200 hover:border-blue-200 hover:shadow-md"
-                )}
-              >
-                {/* Top Row: Question content and inline actions */}
-                <div
-                  className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full cursor-pointer select-none"
-                  onClick={(e) => {
-                    // Prevent toggle if clicking buttons/actions
-                    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('a')) {
-                      return
-                    }
-                    setExpandedQuestionId(prev => prev === q.id ? null : q.id)
-                  }}
-                >
-                  <div className="flex items-start gap-4 flex-1">
-                    {/* Circle number */}
-                    <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs mt-0.5 select-none">
-                      {idx + 1}
-                    </div>
-
-                    <div className="space-y-1.5 flex-1">
-                      {/* Show badges ONLY when COLLAPSED */}
-                      {!isExpanded && (
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge variant="outline" className="bg-[#EFF6FF] text-[#2563EB] border-blue-100 text-[10px] font-bold px-2.5 py-0.5 select-none rounded-full">
-                            {q.category}
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-[10px] font-bold px-2.5 py-0.5 select-none rounded-full border-none",
-                              q.difficulty === "EASY" && "bg-emerald-50 text-emerald-700",
-                              q.difficulty === "MEDIUM" && "bg-amber-50 text-amber-700",
-                              q.difficulty === "HARD" && "bg-rose-50 text-rose-700"
-                            )}
-                          >
-                            {q.difficulty}
-                          </Badge>
-                          {q.isAiGenerated && (
-                            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-100 text-[10px] font-bold px-2.5 py-0.5 select-none rounded-full flex items-center gap-1">
-                              <IconSparkles className="size-3 text-purple-600" /> AI generated
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-
-                      <p className="text-sm font-semibold text-slate-800 leading-relaxed pr-6 select-text">
-                        {q.text}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Actions on the Right */}
-                  <div className="flex items-center gap-4 shrink-0 self-end md:self-auto border-t md:border-t-0 pt-2 md:pt-0 w-full md:w-auto justify-end md:justify-start">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleOpenEdit(q)
-                      }}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer py-1 px-1.5 rounded hover:bg-slate-50"
-                    >
-                      <IconPencil className="size-3.5 text-slate-500" />
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleRegenerate(q.id)
-                      }}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-purple-600 transition-colors cursor-pointer py-1 px-1.5 rounded hover:bg-slate-50"
-                    >
-                      <IconRefresh className="size-3.5 text-slate-500" />
-                      Regenerate
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDelete(q.id)
-                      }}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-700 transition-colors cursor-pointer py-1 px-1.5 rounded hover:bg-red-50"
-                    >
-                      <IconTrash className="size-3.5 text-red-500" />
-                      Delete
-                    </button>
-
-                    {/* Arrow Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setExpandedQuestionId(prev => prev === q.id ? null : q.id)
-                      }}
-                      className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors"
-                    >
-                      {isExpanded ? (
-                        <IconChevronUp className="size-4 text-slate-500" />
-                      ) : (
-                        <IconChevronDown className="size-4 text-slate-500" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Expanded details card matching Figma perfectly */}
-                {isExpanded && (
-                  <div className="pt-5 border-t border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-6 animate-in slide-in-from-top-2 duration-200">
-                    {/* Column 1: Keywords */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-1.5 text-[#2563EB] font-bold text-xs uppercase tracking-wider select-none">
-                        <IconKey className="size-4 text-[#2563EB]" />
-                        Keywords
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {details.keywords.map(kw => (
-                          <Badge
-                            key={kw}
-                            variant="outline"
-                            className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-2.5 py-0.5 rounded-md"
-                          >
-                            {kw}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Column 2: Concepts Covered */}
-                    <div className="space-y-3 pl-0 md:pl-6 border-l-0 md:border-l border-slate-100">
-                      <div className="flex items-center gap-1.5 text-[#7C3AED] font-bold text-xs uppercase tracking-wider select-none">
-                        <IconBulb className="size-4 text-[#7C3AED]" />
-                        Concepts Covered
-                      </div>
-                      <ul className="space-y-1.5 text-slate-600 text-xs font-semibold leading-relaxed list-disc pl-4">
-                        {details.concepts.map(concept => (
-                          <li key={concept} className="hover:text-slate-800 transition-colors">
-                            {concept}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Column 3: Expected Answer */}
-                    <div className="space-y-3 pl-0 md:pl-6 border-l-0 md:border-l border-slate-100">
-                      <div className="flex items-center gap-1.5 text-[#D97706] font-bold text-xs uppercase tracking-wider select-none">
-                        <IconFileText className="size-4 text-[#D97706]" />
-                        Expected Answer
-                      </div>
-                      <p className="text-slate-600 text-xs font-semibold leading-relaxed select-text">
-                        {details.expectedAnswer}
-                      </p>
-                    </div>
-
-                    {/* Column 4: Example / Expected Output */}
-                    <div className="space-y-3 pl-0 md:pl-6 border-l-0 md:border-l border-slate-100">
-                      <div className="flex items-center gap-1.5 text-[#059669] font-bold text-xs uppercase tracking-wider select-none">
-                        <IconCheck className="size-4 text-[#059669]" />
-                        Example / Expected Output
-                      </div>
-                      <p className="text-slate-600 text-xs font-semibold leading-relaxed select-text">
-                        {details.exampleOutput}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                question={q}
+                index={idx}
+                isExpanded={isExpanded}
+                onToggleExpand={() => setExpandedQuestionId(isExpanded ? null : q.id)}
+                onEdit={() => handleOpenEdit(q)}
+                onRegenerate={() => handleRegenerate(q.id)}
+                onDelete={() => handleDelete(q.id)}
+                details={details}
+              />
             )
           })
         )}
