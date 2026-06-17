@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils"
 import { StepIndicator } from "./add-role-stepper"
 import { QuestionLevelTabs } from "./QuestionLevelTabs"
 import { QuestionCard } from "./QuestionCard"
+import { Accordion } from "@/components/ui/accordion"
 
 // 50 highly realistic Front-End questions distributed across 4 difficulty levels
 const INITIAL_QUESTIONS = [
@@ -490,24 +491,32 @@ export function QuestionsStep() {
             <p className="text-xs text-slate-400 mt-1">Try modifying your search or add a custom question.</p>
           </div>
         ) : (
-          filteredQuestions.map((q, idx) => {
-            const isExpanded = expandedQuestionId === q.id
-            const details = getQuestionDetails(q.text)
+          <Accordion
+            type="single"
+            collapsible
+            value={expandedQuestionId || ""}
+            onValueChange={(val) => setExpandedQuestionId(val || null)}
+            className="space-y-3 w-full"
+          >
+            {filteredQuestions.map((q, idx) => {
+              const isExpanded = expandedQuestionId === q.id
+              const details = getQuestionDetails(q.text)
 
-            return (
-              <QuestionCard
-                key={q.id}
-                question={q}
-                index={idx}
-                isExpanded={isExpanded}
-                onToggleExpand={() => setExpandedQuestionId(isExpanded ? null : q.id)}
-                onEdit={() => handleOpenEdit(q)}
-                onRegenerate={() => handleRegenerate(q.id)}
-                onDelete={() => handleDelete(q.id)}
-                details={details}
-              />
-            )
-          })
+              return (
+                <QuestionCard
+                  key={q.id}
+                  question={q}
+                  index={idx}
+                  isExpanded={isExpanded}
+                  onToggleExpand={() => setExpandedQuestionId(isExpanded ? null : q.id)}
+                  onEdit={() => handleOpenEdit(q)}
+                  onRegenerate={() => handleRegenerate(q.id)}
+                  onDelete={() => handleDelete(q.id)}
+                  details={details}
+                />
+              )
+            })}
+          </Accordion>
         )}
       </div>
 
