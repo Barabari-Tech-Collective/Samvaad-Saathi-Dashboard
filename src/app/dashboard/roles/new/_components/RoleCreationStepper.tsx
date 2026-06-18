@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState, useEffect, Fragment } from "react"
 import { IconCheck, IconChevronRight } from "@tabler/icons-react"
 import { cn } from "@/lib/utils"
 
@@ -19,9 +19,9 @@ export const STEP_LABELS = [
 ]
 
 export function RoleCreationStepper({ currentStep, onStepClick }: RoleCreationStepperProps) {
-  const [maxStep, setMaxStep] = React.useState(currentStep)
+  const [maxStep, setMaxStep] = useState(currentStep)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("samvaad_saathi_max_step_reached")
       let reached = currentStep
@@ -52,7 +52,7 @@ export function RoleCreationStepper({ currentStep, onStepClick }: RoleCreationSt
         const isAllowed = index <= maxStep
 
         return (
-          <React.Fragment key={label}>
+          <Fragment key={label}>
             {/* Step Pill */}
             <div
               onClick={() => {
@@ -99,7 +99,7 @@ export function RoleCreationStepper({ currentStep, onStepClick }: RoleCreationSt
             {index < STEP_LABELS.length - 1 && (
               <IconChevronRight className="size-3.5 text-slate-300 shrink-0 mx-0.5" />
             )}
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </div>
