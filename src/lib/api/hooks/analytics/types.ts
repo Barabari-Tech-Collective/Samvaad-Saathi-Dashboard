@@ -557,3 +557,112 @@ export type DeleteJobProfileResponse = {
   deleted: boolean
   jobProfileId: number
 }
+
+export type JobProfilesSummaryResponse = KpiResponse
+
+export type JobProfileActivityRow = Readonly<{
+  id: number | string
+  role: string
+  status: string
+  time: string
+}>
+
+export type JobProfilesRecentActivityResponse = Readonly<{
+  items: readonly JobProfileActivityRow[]
+}>
+
+export type JobProfileUploadResponse = {
+  success: boolean
+  originalFileName: string
+  fileType: string
+  fileSize: number
+  uploadedAt?: string
+  topicsDetected?: string[]
+  totalQuestions?: number
+  topics?: any[]
+}
+
+export type JobProfileExtractSkillsRequest = {
+  job_description: string
+}
+
+export type JobProfileExtractSkillsResponse = {
+  skills: string[]
+}
+
+export type JobProfileGenerateQuestionsRequest = {
+  levels: Array<{
+    level: number
+    count: number
+  }>
+  knowledge_reference_context?: string
+}
+
+export type JobProfileGenerateQuestionsResponse = {
+  jobProfileId: string | number
+  status: string
+  generatedCount: number
+}
+
+export type JobProfileQuestionItem = {
+  question_id: string
+  questionId?: string
+  level: number
+  difficulty: string
+  type: string
+  question: string
+  is_ai_generated: boolean
+  isAiGenerated?: boolean
+  keywords?: string[]
+  concepts_covered?: string[]
+  conceptsCovered?: string[]
+  expected_answer?: string
+  expectedAnswer?: string
+  example_output?: string
+  exampleOutput?: string
+}
+
+export type JobProfileQuestionsListResponse = {
+  questions: JobProfileQuestionItem[]
+  total_questions: number
+  totalQuestions?: number
+}
+
+export type JobProfileAddQuestionRequest = {
+  question: string
+  level: number
+  difficulty: string
+  type: string
+  is_ai_generated?: boolean
+}
+
+export type JobProfileAddQuestionResponse = {
+  question_id: string
+  status: string
+}
+
+export type JobProfileUpdateQuestionRequest = {
+  question?: string
+  level?: number
+  difficulty?: string
+  type?: string
+  keywords?: string[]
+  concepts_covered?: string[]
+  expected_answer?: string
+  example_output?: string
+}
+
+export type JobProfileUpdateQuestionResponse = {
+  status: string
+  question: JobProfileQuestionItem
+}
+
+export type JobProfileRegenerateQuestionResponse = {
+  status: string
+  question: JobProfileQuestionItem
+}
+
+export type JobProfileDeleteQuestionResponse = {
+  status: string
+  deleted_question_id: string
+}

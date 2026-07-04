@@ -403,7 +403,7 @@ export function AddRoleStepper() {
                     setKnowledgeQuestions={setKnowledgeQuestions}
                   />
                 )}
-                {step === 3 && <ReferenceQuestionsPreviewStep knowledgeQuestions={knowledgeQuestions} />}
+                {step === 3 && <ReferenceQuestionsPreviewStep form={form} difficultyLevels={difficultyLevels} knowledgeQuestions={knowledgeQuestions} />}
                 {step === 5 && <ReviewSubmitStep form={form} difficultyLevels={difficultyLevels} />}
               </motion.div>
             </AnimatePresence>

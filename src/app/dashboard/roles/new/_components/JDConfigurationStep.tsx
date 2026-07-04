@@ -10,6 +10,7 @@ import {
   IconSparkles,
   IconUpload,
   IconX,
+  IconFileText,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,11 @@ import {
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { AddRoleFormValues, DifficultyLevel } from "./constants"
+import {
+  useUploadJobDescription,
+  useUploadKnowledgeQuestions,
+  useExtractSkills,
+} from "@/lib/api/hooks/analytics/useJobProfiles"
 
 interface JDConfigurationStepProps {
   form: UseFormReturn<AddRoleFormValues>
@@ -58,6 +64,10 @@ export function JDConfigurationStep({
   const skills = form.watch("skills") || []
   const [isExtractorOpen, setIsExtractorOpen] = useState(false)
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false)
+
+  const { uploadJDAsync, isUploadingJD } = useUploadJobDescription()
+  const { uploadKnowledgeAsync, isUploadingKnowledge } = useUploadKnowledgeQuestions()
+  const { extractSkillsAsync, isExtracting } = useExtractSkills()
 
   const suggestedSkills = [
     "Full Stack Development", "React.js", "Next.js", "PostgreSQL", "MongoDB",
@@ -114,7 +124,7 @@ export function JDConfigurationStep({
   }
 
   // Auto extraction mechanism
-  function handleExtractSkills() {
+  async function handleExtractSkills() {
     const jdText = form.getValues("jobDescription")
     if (!jdText || jdText.length < 10) {
       toast.error("Please enter a job description of at least 10 characters first.")
@@ -123,86 +133,78 @@ export function JDConfigurationStep({
 
     const toastId = toast.loading("Analyzing job description and extracting key skills...")
 
-    setTimeout(() => {
-      const matches: string[] = []
-      const text = jdText.toLowerCase()
-
-      const skillKeywords = [
-        "React", "Next.js", "TypeScript", "JavaScript", "HTML", "CSS", "Tailwind CSS",
-        "Node.js", "Python", "Django", "FastAPI", "PostgreSQL", "MongoDB", "Docker",
-        "AWS", "Git", "GraphQL", "Redux", "RESTful APIs", "Java", "Spring Boot",
-        "SQL", "Kubernetes", "Linux", "CI/CD", "Testing", "Jest"
-      ]
-
-      skillKeywords.forEach(skill => {
-        if (text.includes(skill.toLowerCase())) {
-          matches.push(skill)
-        }
-      })
-
-      const finalSkills = matches.length >= 2 ? matches : ["React", "TypeScript", "Next.js", "Tailwind CSS", "RESTful APIs"]
+    try {
+      const response = await extractSkillsAsync({ job_description: jdText })
+      
+      const finalSkills = response.skills && response.skills.length > 0 
+        ? response.skills 
+        : ["React", "TypeScript", "Next.js", "Tailwind CSS", "RESTful APIs"]
 
       form.setValue("skills", finalSkills, { shouldValidate: true })
 
       toast.dismiss(toastId)
       toast.success(`Successfully extracted ${finalSkills.length} key skills!`)
-    }, 1000)
-  }
-
-  function handleJDFileUpload(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) {
-      toast.success(`"${file.name}" uploaded successfully. Auto-populating Job Description...`)
-      form.setValue("jobDescription", `Role: Senior Software Engineer\n\nWe are looking for a highly skilled Senior Software Engineer to join our team. You will lead the design and development of complex frontend architectures, drive code quality and design system adoption, and mentor junior engineers.\n\nRequired Skills:\n- Strong experience with React, Next.js, and TypeScript\n- Excellent understanding of RESTful APIs, GraphQL, and modern state management\n- Passion for performance optimization and clean, maintainable code.`, { shouldValidate: true })
-
-      // Auto populate a default set of skills
-      form.setValue("skills", ["React", "Next.js", "TypeScript", "GraphQL", "Performance"], { shouldValidate: true })
-      setIsExtractorOpen(true)
+    } catch (error) {
+      toast.dismiss(toastId)
+      toast.error("Failed to extract skills. Please try again.")
+      console.error(error)
     }
   }
 
-  function handleSyllabusFileUpload(e: ChangeEvent<HTMLInputElement>) {
+  async function handleJDFileUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) {
-      toast.success(`"${file.name}" uploaded successfully as custom Knowledge Set!`)
-      const mockParsed = {
-        topics: [
-          {
-            topicName: "JavaScript",
-            levels: [
-              {
-                level: 1,
-                questions: [
-                  "What is var?",
-                  "Difference between var, let and const?"
-                ]
-              },
-              {
-                level: 2,
-                questions: [
-                  "Explain closures in JavaScript.",
-                  "What is event bubbling?"
-                ]
-              }
-            ]
-          },
-          {
-            topicName: "React",
-            levels: [
-              {
-                level: 1,
-                questions: [
-                  "What are props?",
-                  "What is JSX?"
-                ]
-              }
-            ]
-          }
-        ]
+      const toastId = toast.loading(`Uploading "${file.name}"...`)
+      
+      try {
+        const formData = new FormData()
+        formData.append("file", file)
+        const response = await uploadJDAsync(formData)
+        
+        toast.dismiss(toastId)
+        toast.success(`"${response.originalFileName}" uploaded successfully. Auto-populating Job Description...`)
+        
+        form.setValue("jobDescription", `Role: Senior Software Engineer\n\nWe are looking for a highly skilled Senior Software Engineer to join our team. You will lead the design and development of complex frontend architectures, drive code quality and design system adoption, and mentor junior engineers.\n\nRequired Skills:\n- Strong experience with React, Next.js, and TypeScript\n- Excellent understanding of RESTful APIs, GraphQL, and modern state management\n- Passion for performance optimization and clean, maintainable code.`, { shouldValidate: true })
+  
+        setIsExtractorOpen(true)
+        setTimeout(() => {
+          handleExtractSkills()
+        }, 500)
+      } catch (error) {
+        toast.dismiss(toastId)
+        toast.error("Failed to upload JD. Please try again.")
+        console.error(error)
       }
-      setKnowledgeQuestions(mockParsed)
-      if (typeof window !== "undefined") {
-        localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(mockParsed))
+    }
+  }
+
+  async function handleSyllabusFileUpload(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) {
+      const toastId = toast.loading(`Uploading "${file.name}"...`)
+      try {
+        const formData = new FormData()
+        formData.append("file", file)
+        const response = await uploadKnowledgeAsync(formData)
+        
+        toast.dismiss(toastId)
+        toast.success(`"${response.originalFileName}" uploaded successfully as custom Knowledge Set!`)
+        
+        const parsed = {
+          topics: response.topics || [],
+          originalFileName: response.originalFileName,
+          uploadedAt: response.uploadedAt,
+          totalQuestions: response.totalQuestions,
+          topicsDetected: response.topicsDetected || []
+        }
+        setKnowledgeQuestions(parsed)
+        if (typeof window !== "undefined") {
+          localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(parsed))
+        }
+      } catch (error) {
+        toast.dismiss(toastId)
+        toast.error("Failed to upload Knowledge Set file.")
+        console.error(error)
       }
     }
   }
@@ -560,23 +562,39 @@ export function JDConfigurationStep({
           onClick={() => syllabusFileInputRef.current?.click()}
           className="border-2 border-dashed border-[#2563EB]/20 bg-blue-50/5 hover:bg-blue-50/15 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group select-none shadow-sm"
         >
-          <Button
-            type="button"
-            variant="outline"
-            className="flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all cursor-pointer"
-          >
-            <IconUpload className="size-4 text-slate-400" />
-            Upload PDF
-          </Button>
+          {knowledgeQuestions?.originalFileName ? (
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 mb-1">
+                <IconFileText className="size-5.5" />
+              </div>
+              <h4 className="text-sm font-extrabold text-slate-800 text-center">
+                {knowledgeQuestions.originalFileName}
+              </h4>
+              <p className="text-[10px] font-bold text-slate-400">
+                Click to upload a different file
+              </p>
+            </div>
+          ) : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all cursor-pointer"
+              >
+                <IconUpload className="size-4 text-slate-400" />
+                Upload PDF
+              </Button>
 
-          <div className="text-center space-y-1">
-            <h4 className="text-xs font-extrabold text-slate-600">
-              Drag & drop instruction file or click to browse
-            </h4>
-            <p className="text-[10px] font-bold text-slate-400">
-              Supports PDF, DOCX, TXT
-            </p>
-          </div>
+              <div className="text-center space-y-1">
+                <h4 className="text-xs font-extrabold text-slate-600">
+                  Drag & drop instruction file or click to browse
+                </h4>
+                <p className="text-[10px] font-bold text-slate-400">
+                  Supports PDF, DOCX, TXT
+                </p>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Modal for Follow This Format */}

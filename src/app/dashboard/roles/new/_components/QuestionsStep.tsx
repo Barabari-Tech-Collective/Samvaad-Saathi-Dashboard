@@ -24,154 +24,61 @@ import { Accordion } from "@/components/ui/accordion"
 import { AddQuestionDialog } from "./AddQuestionDialog"
 import { EditQuestionDialog } from "./EditQuestionDialog"
 
-// 50 highly realistic Front-End questions distributed across 4 difficulty levels
-const INITIAL_QUESTIONS = [
-  // LEVEL 1 (15 questions)
-  ...Array.from({ length: 15 }, (_, i) => ({
-    id: `q-1-${i}`,
-    level: 1,
-    category: "THEORETICAL",
-    difficulty: "EASY",
-    text: [
-      "Explain the difference between var, let, and const in JavaScript.",
-      "What is the box model in CSS?",
-      "What are React hooks and why were they introduced?",
-      "Explain the concept of semantic HTML.",
-      "What is the difference between double equals (==) and triple equals (===) in JavaScript?",
-      "What are the different ways to style a React application?",
-      "What is the purpose of the alt attribute on an image tag?",
-      "Explain what 'use strict' does in JavaScript.",
-      "What is a closure in JavaScript?",
-      "What are media queries and how are they used in CSS?",
-      "What is the Virtual DOM in React?",
-      "Explain the difference between state and props in React.",
-      "What is event bubbling in the browser DOM?",
-      "What are the primitive data types in JavaScript?",
-      "What is the purpose of the key prop in React lists?"
-    ][i % 15],
-    isAiGenerated: true
-  })),
-  // LEVEL 2 (15 questions)
-  ...Array.from({ length: 15 }, (_, i) => ({
-    id: `q-2-${i}`,
-    level: 2,
-    category: "THEORETICAL",
-    difficulty: "MEDIUM",
-    text: [
-      "How does the browser event loop work?",
-      "Describe how the HTTP request lifecycle works.",
-      "What is the difference between server-side rendering (SSR) and static site generation (SSG)?",
-      "Explain how closures can lead to memory leaks in JavaScript.",
-      "What is the difference between LocalStorage, SessionStorage, and Cookies?",
-      "Explain the dependency array in React's useEffect hook.",
-      "What are higher-order components (HOCs) in React?",
-      "How does CORS (Cross-Origin Resource Sharing) work?",
-      "What is the difference between debounce and throttle?",
-      "Explain how flexbox and grid layouts differ in CSS.",
-      "What is the purpose of React.memo() and when should you use it?",
-      "How does promise chaining work in JavaScript?",
-      "What are the benefits of using TypeScript over vanilla JavaScript?",
-      "Explain the difference between client-side routing and server-side routing.",
-      "What is CSS specificity and how is it calculated?"
-    ][i % 15],
-    isAiGenerated: true
-  })),
-  // LEVEL 3 (10 questions)
-  ...Array.from({ length: 10 }, (_, i) => ({
-    id: `q-3-${i}`,
-    level: 3,
-    category: "PRACTICAL",
-    difficulty: "MEDIUM",
-    text: [
-      "How would you optimize a slow loading REACT component?",
-      "Write a custom hook in React to fetch data from an API with caching.",
-      "Explain how to implement code-splitting in a Next.js application.",
-      "How would you handle global state management in a large-scale React application?",
-      "Write a JavaScript function to perform a deep clone of an object.",
-      "Describe how you would implement infinite scrolling in a list component.",
-      "How do you profile performance bottlenecks in Chrome DevTools?",
-      "Explain how you would handle error boundaries in React.",
-      "Write a responsive CSS layout using CSS Grid without media queries.",
-      "How would you implement a secure JWT authentication flow in Next.js?"
-    ][i % 10],
-    isAiGenerated: true
-  })),
-  // LEVEL 4 (10 questions)
-  ...Array.from({ length: 10 }, (_, i) => ({
-    id: `q-4-${i}`,
-    level: 4,
-    category: "PRACTICAL",
-    difficulty: "HARD",
-    text: [
-      "How would you design a highly scalable micro-frontend architecture?",
-      "Explain how you would optimize Core Web Vitals (LCP, FID, CLS) for an e-commerce site.",
-      "Write a complex state machine using XState or pure React to manage a multi-step checkout flow.",
-      "How would you prevent re-renders in a highly dynamic real-time dashboard component?",
-      "Describe how you would design and build a custom component library with full accessibility (WAI-ARIA).",
-      "How do you implement offline support and service workers in a Progressive Web App (PWA)?",
-      "Write a Webpack configuration from scratch that supports TypeScript, CSS modules, and code splitting.",
-      "Explain the security implications of XSS and CSRF in Next.js and how to mitigate them.",
-      "How do you orchestrate Web Workers to run heavy algorithms off the main UI thread?",
-      "Describe how you would migrate a legacy monolithic single-page app to Next.js incremental static regeneration."
-    ][i % 10],
-    isAiGenerated: true
-  }))
-]
+import { 
+  useGetJobProfileQuestions, 
+  useGenerateQuestions, 
+  useAddJobProfileQuestion, 
+  useUpdateJobProfileQuestion, 
+  useDeleteJobProfileQuestion, 
+  useRegenerateJobProfileQuestion 
+} from "@/lib/api/hooks/analytics/useJobProfiles"
+import { useRef } from "react"
 
 export function QuestionsStep() {
   const router = useRouter()
 
-  // Expanded question state (only one expanded at a time)
-  const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null)
+  // Load draft profile ID from local storage
+  let profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null
 
-  // Details dictionary helper for rich details expanded card
+  // API Hooks
+  const { questionsData, isLoadingQuestions, refetch } = useGetJobProfileQuestions(profileId)
+  const { generateQuestionsAsync, isGenerating } = useGenerateQuestions(profileId)
+  const { addQuestionAsync } = useAddJobProfileQuestion(profileId)
+  const { updateQuestionAsync } = useUpdateJobProfileQuestion(profileId)
+  const { deleteQuestionAsync } = useDeleteJobProfileQuestion(profileId)
+  const { regenerateQuestionAsync } = useRegenerateJobProfileQuestion(profileId)
+
+  // Map API questions to UI model
+  const apiQuestions = questionsData?.questions || []
+  const questions = apiQuestions.map(q => ({
+    id: q.question_id || q.questionId,
+    level: q.level,
+    category: q.type,
+    difficulty: q.difficulty,
+    text: q.question,
+    isAiGenerated: q.is_ai_generated ?? q.isAiGenerated,
+    keywords: q.keywords || [],
+    concepts: (q.concepts_covered ?? q.conceptsCovered) || [],
+    expectedAnswer: (q.expected_answer ?? q.expectedAnswer) || "",
+    exampleOutput: (q.example_output ?? q.exampleOutput) || ""
+  }))
+
   const getQuestionDetails = (qText: string) => {
-    const text = qText.toLowerCase()
-    if (text.includes("var, let, and const")) {
+    // If the API provided keywords, use them, otherwise fallback to generic
+    const targetQ = questions.find(q => q.text === qText)
+    if (targetQ && (targetQ.keywords?.length > 0 || targetQ.concepts?.length > 0)) {
       return {
-        keywords: ["var", "let", "const", "hoisting", "scope", "block scope"],
-        concepts: ["Variable declaration", "Hoisting behavior", "Scope (Function vs Block)", "Re-declaration rules", "Temporal Dead Zone"],
-        expectedAnswer: "Step-by-step explanation covering difference, scope, hoisting and usage scenarios.",
-        exampleOutput: "Explains each keyword with examples and when to use which."
-      }
-    }
-    if (text.includes("react hooks")) {
-      return {
-        keywords: ["hooks", "functional components", "state", "lifecycle", "useState", "useEffect"],
-        concepts: ["Stateful logic sharing", "Class component drawbacks", "Functional programming", "Side effects management", "Rules of Hooks"],
-        expectedAnswer: "React Hooks let functional components use state and lifecycle methods without classes, reducing boilerplate and encouraging reusability.",
-        exampleOutput: "Shows examples of useState, useEffect, and custom hooks compared to traditional class lifecycle methods."
-      }
-    }
-    if (text.includes("event loop")) {
-      return {
-        keywords: ["event loop", "call stack", "callback queue", "microtasks", "macrotasks", "asynchronous"],
-        concepts: ["Single-threaded execution", "Execution stack execution", "Task queue prioritization", "Promise/Microtask scheduling", "Browser rendering cycles"],
-        expectedAnswer: "The Event Loop orchestrates asynchronous JS by monitoring the call stack and pushing callbacks from task queues when the stack is empty.",
-        exampleOutput: "Visualizes code execution order with console.logs of Promises, setTimeouts, and synchronous code."
-      }
-    }
-    if (text.includes("box model")) {
-      return {
-        keywords: ["box model", "content", "padding", "border", "margin", "box-sizing"],
-        concepts: ["Content area dimensions", "Padding interior spacing", "Border separation outline", "Margin exterior spacing", "Content-box vs Border-box sizing"],
-        expectedAnswer: "The CSS box model is a container that wraps HTML elements, consisting of margins, borders, padding, and the actual content.",
-        exampleOutput: "Demonstrates width calculation differences between content-box and border-box sizing models."
-      }
-    }
-    if (text.includes("http request lifecycle")) {
-      return {
-        keywords: ["http", "dns lookup", "tcp handshake", "ssl tls", "http parser", "response"],
-        concepts: ["DNS resolution routing", "TCP connection handshake", "TLS secure negotiation", "HTTP server request handling", "Browser DOM construction"],
-        expectedAnswer: "Explains the journey of a request from browser DNS lookup to server processing, down to receiving the HTTP response packet.",
-        exampleOutput: "Lists each micro-step of standard network handshakes and payload delivery stages."
+        keywords: targetQ.keywords,
+        concepts: targetQ.concepts,
+        expectedAnswer: targetQ.expectedAnswer,
+        exampleOutput: targetQ.exampleOutput
       }
     }
     return {
-      keywords: ["frontend", "best practices", "performance", "architecture", "optimization"],
-      concepts: ["Core concepts", "Performance optimizations", "Cross-browser compatibility", "Maintainable architecture", "Modern specifications"],
+      keywords: ["frontend", "best practices", "architecture", "optimization"],
+      concepts: ["Core concepts", "Performance optimizations", "Maintainable architecture"],
       expectedAnswer: "A complete explanation addressing the core design, performance implications, and practical implementation details of the topic.",
-      exampleOutput: "Code example illustrating the pattern in production, along with edge case handling and optimization tips."
+      exampleOutput: "Code example illustrating the pattern in production."
     }
   }
 
@@ -183,8 +90,6 @@ export function QuestionsStep() {
     { level: 4, selected: true, count: 10, badgeLabel: "Expert", title: "Advanced / Pressure Scenarios" }
   ])
 
-  // Local state for full list of questions
-  const [questions, setQuestions] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<number>(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [draftTitle, setDraftTitle] = useState("Senior Front-End Developer - Engineering")
@@ -193,11 +98,12 @@ export function QuestionsStep() {
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [activeQuestion, setActiveQuestion] = useState<any>(null)
+  const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null)
 
   // Floating Toast state
   const [showToast, setShowToast] = useState(true)
+  const hasGeneratedRef = useRef(false)
 
-  // Sync effect to load levels and mock simulated Backend Generate Questions API Request
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedLevels = localStorage.getItem("samvaad_saathi_difficulty_levels")
@@ -206,21 +112,11 @@ export function QuestionsStep() {
           const parsed = JSON.parse(savedLevels)
           if (Array.isArray(parsed) && parsed.length > 0) {
             setDifficultyLevels(parsed)
-
-            // Dynamic question counting sync log for API Parity
-            const levelsPayload = parsed.map(l => ({
-              level: l.level,
-              count: l.selected ? l.count : 0
-            }))
-            console.log("Simulating Backend Generate Questions API Request payload:", {
-              levels: levelsPayload
-            })
           }
         } catch (e) {
-          console.error("Failed to parse difficulty levels:", e)
+          console.error(e)
         }
       }
-
       const saved = localStorage.getItem("samvaad_saathi_draft_role")
       if (saved) {
         try {
@@ -235,42 +131,50 @@ export function QuestionsStep() {
     }
   }, [])
 
-  // Sync questions array counts to match custom selected difficulty levels
-  useEffect(() => {
-    const activeQuestionsList: any[] = []
-    difficultyLevels.forEach((level) => {
-      if (level.selected) {
-        const levelPool = INITIAL_QUESTIONS.filter(q => q.level === level.level)
-        const count = level.count
-        if (levelPool.length >= count) {
-          activeQuestionsList.push(...levelPool.slice(0, count))
-        } else {
-          activeQuestionsList.push(...levelPool)
-          const remaining = count - levelPool.length
-          for (let i = 0; i < remaining; i++) {
-            activeQuestionsList.push({
-              id: `q-extra-${level.level}-${i}-${Date.now()}`,
-              level: level.level,
-              category: level.level > 2 ? "PRACTICAL" : "THEORETICAL",
-              difficulty: level.level === 1 ? "EASY" : level.level === 4 ? "HARD" : "MEDIUM",
-              text: `AI generated instruction question for ${level.title} #${i + 1}`,
-              isAiGenerated: true
-            })
-          }
-        }
-      }
-    })
-    setQuestions(activeQuestionsList)
-  }, [difficultyLevels])
-
   const activeLevels = difficultyLevels.filter(l => l.selected)
   const totalQuestions = activeLevels.reduce((acc, curr) => acc + curr.count, 0)
+  
+  // Try to generate questions automatically if we have 0 questions from API
+  useEffect(() => {
+    const fetchedTotal = questionsData?.total_questions ?? questionsData?.totalQuestions
+    if (profileId && questionsData && fetchedTotal === 0 && !isGenerating && !hasGeneratedRef.current) {
+       hasGeneratedRef.current = true;
+       const levelsPayload = difficultyLevels.map(l => ({
+          level: l.level,
+          count: l.selected ? l.count : 0
+       }))
+       
+       let knowledgeReferenceContext = undefined;
+       if (typeof window !== "undefined") {
+         const k = localStorage.getItem("samvaad_saathi_knowledge_questions");
+         if (k) knowledgeReferenceContext = k;
+       }
+
+       if (levelsPayload.some(l => l.count > 0)) {
+         const loadingToast = toast.loading("Generating AI questions based on provided reference...")
+         generateQuestionsAsync({ 
+             levels: levelsPayload,
+             knowledge_reference_context: knowledgeReferenceContext,
+             ...({ knowledgeReferenceContext } as any)
+         })
+           .then(() => {
+             toast.dismiss(loadingToast)
+             toast.success("Questions generated successfully!")
+             refetch()
+           })
+           .catch(err => {
+             toast.dismiss(loadingToast)
+             toast.error("Failed to generate questions")
+           })
+       }
+    }
+  }, [profileId, questionsData, difficultyLevels, isGenerating, generateQuestionsAsync, refetch])
 
   useEffect(() => {
     if (activeLevels.length > 0 && !activeLevels.some(l => l.level === activeTab)) {
       setActiveTab(activeLevels[0].level)
     }
-  }, [difficultyLevels, activeTab])
+  }, [difficultyLevels, activeTab, activeLevels])
 
   // Set the first question of the current level expanded by default on tab change
   useEffect(() => {
@@ -280,7 +184,7 @@ export function QuestionsStep() {
     } else {
       setExpandedQuestionId(null)
     }
-  }, [activeTab])
+  }, [activeTab, questionsData])
 
   // Modals input fields
   const [modalText, setModalText] = useState("")
@@ -294,10 +198,15 @@ export function QuestionsStep() {
     return matchesLevel && matchesSearch
   })
 
-  // Dynamic actions
-  const handleDelete = (id: string) => {
-    setQuestions(prev => prev.filter(q => q.id !== id))
-    toast.success("Question deleted successfully")
+  // Dynamic actions mapped to backend APIs
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteQuestionAsync({ questionId: id })
+      toast.success("Question deleted successfully")
+      refetch()
+    } catch {
+      toast.error("Failed to delete question")
+    }
   }
 
   const handleOpenEdit = (q: any) => {
@@ -308,16 +217,23 @@ export function QuestionsStep() {
     setIsEditOpen(true)
   }
 
-  const handleSaveEdit = () => {
-    if (!modalText.trim()) return
-    setQuestions(prev => prev.map(q => q.id === activeQuestion.id ? {
-      ...q,
-      text: modalText,
-      category: modalCategory,
-      difficulty: modalDifficulty
-    } : q))
-    setIsEditOpen(false)
-    toast.success("Question updated successfully")
+  const handleSaveEdit = async () => {
+    if (!modalText.trim() || !activeQuestion) return
+    try {
+      await updateQuestionAsync({
+        questionId: activeQuestion.id,
+        data: {
+          question: modalText,
+          category: modalCategory,
+          difficulty: modalDifficulty
+        }
+      })
+      setIsEditOpen(false)
+      toast.success("Question updated successfully")
+      refetch()
+    } catch {
+      toast.error("Failed to update question")
+    }
   }
 
   const handleOpenAdd = () => {
@@ -327,38 +243,32 @@ export function QuestionsStep() {
     setIsAddOpen(true)
   }
 
-  const handleAddQuestion = () => {
+  const handleAddQuestion = async () => {
     if (!modalText.trim()) return
-    const newQ = {
-      id: `q-custom-${Date.now()}`,
-      level: activeTab,
-      category: modalCategory,
-      difficulty: modalDifficulty,
-      text: modalText,
-      isAiGenerated: false
+    try {
+      await addQuestionAsync({
+        question: modalText,
+        level: activeTab,
+        difficulty: modalDifficulty,
+        type: modalCategory,
+        is_ai_generated: false
+      })
+      setIsAddOpen(false)
+      toast.success("New question added successfully")
+      refetch()
+    } catch {
+      toast.error("Failed to add question")
     }
-    setQuestions(prev => [newQ, ...prev])
-    setIsAddOpen(false)
-    toast.success("New question added successfully")
   }
 
-  const handleRegenerate = (id: string) => {
-    const newOptions = [
-      "Describe the architecture of a custom React context wrapper.",
-      "Explain the trade-offs of micro-frontend builds vs monorepos.",
-      "How does the browser parse HTML and CSS to create the Render Tree?",
-      "What is the difference between requestAnimationFrame and setTimeout?",
-      "How would you implement state preservation across Page reloads in Next.js?",
-      "Explain how closures create private scopes in Javascript modules."
-    ]
-    const randomText = newOptions[Math.floor(Math.random() * newOptions.length)]
-
-    setQuestions(prev => prev.map(q => q.id === id ? {
-      ...q,
-      text: randomText,
-      isAiGenerated: true
-    } : q))
-    toast.success("Question regenerated by AI successfully")
+  const handleRegenerate = async (id: string) => {
+    try {
+      await regenerateQuestionAsync({ questionId: id })
+      toast.success("Question regenerated by AI successfully")
+      refetch()
+    } catch {
+      toast.error("Failed to regenerate question")
+    }
   }
 
   return (

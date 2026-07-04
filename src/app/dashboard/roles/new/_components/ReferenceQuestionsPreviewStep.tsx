@@ -12,6 +12,8 @@ import {
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { UseFormReturn } from "react-hook-form"
+import { AddRoleFormValues, DifficultyLevel } from "./constants"
 
 const defaultTopics = [
   {
@@ -99,16 +101,60 @@ const defaultTopics = [
 ]
 
 interface ReferenceQuestionsPreviewStepProps {
+  form: UseFormReturn<AddRoleFormValues>
+  difficultyLevels: DifficultyLevel[]
   knowledgeQuestions: any
 }
 
 export function ReferenceQuestionsPreviewStep({
+  form,
+  difficultyLevels,
   knowledgeQuestions
 }: ReferenceQuestionsPreviewStepProps) {
   const router = useRouter()
   const [selectedLevel, setSelectedLevel] = useState<number>(1)
   
-  const activeQuestionsData = knowledgeQuestions?.topics || defaultTopics
+  const activeQuestionsData = knowledgeQuestions?.topics || []
+  
+  // Dynamically compute available levels and question counts from the parsed PDF data
+  const availableLevelsMap = new Map<number, number>()
+  activeQuestionsData.forEach((topic: any) => {
+    topic.levels?.forEach((l: any) => {
+      if (l.questions && l.questions.length > 0) {
+        const currentCount = availableLevelsMap.get(l.level) || 0
+        availableLevelsMap.set(l.level, currentCount + l.questions.length)
+      }
+    })
+  })
+
+  const availableLevels = Array.from(availableLevelsMap.entries()).map(([level, count]) => ({
+    level: Number(level),
+    count,
+    badge: `L${level}`,
+    name: `Level ${level}`
+  })).sort((a, b) => a.level - b.level)
+
+  const originalFileName = knowledgeQuestions?.originalFileName || "Uploaded Document"
+  const uploadedAt = knowledgeQuestions?.uploadedAt ? new Date(knowledgeQuestions.uploadedAt).toLocaleString() : "Just now"
+  const topicsDetected = knowledgeQuestions?.topicsDetected || []
+  const totalQuestionsData = knowledgeQuestions?.totalQuestions || 0
+  
+  const formValues = form.getValues()
+  const jobName = formValues.jobName || "Unnamed Role"
+  const category = formValues.category || "Uncategorized"
+  const experienceLevel = formValues.experienceLevel || "Fresher"
+  
+  const selectedDifficultyLevels = difficultyLevels.filter(l => l.selected)
+
+  // Set initial selected level to the first available level if current is not valid
+  useEffect(() => {
+    if (availableLevels.length > 0) {
+      const isCurrentLevelValid = availableLevels.some(l => l.level === selectedLevel)
+      if (!isCurrentLevelValid) {
+        setSelectedLevel(availableLevels[0].level)
+      }
+    }
+  }, [availableLevels, selectedLevel])
 
   // Filter topics that have questions for the selectedLevel
   const filteredTopics = activeQuestionsData.filter((topic: any) => {
@@ -117,6 +163,7 @@ export function ReferenceQuestionsPreviewStep({
   })
 
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null)
+  const [viewAllTopics, setViewAllTopics] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (filteredTopics.length > 0) {
@@ -139,36 +186,31 @@ export function ReferenceQuestionsPreviewStep({
           <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
             <div>
               <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ROLE NAME</div>
-              <div className="text-sm font-extrabold text-slate-800 mt-1">Senior Front-End Developer</div>
+              <div className="text-sm font-extrabold text-slate-800 mt-1">{jobName}</div>
             </div>
             <div>
               <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">CATEGORY</div>
-              <div className="text-sm font-extrabold text-slate-800 mt-1">Engineering</div>
+              <div className="text-sm font-extrabold text-slate-800 mt-1">{category}</div>
             </div>
             <div className="mt-2">
               <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">EXPERIENCE</div>
-              <div className="text-sm font-extrabold text-slate-800 mt-1">4–6 Years</div>
+              <div className="text-sm font-extrabold text-slate-800 mt-1">{experienceLevel}</div>
             </div>
             <div className="mt-2">
-              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">LEVELS SELECTED</div>
-              <div className="text-sm font-extrabold text-slate-800 mt-1">4 levels</div>
+              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">LEVELS FROM PDF</div>
+              <div className="text-sm font-extrabold text-slate-800 mt-1">{availableLevels.length} levels</div>
             </div>
           </div>
           
           <div className="space-y-3 pt-4 border-t border-slate-100">
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">LEVELS CONFIGURED</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">LEVELS FOUND IN DOCUMENT</div>
             <div className="grid grid-cols-2 gap-3">
-              {[
-                { id: "L1", name: "Level 1", count: 15, lvlVal: 1 },
-                { id: "L2", name: "Level 2", count: 15, lvlVal: 2 },
-                { id: "L3", name: "Level 3", count: 10, lvlVal: 3 },
-                { id: "L4", name: "Level 4", count: 10, lvlVal: 4 },
-              ].map((lvl) => {
-                const isSelected = selectedLevel === lvl.lvlVal
+              {availableLevels.map((lvl) => {
+                const isSelected = selectedLevel === lvl.level
                 return (
                   <div
-                    key={lvl.id}
-                    onClick={() => setSelectedLevel(lvl.lvlVal)}
+                    key={lvl.badge}
+                    onClick={() => setSelectedLevel(lvl.level)}
                     className={cn(
                       "flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer select-none",
                       isSelected
@@ -181,7 +223,7 @@ export function ReferenceQuestionsPreviewStep({
                         "text-[10px] font-black px-1.5 py-0.5 rounded transition-colors",
                         isSelected ? "text-white bg-[#2563EB]" : "text-blue-600 bg-blue-50"
                       )}>
-                        {lvl.id}
+                        {lvl.badge}
                       </span>
                       <span className="text-xs font-bold text-slate-700">{lvl.name}</span>
                     </div>
@@ -189,6 +231,11 @@ export function ReferenceQuestionsPreviewStep({
                   </div>
                 )
               })}
+              {availableLevels.length === 0 && (
+                <div className="col-span-2 text-xs text-slate-400 italic py-2">
+                  No levels detected in the document.
+                </div>
+              )}
             </div>
           </div>
         </Card>
@@ -204,26 +251,28 @@ export function ReferenceQuestionsPreviewStep({
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
               <IconFileText className="size-5.5 text-blue-600" />
             </div>
-            <div>
-              <h4 className="text-xs font-extrabold text-slate-800">Frontend_Question_Bank.pdf</h4>
-              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Uploaded today, 2:45 PM</p>
+            <div className="max-w-[200px]">
+              <h4 className="text-xs font-extrabold text-slate-800 truncate" title={originalFileName}>{originalFileName}</h4>
+              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">{uploadedAt}</p>
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">TOPICS DETECTED</div>
             <div className="flex flex-wrap gap-1.5">
-              {["JavaScript", "React", "TypeScript", "Performance Optimization", "System Design"].map((t) => (
+              {topicsDetected.length > 0 ? topicsDetected.map((t: string) => (
                 <Badge key={t} variant="outline" className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-semibold px-3 py-1 rounded-full">
                   {t}
                 </Badge>
-              ))}
+              )) : (
+                <span className="text-xs text-slate-400 italic">No topics detected</span>
+              )}
             </div>
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-600">
             <span>Question count</span>
-            <span className="text-[#2563EB] font-black"># 42 Reference Questions</span>
+            <span className="text-[#2563EB] font-black"># {totalQuestionsData} Reference Questions</span>
           </div>
         </Card>
       </div>
@@ -247,23 +296,24 @@ export function ReferenceQuestionsPreviewStep({
             <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-2xl select-none">
               <IconAlertCircle className="size-8 text-slate-300 mx-auto mb-2" />
               <p className="text-xs text-slate-400 font-semibold">
-                No questions available for Level {selectedLevel}
+                No reference questions available for Level {selectedLevel}. Try selecting another level or uploading a document.
               </p>
             </div>
           ) : (
-            filteredTopics.map((topic: any) => {
+            filteredTopics.map((topic: any, idx: number) => {
               const levelData = topic.levels?.find((l: any) => l.level === selectedLevel)
               const questionsList = levelData?.questions || []
               const totalQuestions = questionsList.length
               const previewCount = Math.min(5, totalQuestions)
-              const previewQuestions = questionsList.slice(0, 5)
               
               const topicId = topic.topicName.toLowerCase()
               const isExpanded = expandedTopic === topicId
+              const isViewAll = !!viewAllTopics[topicId]
+              const previewQuestions = isViewAll ? questionsList : questionsList.slice(0, 5)
 
               return (
                 <div
-                  key={topic.topicName}
+                  key={`${topic.topicName}-${idx}`}
                   className={cn(
                     "border rounded-2xl bg-white overflow-hidden transition-all duration-200",
                     isExpanded ? "border-[#2563EB]/40 ring-1 ring-blue-500/5 shadow-sm" : "border-slate-200 hover:border-blue-200"
@@ -280,16 +330,18 @@ export function ReferenceQuestionsPreviewStep({
                       </div>
                       <div className="space-y-0.5">
                         <h4 className="text-sm font-extrabold text-slate-800">{topic.topicName}</h4>
-                        <p className="text-[11px] font-semibold text-slate-400">
-                          Preview of {previewCount} of {totalQuestions} questions
+                        <p className="text-[10px] font-semibold text-slate-400">
+                          {isExpanded && isViewAll 
+                            ? `Showing all ${totalQuestions} questions` 
+                            : `Preview of ${previewCount} of ${totalQuestions} questions`}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="bg-[#EFF6FF] text-[#2563EB] border-none text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        {totalQuestions} Question{totalQuestions !== 1 ? "s" : ""}
-                      </Badge>
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
+                        {totalQuestions} Questions
+                      </span>
                       {isExpanded ? (
                         <IconChevronUp className="size-4 text-slate-400" />
                       ) : (
@@ -298,7 +350,7 @@ export function ReferenceQuestionsPreviewStep({
                     </div>
                   </div>
 
-                  {/* Questions list when expanded */}
+                  {/* Expanded Content Area */}
                   {isExpanded && (
                     <div className="px-4 pb-4 pt-1 border-t border-slate-50 space-y-3 animate-in fade-in duration-200">
                       <div className="space-y-2">
@@ -315,19 +367,16 @@ export function ReferenceQuestionsPreviewStep({
                         ))}
                       </div>
 
-                      {totalQuestions > 0 && (
+                      {totalQuestions > 5 && (
                         <div className="pt-2">
                           <button
                             type="button"
                             onClick={() => {
-                              toast.info(
-                                `Questions for ${topic.topicName} (Level ${selectedLevel}):\n\n` +
-                                  questionsList.map((q: string, i: number) => `${i + 1}. ${q}`).join("\n")
-                              )
+                              setViewAllTopics(prev => ({ ...prev, [topicId]: !isViewAll }))
                             }}
                             className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors cursor-pointer flex items-center gap-1"
                           >
-                            View all {totalQuestions} question{totalQuestions !== 1 ? "s" : ""} →
+                            {isViewAll ? "View less ↑" : `View all ${totalQuestions} questions →`}
                           </button>
                         </div>
                       )}

@@ -27,83 +27,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useJobProfilesSummary, useJobProfilesList } from "@/lib/api/hooks/analytics/useJobProfiles"
 
 export default function RolesManagementPage() {
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all")
   const [activeCardIdx, setActiveCardIdx] = React.useState<number | null>(null)
+  const [showAllRecent, setShowAllRecent] = React.useState<boolean>(false)
 
-  // Mock summary card counts
-  const summaryCards = [
-    {
-      title: "Total Roles",
-      count: "20",
-      icon: <IconBriefcase className="size-4" />,
-      colorClass: "text-blue-600",
-    },
-    {
-      title: "Pending Review",
-      count: "02",
-      icon: <IconClock className="size-4" />,
-      colorClass: "text-amber-600",
-    },
-    {
-      title: "Approved",
-      count: "16",
-      icon: <IconCheck className="size-4" />,
-      colorClass: "text-emerald-600",
-    },
-    {
-      title: "Rejected",
-      count: "02",
-      icon: <IconX className="size-4" />,
-      colorClass: "text-rose-600",
-    },
-  ]
+  const { jobProfilesSummary, isLoadingJobProfilesSummary } = useJobProfilesSummary()
+  
+  // Fetch up to 5 items initially. When showAllRecent is true, fetch up to 50 to prevent UI freezing.
+  const limit = showAllRecent ? 50 : 5
+  const { jobProfiles, isLoadingJobProfiles } = useJobProfilesList(selectedCategory, limit)
 
-  // Mock activity records
-  const recentActivities = [
-    {
-      id: 1,
-      role: "Frontend Developer",
-      status: "approved",
-      time: "2 Hours ago",
-      icon: <IconCheck className="size-4 text-emerald-600" />,
-      bg: "bg-emerald-50",
-    },
-    {
-      id: 2,
-      role: "UX Designer",
-      status: "approved",
-      time: "5 Hours ago",
-      icon: <IconCheck className="size-4 text-emerald-600" />,
-      bg: "bg-emerald-50",
-    },
-    {
-      id: 3,
-      role: "Data Analytics",
-      status: "pending",
-      time: "1 Day ago",
-      icon: <IconClock className="size-4 text-amber-600" />,
-      bg: "bg-amber-50",
-    },
-    {
-      id: 4,
-      role: "Backend Developer",
-      status: "requires revision",
-      time: "5 Hours ago",
-      icon: <IconAlertCircle className="size-4 text-rose-600" />,
-      bg: "bg-rose-50",
-    },
-    {
-      id: 5,
-      role: "Product Manager",
-      status: "draft saved",
-      time: "5 Hours ago",
-      icon: <IconFileText className="size-4 text-slate-500" />,
-      bg: "bg-slate-50",
-    },
-  ]
+  const kpis = jobProfilesSummary?.kpis ?? []
+
+  const getSummaryCardMeta = (title: string) => {
+    const t = title.toLowerCase()
+    if (t.includes("pending")) return { icon: <IconClock className="size-4" />, colorClass: "text-amber-600" }
+    if (t.includes("approved")) return { icon: <IconCheck className="size-4" />, colorClass: "text-emerald-600" }
+    if (t.includes("reject")) return { icon: <IconX className="size-4" />, colorClass: "text-rose-600" }
+    return { icon: <IconBriefcase className="size-4" />, colorClass: "text-blue-600" }
+  }
+
+  const getActivityMeta = (status: string) => {
+    const s = status.toLowerCase()
+    if (s.includes("approved")) return { icon: <IconCheck className="size-4 text-emerald-600" />, bg: "bg-emerald-50" }
+    if (s.includes("pending")) return { icon: <IconClock className="size-4 text-amber-600" />, bg: "bg-amber-50" }
+    if (s.includes("revision") || s.includes("reject")) return { icon: <IconAlertCircle className="size-4 text-rose-600" />, bg: "bg-rose-50" }
+    return { icon: <IconFileText className="size-4 text-slate-500" />, bg: "bg-slate-50" }
+  }
 
   return (
     <div className="@container/main flex flex-col gap-6 py-5 px-4 md:gap-7 md:py-6 lg:px-8 bg-slate-50/50 min-h-[calc(100vh-80px)] select-none">
@@ -114,14 +69,24 @@ export default function RolesManagementPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {summaryCards.map((card, idx) => {
+        {isLoadingJobProfilesSummary ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full rounded-2xl" />
+          ))
+        ) : (kpis.length > 0 ? kpis : [
+          { label: "Total Roles", value: 0 },
+          { label: "Pending Review", value: 0 },
+          { label: "Approved", value: 0 },
+          { label: "Rejected", value: 0 }
+        ]).map((kpi, idx) => {
           const isActive = activeCardIdx === idx
+          const meta = getSummaryCardMeta(kpi.label)
           return (
             <Card
               key={idx}
               onClick={() => {
                 setActiveCardIdx(idx)
-                toast.info(`Active filter set to: ${card.title}`)
+                toast.info(`Active filter set to: ${kpi.label}`)
               }}
               className={`border rounded-2xl shadow-sm overflow-hidden transition-all duration-200 hover:-translate-y-0.5 group cursor-pointer ${isActive
                 ? "bg-[#EFF6FF] border-[#BFDBFE]/85 shadow-md"
@@ -132,18 +97,18 @@ export default function RolesManagementPage() {
                 <div className="space-y-1">
                   <p className={`text-xs font-bold tracking-wider uppercase transition-colors duration-200 ${isActive ? "text-[#1E40AF]/80" : "text-slate-400 group-hover:text-[#1E40AF]/60"
                     }`}>
-                    {card.title}
+                    {kpi.label}
                   </p>
                   <h3 className={`text-3xl font-black transition-colors duration-200 ${isActive ? "text-[#1E40AF]" : "text-slate-800 group-hover:text-[#1E40AF]"
                     }`}>
-                    {card.count}
+                    {kpi.value ?? "0"}
                   </h3>
                 </div>
 
                 <div className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-200 ${isActive ? "bg-white text-[#1E40AF]" : "bg-slate-50 group-hover:bg-white text-slate-600 group-hover:text-[#1E40AF]"
                   }`}>
-                  {React.cloneElement(card.icon, {
-                    className: `size-4 transition-colors duration-200 ${isActive ? "text-blue-600" : card.colorClass + " group-hover:text-blue-600"}`
+                  {React.cloneElement(meta.icon, {
+                    className: `size-4 transition-colors duration-200 ${isActive ? "text-blue-600" : meta.colorClass + " group-hover:text-blue-600"}`
                   })}
                 </div>
               </CardContent>
@@ -200,41 +165,57 @@ export default function RolesManagementPage() {
         <CardContent className="p-6 md:p-8 space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-extrabold text-slate-800 tracking-tight">
-              Recent Activity
+              Recent Roles Activity
             </h3>
             <button
               onClick={() => {
-                toast.info("Viewing all recent activities...")
+                setShowAllRecent((prev) => !prev)
               }}
               className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors flex items-center gap-1 cursor-pointer select-none"
             >
-              View All
-              <IconArrowUpRight className="size-3.5" />
+              {showAllRecent ? "View Less" : "View All"}
+              <IconArrowUpRight className={`size-3.5 transition-transform ${showAllRecent ? "rotate-180" : ""}`} />
             </button>
           </div>
 
           <div className="divide-y divide-slate-100">
-            {recentActivities.map((act) => (
+            {isLoadingJobProfiles ? (
+              <div className="space-y-4 pt-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <Skeleton className="h-10 w-10 rounded-xl" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : jobProfiles.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4">No recent activity.</p>
+            ) : jobProfiles.map((act) => {
+              const meta = getActivityMeta("approved") // Default styling for job profiles
+              return (
               <div
-                key={act.id}
+                key={act.jobProfileId}
                 className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4 group transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl flex items-center justify-center shrink-0 ${act.bg}`}>
-                    {act.icon}
+                  <div className={`p-2 rounded-xl flex items-center justify-center shrink-0 ${meta.bg}`}>
+                    {meta.icon}
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-xs font-bold text-slate-700 leading-none">
-                      Role '<span className="text-slate-800 font-extrabold">{act.role}</span>' {act.status}
+                      Role '<span className="text-slate-800 font-extrabold">{act.jobName}</span>' created
                     </p>
                   </div>
                 </div>
 
                 <span className="text-[11px] font-semibold text-slate-400 shrink-0">
-                  {act.time}
+                  {new Date(act.createdAt).toLocaleDateString()}
                 </span>
               </div>
-            ))}
+            )})}
           </div>
         </CardContent>
       </Card>
