@@ -215,7 +215,7 @@ export function useUpdateJobProfileQuestion(jobProfileId?: string | null) {
   const mutation = api.useMutation<
     JobProfileUpdateQuestionResponse,
     unknown,
-    { questionId: string; data: JobProfileUpdateQuestionRequest }
+    { questionId: string } & JobProfileUpdateQuestionRequest
   >({
     url: ({ questionId }) => `/v2/job-profile-questions/${questionId}`,
     method: "PATCH",

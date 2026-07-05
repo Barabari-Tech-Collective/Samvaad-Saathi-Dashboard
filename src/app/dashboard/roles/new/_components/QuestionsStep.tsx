@@ -235,11 +235,9 @@ export function QuestionsStep() {
     try {
       await updateQuestionAsync({
         questionId: activeQuestion.id,
-        data: {
-          question: modalText,
-          type: modalCategory,
-          difficulty: modalDifficulty
-        }
+        question: modalText,
+        type: modalCategory,
+        difficulty: modalDifficulty
       })
       setIsEditOpen(false)
       toast.success("Question updated successfully")
