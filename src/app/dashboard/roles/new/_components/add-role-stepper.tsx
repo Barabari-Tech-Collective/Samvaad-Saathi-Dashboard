@@ -234,6 +234,46 @@ export function AddRoleStepper() {
     setStep((s) => s - 1)
   }
 
+  async function handleGenerateQuestionsClick() {
+    try {
+      let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
+      if (!profileId || profileId === "null") {
+        const values = form.getValues()
+        const finalCompanyName = values.jdType === "role"
+          ? "General Role"
+          : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+        
+        const difficultyText = difficultyLevels
+          .filter(l => l.selected)
+          .map(l => `${l.title}:\n- Question: ${l.exampleQuestion || l.placeholder}`)
+          .join("\n\n")
+
+        const finalContext = [
+          values.additionalContext,
+          difficultyText ? `Difficulty Levels:\n${difficultyText}` : ""
+        ].filter(Boolean).join("\n\n")
+
+        const response = await createJobProfileAsync({
+          jobName: values.jobName,
+          jobDescription: values.jobDescription,
+          companyName: finalCompanyName,
+          experienceLevel: values.experienceLevel,
+          skills: values.skills,
+          additionalContext: finalContext || undefined,
+          category: values.category,
+          employmentType: values.employmentType,
+        })
+        const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
+        profileId = newId.toString()
+        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId)
+      }
+      router.push("/dashboard/roles/new/questions")
+    } catch (e) {
+      console.error("Failed to create profile before generating questions:", e)
+      toast.error("Failed to prepare profile for questions. Check your connection.")
+    }
+  }
+
   async function onSubmit(values: AddRoleFormValues) {
     try {
       // Ensure company name is never empty for the backend
@@ -505,7 +545,7 @@ export function AddRoleStepper() {
 
                 <Button
                   type="button"
-                  onClick={() => router.push("/dashboard/roles/new/questions")}
+                  onClick={handleGenerateQuestionsClick}
                   className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors flex items-center gap-1.5"
                 >
                   <IconSparkles className="size-4" />

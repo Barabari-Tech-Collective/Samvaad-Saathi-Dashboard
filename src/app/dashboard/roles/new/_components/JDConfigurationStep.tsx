@@ -195,7 +195,8 @@ export function JDConfigurationStep({
           originalFileName: response.originalFileName,
           uploadedAt: response.uploadedAt,
           totalQuestions: response.totalQuestions,
-          topicsDetected: response.topicsDetected || []
+          topicsDetected: response.topicsDetected || [],
+          extractedText: response.extracted_text || ""
         }
         setKnowledgeQuestions(parsed)
         if (typeof window !== "undefined") {

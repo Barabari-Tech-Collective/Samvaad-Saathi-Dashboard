@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { toast } from "sonner"
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react"
+import { IconLoader2 } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -12,6 +13,7 @@ import {
   EMPLOYMENT_OPTIONS,
   EXPERIENCE_OPTIONS,
 } from "./constants"
+import { useGetJobProfileReview } from "@/lib/api/hooks/analytics/useJobProfiles"
 
 interface ReviewSubmitStepProps {
   form: UseFormReturn<AddRoleFormValues>
@@ -22,69 +24,52 @@ export function ReviewSubmitStep({
   form,
   difficultyLevels,
 }: ReviewSubmitStepProps) {
-  const values = form.watch()
-  const expLabel =
-    EXPERIENCE_OPTIONS.find((l) => l.value === values.experienceLevel)?.label ??
-    "3–4 Years"
-  const catLabel =
-    CATEGORY_OPTIONS.find((l) => l.value === values.category)?.label ??
-    "Engineering"
-  const empLabel =
-    EMPLOYMENT_OPTIONS.find((l) => l.value === values.employmentType)?.label ??
-    "Full-time"
+  const [isMounted, setIsMounted] = useState(false)
+  const profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null
 
-  // Make mock data fallbacks match the Figma screenshot exactly
-  const jobName = values.jobName || "Senior Front-End Developer"
-  const category = catLabel
-  const experienceRange = expLabel
-  const employmentType = empLabel
-  const jobDescription = values.jobDescription || "Own end-to-end frontend architecture for the customer experience surface. Drive performance, design-system adoption and mentorship across squads."
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
-  const skillsList = values.skills && values.skills.length > 0 ? values.skills : ["React", "TypeScript", "GraphQL", "Performance"]
-  const competenciesList = ["Systems thinking", "Stakeholder comms", "Production ownership"]
+  const { reviewData, isLoadingReview } = useGetJobProfileReview(profileId)
 
   // Accordion active level state
   const [activeLevel, setActiveLevel] = useState<number | null>(1)
 
-  const activeLevels = difficultyLevels.filter(l => l.selected)
+  if (!isMounted) return null
 
-  const levels = activeLevels.map(level => {
-    let mockQuestions: string[] = []
-    if (level.level === 1) {
-      mockQuestions = [
-        "Q1. Explain the difference between var, let, and const in JavaScript.",
-        "Q2. What are React hooks and why were they introduced?",
-        "Q3. How does the browser event loop work?"
-      ]
-    } else if (level.level === 2) {
-      mockQuestions = [
-        "Q1. Tell me about a challenging React project where you optimized rendering.",
-        "Q2. How did you structure GraphQL schema mutations in your last application?",
-        "Q3. Describe your experience leading architectural decisions across front-end squads."
-      ]
-    } else if (level.level === 3) {
-      mockQuestions = [
-        "Q1. How would you handle state synchronization across multiple browser tabs?",
-        "Q2. What strategies do you use for real-time monitoring of runtime JavaScript errors?",
-        "Q3. Explain how to implement incremental migration from legacy SPA to modern SSR."
-      ]
-    } else if (level.level === 4) {
-      mockQuestions = [
-        "Q1. How would you explain browser rendering cycles under intense performance constraints?",
-        "Q2. Design a thread-safe frontend cache architecture utilizing Web Workers.",
-        "Q3. What actions do you take when your production frontend experiences a sudden memory leak?"
-      ]
-    }
+  if (isLoadingReview || !reviewData) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-500">
+        <IconLoader2 className="w-8 h-8 animate-spin mb-4 text-blue-600" />
+        <p className="text-sm font-medium">Loading review summary...</p>
+      </div>
+    )
+  }
 
+  const { roleDetails, jdSummary, questionSummary } = reviewData
+
+  const jobName = roleDetails?.roleName || "New Role"
+  const category = roleDetails?.category || "Engineering"
+  const experienceRange = roleDetails?.experienceLevel || "Not specified"
+  const employmentType = roleDetails?.employmentType || "Full-time"
+  const jobDescription = roleDetails?.description || "No description provided."
+
+  const skillsList = jdSummary?.extractedSkills || []
+  const competenciesList = jdSummary?.competencies || []
+
+  const levels = (questionSummary?.levels || []).map((level: any) => {
+    const mockQuestions = level.previewQuestions?.map((q: any) => q.question) || []
+    
     return {
       id: level.level,
       badge: `L${level.level}`,
       title: level.title,
       description: level.description,
-      countText: `${level.count} questions`,
+      countText: `${level.questionCount} questions`,
       questions: mockQuestions,
       hasMoreLink: true,
-      hasMoreText: `View all ${level.count} questions`
+      hasMoreText: `View all ${level.questionCount} questions`
     }
   })
 
@@ -171,7 +156,7 @@ export function ReviewSubmitStep({
             Question Overview
           </h3>
           <span className="text-xs font-semibold text-slate-400">
-            50 questions across 4 levels
+            {questionSummary?.totalQuestions || 0} questions across {questionSummary?.totalLevels || 0} levels
           </span>
         </div>
 

@@ -666,3 +666,43 @@ export type JobProfileDeleteQuestionResponse = {
   status: string
   deleted_question_id: string
 }
+export type JobProfileReviewRoleDetails = {
+  roleName: string
+  companyName?: string
+  category?: string
+  experienceLevel?: string
+  employmentType?: string
+  description?: string
+}
+
+export type JobProfileReviewJdSummary = {
+  extractedSkills: string[]
+  competencies: string[]
+}
+
+export type JobProfileReviewPreviewQuestion = {
+  questionId: number | string
+  question: string
+}
+
+export type JobProfileReviewLevelInfo = {
+  level: number
+  title: string
+  description: string
+  questionCount: number
+  previewQuestions: JobProfileReviewPreviewQuestion[]
+}
+
+export type JobProfileReviewQuestionSummary = {
+  totalQuestions: number
+  totalLevels: number
+  levels: JobProfileReviewLevelInfo[]
+}
+
+export type JobProfileReviewResponse = {
+  jobProfileId: number | string
+  roleDetails: JobProfileReviewRoleDetails
+  jdSummary: JobProfileReviewJdSummary
+  questionSummary: JobProfileReviewQuestionSummary
+  status: string
+}

@@ -10,6 +10,7 @@ import {
   IconAlertCircle,
   IconFileText,
   IconCheck,
+  IconLoader2,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
@@ -75,24 +76,54 @@ export function QuestionsStep() {
       }
     }
     return {
-      keywords: ["frontend", "best practices", "architecture", "optimization"],
-      concepts: ["Core concepts", "Performance optimizations", "Maintainable architecture"],
-      expectedAnswer: "A complete explanation addressing the core design, performance implications, and practical implementation details of the topic.",
-      exampleOutput: "Code example illustrating the pattern in production."
+      keywords: [],
+      concepts: [],
+      expectedAnswer: "No expected answer provided.",
+      exampleOutput: ""
     }
   }
 
   // Load difficulty levels from localStorage or fallback to default
-  const [difficultyLevels, setDifficultyLevels] = useState([
-    { level: 1, selected: true, count: 15, badgeLabel: "Foundational", title: "General Fundamentals" },
-    { level: 2, selected: true, count: 15, badgeLabel: "Intermediate", title: "Project & Resume Based" },
-    { level: 3, selected: true, count: 10, badgeLabel: "Advanced", title: "Production & Scenario Based" },
-    { level: 4, selected: true, count: 10, badgeLabel: "Expert", title: "Advanced / Pressure Scenarios" }
-  ])
+  const [difficultyLevels, setDifficultyLevels] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedLevels = localStorage.getItem("samvaad_saathi_difficulty_levels")
+      if (savedLevels) {
+        try {
+          const parsed = JSON.parse(savedLevels)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed
+          }
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+    return [
+      { level: 1, selected: true, count: 15, badgeLabel: "Foundational", title: "General Fundamentals" },
+      { level: 2, selected: true, count: 15, badgeLabel: "Intermediate", title: "Project & Resume Based" },
+      { level: 3, selected: true, count: 10, badgeLabel: "Advanced", title: "Production & Scenario Based" },
+      { level: 4, selected: true, count: 10, badgeLabel: "Expert", title: "Advanced / Pressure Scenarios" }
+    ]
+  })
 
   const [activeTab, setActiveTab] = useState<number>(1)
   const [searchQuery, setSearchQuery] = useState("")
-  const [draftTitle, setDraftTitle] = useState("Senior Front-End Developer - Engineering")
+  const [draftTitle, setDraftTitle] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("samvaad_saathi_draft_role")
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          if (parsed.jobName) {
+            return `${parsed.jobName} - ${parsed.companyName || "Engineering"}`
+          }
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+    return "New Role Draft"
+  })
 
   // Modals state
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -104,32 +135,7 @@ export function QuestionsStep() {
   const [showToast, setShowToast] = useState(true)
   const hasGeneratedRef = useRef(false)
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedLevels = localStorage.getItem("samvaad_saathi_difficulty_levels")
-      if (savedLevels) {
-        try {
-          const parsed = JSON.parse(savedLevels)
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setDifficultyLevels(parsed)
-          }
-        } catch (e) {
-          console.error(e)
-        }
-      }
-      const saved = localStorage.getItem("samvaad_saathi_draft_role")
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved)
-          if (parsed.jobName) {
-            setDraftTitle(`${parsed.jobName} - ${parsed.companyName || "Engineering"}`)
-          }
-        } catch (e) {
-          console.error(e)
-        }
-      }
-    }
-  }, [])
+
 
   const activeLevels = difficultyLevels.filter(l => l.selected)
   const totalQuestions = activeLevels.reduce((acc, curr) => acc + curr.count, 0)
@@ -147,7 +153,13 @@ export function QuestionsStep() {
        let knowledgeReferenceContext = undefined;
        if (typeof window !== "undefined") {
          const k = localStorage.getItem("samvaad_saathi_knowledge_questions");
-         if (k) knowledgeReferenceContext = k;
+         if (k) {
+           try {
+             knowledgeReferenceContext = JSON.parse(k).extractedText;
+           } catch (e) {
+             knowledgeReferenceContext = k;
+           }
+         }
        }
 
        if (levelsPayload.some(l => l.count > 0)) {
@@ -163,8 +175,9 @@ export function QuestionsStep() {
              refetch()
            })
            .catch(err => {
+             console.error("Error generating questions:", err)
              toast.dismiss(loadingToast)
-             toast.error("Failed to generate questions")
+             toast.error(err?.response?.data?.detail || "Failed to generate questions")
            })
        }
     }
@@ -224,7 +237,7 @@ export function QuestionsStep() {
         questionId: activeQuestion.id,
         data: {
           question: modalText,
-          category: modalCategory,
+          type: modalCategory,
           difficulty: modalDifficulty
         }
       })
@@ -269,6 +282,15 @@ export function QuestionsStep() {
     } catch {
       toast.error("Failed to regenerate question")
     }
+  }
+
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted) {
+    return null
   }
 
   return (
@@ -396,7 +418,15 @@ export function QuestionsStep() {
 
       {/* Dynamic Questions List */}
       <div className="space-y-3">
-        {filteredQuestions.length === 0 ? (
+        {isGenerating ? (
+          <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center bg-white shadow-sm flex flex-col items-center">
+            <IconLoader2 className="size-10 animate-spin text-blue-600 mb-3" />
+            <h3 className="text-sm font-semibold text-slate-700">Generating AI Questions</h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              Please wait, this can take up to 2 minutes. The AI is crafting high-quality interview questions based on your JD and selected difficulty levels.
+            </p>
+          </div>
+        ) : filteredQuestions.length === 0 ? (
           <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center bg-white shadow-sm">
             <IconAlertCircle className="size-10 text-slate-300 mx-auto mb-2" />
             <h3 className="text-sm font-semibold text-slate-700">No questions found</h3>
@@ -435,11 +465,9 @@ export function QuestionsStep() {
       {/* Floating Bottom-Right Toast */}
       {showToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#EFF6FF] border border-blue-200 rounded-xl px-4 py-3 shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
-          <div className="flex size-6 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-            <IconCheck className="size-4 font-bold" />
-          </div>
-          <div>
-            <p className="text-xs font-extrabold text-blue-800">{totalQuestions} questions generated successfully</p>
+          <div className="flex items-center gap-2">
+            <IconCheck className="size-4 text-blue-600" />
+            <p className="text-xs font-extrabold text-blue-800">{questions.length > 0 ? `${questions.length} questions generated successfully` : 'Generating questions...'}</p>
           </div>
           <button
             onClick={() => setShowToast(false)}

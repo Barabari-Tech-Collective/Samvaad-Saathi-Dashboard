@@ -20,6 +20,7 @@ import type {
   JobProfileUpdateQuestionResponse,
   JobProfileRegenerateQuestionResponse,
   JobProfileDeleteQuestionResponse,
+  JobProfileReviewResponse,
 } from "./types"
 import { analyticsKey } from "./query-keys"
 
@@ -179,9 +180,7 @@ export function useGetJobProfileQuestions(jobProfileId: string | null) {
     url: `/v2/job-profiles/${jobProfileId}/questions`,
     method: "GET",
     key: ["/v2/job-profiles", jobProfileId, "questions"],
-    options: {
-      enabled: !!jobProfileId,
-    },
+    enabled: !!jobProfileId && jobProfileId !== "null",
   })
 
   return {
@@ -264,5 +263,24 @@ export function useDeleteJobProfileQuestion(jobProfileId?: string | null) {
     deleteQuestionAsync: mutation.mutateAsync,
     isDeletingQuestion: mutation.isPending,
     ...mutation,
+  }
+}
+
+// ── GET /v2/job-profiles/{job_profile_id}/review ──────────────────────────────
+export function useGetJobProfileReview(jobProfileId: string | null) {
+  const query = api.useQuery<JobProfileReviewResponse>({
+    url: `/v2/job-profiles/${jobProfileId}/review`,
+    method: "GET",
+    key: ["job-profile-review", jobProfileId],
+    enabled: !!jobProfileId && jobProfileId !== "null",
+    refetchOnWindowFocus: false,
+  })
+
+  return {
+    reviewData: query.data,
+    isLoadingReview: query.isLoading,
+    isErrorReview: query.isError,
+    errorReview: query.error,
+    refetchReview: query.refetch,
   }
 }

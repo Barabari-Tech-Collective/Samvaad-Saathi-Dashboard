@@ -124,7 +124,12 @@ export default function RolesManagementPage() {
             Quick Actions
           </h4>
           <Button
-            onClick={() => router.push("/dashboard/roles/new")}
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                localStorage.removeItem("samvaad_saathi_draft_profile_id")
+              }
+              router.push("/dashboard/roles/new")
+            }}
             className="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold text-xs px-5 py-2.5 h-10 rounded-lg shadow-sm flex items-center gap-1.5 transition-all select-none"
           >
             <IconPlus className="size-4" />
