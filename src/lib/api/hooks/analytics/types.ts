@@ -706,3 +706,13 @@ export type JobProfileReviewResponse = {
   questionSummary: JobProfileReviewQuestionSummary
   status: string
 }
+
+export type JobProfileSubmitResponse = {
+  jobProfileId: number | string
+  jobName: string
+  status: string
+  submittedAt: string
+  totalQuestions: number
+  totalLevels: number
+  message: string
+}

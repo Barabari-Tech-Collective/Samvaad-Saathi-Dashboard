@@ -21,6 +21,7 @@ import type {
   JobProfileRegenerateQuestionResponse,
   JobProfileDeleteQuestionResponse,
   JobProfileReviewResponse,
+  JobProfileSubmitResponse,
 } from "./types"
 import { analyticsKey } from "./query-keys"
 
@@ -282,5 +283,24 @@ export function useGetJobProfileReview(jobProfileId: string | null) {
     isErrorReview: query.isError,
     errorReview: query.error,
     refetchReview: query.refetch,
+  }
+}
+
+// ── POST /v2/job-profiles/{job_profile_id}/submit ─────────────────────────────
+export function useSubmitJobProfile() {
+  const mutation = api.useMutation<
+    JobProfileSubmitResponse,
+    unknown,
+    { jobProfileId: string }
+  >({
+    url: ({ jobProfileId }) => `/v2/job-profiles/${jobProfileId}/submit`,
+    method: "POST",
+    keyToInvalidate: undefined,
+  })
+
+  return {
+    submitProfileAsync: mutation.mutateAsync,
+    isSubmittingProfile: mutation.isPending,
+    ...mutation,
   }
 }

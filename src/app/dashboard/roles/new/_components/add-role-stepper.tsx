@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Form } from "@/components/ui/form"
-import { useCreateJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
+import { useCreateJobProfile, useSubmitJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
 import { RoleCreationStepper } from "./RoleCreationStepper"
 
 import {
@@ -52,6 +52,7 @@ export function AddRoleStepper() {
   const [skillInput, setSkillInput] = useState("")
   const [knowledgeQuestions, setKnowledgeQuestions] = useState<any>(null)
   const { createJobProfileAsync, isCreatingJobProfile } = useCreateJobProfile()
+  const { submitProfileAsync, isSubmittingProfile } = useSubmitJobProfile()
 
   useEffect(() => {
     const stepParam = searchParams.get("step")
@@ -315,25 +316,20 @@ export function AddRoleStepper() {
       }
 
       try {
-        await createJobProfileAsync({
-          jobName: values.jobName,
-          jobDescription: values.jobDescription,
-          companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel,
-          skills: values.skills,
-          additionalContext: finalContext || undefined,
-          category: values.category,
-          employmentType: values.employmentType,
-        })
+        const profileId = localStorage.getItem("samvaad_saathi_draft_profile_id")
+        if (profileId && profileId !== "null") {
+          await submitProfileAsync({ jobProfileId: profileId })
+        } else {
+          throw new Error("No profile ID found to submit")
+        }
       } catch (apiError) {
-        console.warn("Backend API not connected/available, proceeding with frontend mock flow:", apiError)
+        console.warn("Backend API not connected/available or failed to submit, proceeding with frontend flow:", apiError)
       }
-      toast.success("Role created successfully")
+      toast.success("Role submitted successfully")
       router.push("/dashboard/roles/new/success")
     } catch (error) {
       console.error("Submission Error:", error);
-      toast.success("Role created successfully (Mock Flow)")
-      router.push("/dashboard/roles/new/success")
+      toast.error("Failed to submit role. Please try again.")
     }
   }
 
@@ -485,7 +481,7 @@ export function AddRoleStepper() {
 
                 <Button
                   type="button"
-                  disabled={isCreatingJobProfile}
+                  disabled={isSubmittingProfile}
                   className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
                   onClick={form.handleSubmit(
                     onSubmit,
@@ -498,10 +494,10 @@ export function AddRoleStepper() {
                     }
                   )}
                 >
-                  {isCreatingJobProfile ? (
+                  {isSubmittingProfile ? (
                     <>
                       <IconLoader2 className="size-4 animate-spin" />
-                      Finalizing...
+                      Submitting...
                     </>
                   ) : (
                     <>
