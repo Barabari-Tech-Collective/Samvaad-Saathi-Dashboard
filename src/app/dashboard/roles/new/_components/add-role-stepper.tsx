@@ -275,32 +275,29 @@ export function AddRoleStepper() {
     }
   }
 
-  async function onSubmit(values: AddRoleFormValues) {
+  async function handleFinalSubmit() {
     try {
-      // Ensure company name is never empty for the backend
-      const finalCompanyName = values.jdType === "role"
-        ? "General Role"
-        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+      const profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
+      if (!profileId || profileId === "null") {
+        toast.error("No profile ID found to submit.");
+        return;
+      }
 
-      // Format custom difficulty questions into additionalContext payload safely
-      const difficultyText = difficultyLevels
-        .filter(l => l.selected)
-        .map(l => `${l.title}:\n- Question: ${l.exampleQuestion || l.placeholder}`)
-        .join("\n\n")
+      let draftJobName = form.getValues("jobName");
+      if (!draftJobName) {
+        const savedDraftStr = localStorage.getItem("samvaad_saathi_draft_role");
+        if (savedDraftStr) {
+           try { draftJobName = JSON.parse(savedDraftStr).jobName || "Unnamed Role"; } catch(e) {}
+        }
+      }
 
-      const finalContext = [
-        values.additionalContext,
-        difficultyText ? `Difficulty Levels:\n${difficultyText}` : ""
-      ].filter(Boolean).join("\n\n")
-
-      // Compute stats for Success Page binding
       const activeLevelsCount = difficultyLevels.filter(l => l.selected).length;
       const totalQuestionsCount = difficultyLevels
         .filter(l => l.selected)
         .reduce((sum, l) => sum + l.count, 0);
 
-      const submissionInfo = {
-        roleName: values.jobName,
+      let submissionInfo = {
+        roleName: draftJobName || "Unnamed Role",
         totalQuestions: totalQuestionsCount,
         activeLevels: activeLevelsCount,
         submittedDate: new Date().toLocaleDateString("en-US", {
@@ -312,25 +309,30 @@ export function AddRoleStepper() {
       };
 
       if (typeof window !== "undefined") {
+        const existingStr = sessionStorage.getItem("samvaad_saathi_last_submission");
+        if (existingStr && (!draftJobName || draftJobName === "Unnamed Role")) {
+          try {
+             submissionInfo = JSON.parse(existingStr);
+          } catch(e) {}
+        }
         sessionStorage.setItem("samvaad_saathi_last_submission", JSON.stringify(submissionInfo));
       }
 
       try {
-        const profileId = localStorage.getItem("samvaad_saathi_draft_profile_id")
-        if (profileId && profileId !== "null") {
-          await submitProfileAsync({ jobProfileId: profileId })
-        } else {
-          throw new Error("No profile ID found to submit")
-        }
+        await submitProfileAsync({ jobProfileId: profileId });
       } catch (apiError) {
-        console.warn("Backend API not connected/available or failed to submit, proceeding with frontend flow:", apiError)
+        console.warn("Backend API not connected/available or failed to submit, proceeding with frontend flow:", apiError);
       }
-      toast.success("Role submitted successfully")
-      router.push("/dashboard/roles/new/success")
+      toast.success("Role submitted successfully");
+      router.push("/dashboard/roles/new/success");
     } catch (error) {
       console.error("Submission Error:", error);
-      toast.error("Failed to submit role. Please try again.")
+      toast.error("Failed to submit role. Please try again.");
     }
+  }
+
+  async function onSubmit(values: AddRoleFormValues) {
+    // Only used for earlier steps if needed, but final submit uses handleFinalSubmit
   }
 
   const isLastStep = step === STEPS.length - 1
@@ -483,16 +485,7 @@ export function AddRoleStepper() {
                   type="button"
                   disabled={isSubmittingProfile}
                   className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
-                  onClick={form.handleSubmit(
-                    onSubmit,
-                    (errors) => {
-                      console.log("Validation Errors:", errors);
-                      const firstError = Object.values(errors)[0] as any;
-                      if (firstError) {
-                        toast.error(firstError.message || "Please check all fields");
-                      }
-                    }
-                  )}
+                  onClick={() => handleFinalSubmit()}
                 >
                   {isSubmittingProfile ? (
                     <>
