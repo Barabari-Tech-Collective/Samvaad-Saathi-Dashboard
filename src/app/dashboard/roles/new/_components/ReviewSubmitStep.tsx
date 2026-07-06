@@ -35,6 +35,7 @@ export function ReviewSubmitStep({
 
   // Accordion active level state
   const [activeLevel, setActiveLevel] = useState<number | null>(1)
+  const [expandedQuestionLevels, setExpandedQuestionLevels] = useState<number[]>([])
 
   if (!isMounted) return null
 
@@ -202,7 +203,7 @@ export function ReviewSubmitStep({
                 {isLevelExpanded && (
                   <div className="px-4 pb-4 pt-1 border-t border-slate-50 space-y-3 animate-in fade-in duration-200">
                     <div className="space-y-2">
-                      {level.questions.map((qText, qIdx) => (
+                      {level.questions.slice(0, expandedQuestionLevels.includes(level.id) ? undefined : 3).map((qText: string, qIdx: number) => (
                         <div
                           key={qIdx}
                           className="p-3 bg-slate-50/50 hover:bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 transition-colors border border-slate-100"
@@ -212,17 +213,33 @@ export function ReviewSubmitStep({
                       ))}
                     </div>
 
-                    {level.hasMoreLink && (
+                    {level.hasMoreLink && !expandedQuestionLevels.includes(level.id) && level.questions.length > 3 && (
                       <div className="pt-1">
                         <button
                           type="button"
-                          onClick={() => {
-                            toast.info("Navigating to detailed Level 1 question viewer...")
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setExpandedQuestionLevels(prev => [...prev, level.id])
                           }}
                           className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors cursor-pointer flex items-center gap-1 select-none"
                         >
                           {level.hasMoreText}
                           <span>→</span>
+                        </button>
+                      </div>
+                    )}
+                    {expandedQuestionLevels.includes(level.id) && level.questions.length > 3 && (
+                      <div className="pt-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setExpandedQuestionLevels(prev => prev.filter(id => id !== level.id))
+                          }}
+                          className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors cursor-pointer flex items-center gap-1 select-none"
+                        >
+                          View less
+                          <span>↑</span>
                         </button>
                       </div>
                     )}
