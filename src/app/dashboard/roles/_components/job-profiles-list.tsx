@@ -72,8 +72,8 @@ export function JobProfilesList() {
       {/* Profiles grid */}
       {!isLoadingJobProfiles && jobProfiles.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {jobProfiles.map((profile) => (
-            <JobProfileCard key={profile.jobProfileId} profile={profile} />
+          {jobProfiles.map((profile: any) => (
+            <JobProfileCard key={profile.jobProfileId || profile.id} profile={profile} />
           ))}
         </div>
       )}

@@ -550,6 +550,8 @@ export function AddRoleStepper() {
         : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
 
       await createJobProfileAsync({
+        title: values.jobName,
+        description: values.jobDescription,
         jobName: values.jobName,
         jobDescription: values.jobDescription,
         companyName: finalCompanyName,
