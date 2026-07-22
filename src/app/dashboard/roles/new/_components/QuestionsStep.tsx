@@ -52,7 +52,7 @@ export function QuestionsStep() {
   // Map API questions to UI model
   const apiQuestions = questionsData?.questions || []
   const questions = apiQuestions.map(q => ({
-    id: q.question_id || q.questionId,
+    id: String(q.question_id || q.questionId || ""),
     level: q.level,
     category: q.type,
     difficulty: q.difficulty,
