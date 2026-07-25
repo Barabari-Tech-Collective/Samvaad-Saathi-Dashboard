@@ -155,6 +155,15 @@ export function JDConfigurationStep({
   async function handleJDFileUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) {
+      const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
+
+      if (!validTypes.includes(file.type) && !isValidExtension) {
+        toast.error("Invalid file type. Please upload a PDF or Document (.doc, .docx).")
+        if (e.target) e.target.value = ''
+        return
+      }
+
       const toastId = toast.loading(`Uploading "${file.name}"...`)
       
       try {
@@ -182,6 +191,15 @@ export function JDConfigurationStep({
   async function handleSyllabusFileUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) {
+      const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
+
+      if (!validTypes.includes(file.type) && !isValidExtension) {
+        toast.error("Invalid file type. Please upload a PDF or Document (.doc, .docx).")
+        if (e.target) e.target.value = ''
+        return
+      }
+
       const toastId = toast.loading(`Uploading "${file.name}"...`)
       try {
         const formData = new FormData()
@@ -266,31 +284,9 @@ export function JDConfigurationStep({
           <div className="h-[1px] bg-slate-100 flex-1" />
         </div>
 
-        {/* Upload Buttons Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => jdFileInputRef.current?.click()}
-            className="flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 rounded-xl h-11 text-xs font-bold text-slate-600 shadow-sm transition-all cursor-pointer select-none"
-          >
-            <IconUpload className="size-4 text-slate-400" />
-            Upload JD PDF
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => jdFileInputRef.current?.click()}
-            className="flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 rounded-xl h-11 text-xs font-bold text-slate-600 shadow-sm transition-all cursor-pointer select-none"
-          >
-            <IconUpload className="size-4 text-slate-400" />
-            Upload Document
-          </Button>
-        </div>
-
-        {/* Extract Skills Button */}
-        <div className="pt-1">
+        {/* Action Buttons Row */}
+        <div className="flex flex-row items-center justify-between pt-2 w-full">
+          {/* Extract Skills Button */}
           <Button
             type="button"
             variant="outline"
@@ -300,6 +296,17 @@ export function JDConfigurationStep({
           >
             <IconSparkles className="size-4" />
             Extract skills
+          </Button>
+
+          {/* Upload Document Button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => jdFileInputRef.current?.click()}
+            className="border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-600 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer select-none"
+          >
+            <IconUpload className="size-4 text-slate-400" />
+            Upload Document
           </Button>
         </div>
 
