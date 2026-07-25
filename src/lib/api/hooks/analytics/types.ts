@@ -580,6 +580,7 @@ export type JobProfileUploadResponse = {
   topicsDetected?: string[]
   totalQuestions?: number
   topics?: any[]
+  extracted_text?: string
 }
 
 export type JobProfileExtractSkillsRequest = {
