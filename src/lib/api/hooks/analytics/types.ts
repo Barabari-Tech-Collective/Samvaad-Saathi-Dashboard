@@ -583,7 +583,7 @@ export type JobProfileUploadResponse = {
 }
 
 export type JobProfileExtractSkillsRequest = {
-  job_description: string
+  jobDescription: string
 }
 
 export type JobProfileExtractSkillsResponse = {

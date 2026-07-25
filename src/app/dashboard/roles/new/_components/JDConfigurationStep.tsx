@@ -62,6 +62,7 @@ export function JDConfigurationStep({
   const syllabusFileInputRef = useRef<HTMLInputElement>(null)
 
   const skills = form.watch("skills") || []
+  const jobDescription = form.watch("jobDescription") || ""
   const [isExtractorOpen, setIsExtractorOpen] = useState(false)
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false)
 
@@ -134,7 +135,7 @@ export function JDConfigurationStep({
     const toastId = toast.loading("Analyzing job description and extracting key skills...")
 
     try {
-      const response = await extractSkillsAsync({ job_description: jdText })
+      const response = await extractSkillsAsync({ jobDescription: jdText })
       
       const finalSkills = response.skills && response.skills.length > 0 
         ? response.skills 
@@ -294,7 +295,8 @@ export function JDConfigurationStep({
             type="button"
             variant="outline"
             onClick={toggleExtractor}
-            className="border border-[#2563EB]/30 hover:bg-blue-50/50 text-[#2563EB] hover:text-blue-700 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            disabled={jobDescription.length < 10}
+            className="border border-[#2563EB]/30 hover:bg-blue-50/50 text-[#2563EB] hover:text-blue-700 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <IconSparkles className="size-4" />
             Extract skills
