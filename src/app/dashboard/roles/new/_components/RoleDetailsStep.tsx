@@ -32,10 +32,10 @@ export function RoleDetailsStep({ form }: RoleDetailsStepProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 pb-2 mb-2 border-b">
+        <span className="text-xs text-muted-foreground">Type selected</span>
         <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize px-2 py-0.5">
           {jdType === "company" ? "Company Specific" : "Role Specific"}
         </Badge>
-        <span className="text-xs text-muted-foreground">Type selected</span>
       </div>
       <div>
         <h2 className="text-base font-semibold">Role Details</h2>
