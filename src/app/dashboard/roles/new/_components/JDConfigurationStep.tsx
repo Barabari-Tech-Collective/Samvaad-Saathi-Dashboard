@@ -163,8 +163,8 @@ export function JDConfigurationStep({
       const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
 
       if (!isValidExtension) {
-        toast.error("Invalid file type. Please upload a PDF or Document (.doc, .docx).")
-        setUploadError("Invalid file type")
+        toast.error("Please upload a PDF or Document (.doc, .docx).")
+        setUploadError("Only PDF or DOC/DOCX allowed")
         if (e.target) e.target.value = ''
         return
       }
