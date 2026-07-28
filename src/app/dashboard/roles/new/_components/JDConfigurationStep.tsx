@@ -68,6 +68,7 @@ export function JDConfigurationStep({
   const [uploadedJDFileName, setUploadedJDFileName] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [knowledgeUploadError, setKnowledgeUploadError] = useState<string | null>(null)
+  const [uploadedJDText, setUploadedJDText] = useState<string | null>(null)
 
   const { uploadJDAsync, isUploadingJD } = useUploadJobDescription()
   const { uploadKnowledgeAsync, isUploadingKnowledge } = useUploadKnowledgeQuestions()
@@ -138,10 +139,10 @@ export function JDConfigurationStep({
     const toastId = toast.loading("Analyzing job description and extracting key skills...")
 
     try {
-      const response = await extractSkillsAsync({ jobDescription: jdText || `File uploaded: ${uploadedJDFileName}` })
-      
-      const finalSkills = response.skills && response.skills.length > 0 
-        ? response.skills 
+      const response = await extractSkillsAsync({ jobDescription: jdText || uploadedJDText || `File uploaded: ${uploadedJDFileName}` })
+
+      const finalSkills = response.skills && response.skills.length > 0
+        ? response.skills
         : ["React", "TypeScript", "Next.js", "Tailwind CSS", "RESTful APIs"]
 
       form.setValue("skills", finalSkills, { shouldValidate: true })
@@ -169,16 +170,20 @@ export function JDConfigurationStep({
       }
 
       const toastId = toast.loading(`Uploading "${file.name}"...`)
-      
+
       try {
         const formData = new FormData()
         formData.append("file", file)
         const response = await uploadJDAsync(formData)
-        
+
         toast.dismiss(toastId)
         toast.success(`"${response.originalFileName}" uploaded successfully. You can now extract skills.`)
-        setUploadedJDFileName(response.originalFileName || file.name)
         
+        const textFromResponse = response.extracted_text || response.extractedText || response.extractedtext || null
+        
+        setUploadedJDFileName(response.originalFileName || file.name)
+        setUploadedJDText(textFromResponse)
+
       } catch (error) {
         toast.dismiss(toastId)
         toast.error("Failed to upload JD. Please try again.")
@@ -206,10 +211,10 @@ export function JDConfigurationStep({
         const formData = new FormData()
         formData.append("file", file)
         const response = await uploadKnowledgeAsync(formData)
-        
+
         toast.dismiss(toastId)
         toast.success(`"${response.originalFileName}" uploaded successfully as custom Knowledge Set!`)
-        
+
         const parsed = {
           topics: response.topics || [],
           originalFileName: response.originalFileName,
@@ -309,7 +314,7 @@ export function JDConfigurationStep({
               "border hover:bg-slate-50 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer select-none",
               uploadError
                 ? "border-red-200 text-red-600 bg-red-50 hover:border-red-300 hover:bg-red-100"
-                : uploadedJDFileName 
+                : uploadedJDFileName
                   ? "border-green-200 text-green-700 bg-green-50 hover:border-green-300 hover:bg-green-100"
                   : "border-slate-200 text-slate-600 hover:border-slate-300"
             )}
@@ -595,8 +600,8 @@ export function JDConfigurationStep({
           onClick={() => syllabusFileInputRef.current?.click()}
           className={cn(
             "border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group select-none shadow-sm",
-            knowledgeUploadError 
-              ? "border-red-300 bg-red-50 hover:bg-red-100/80" 
+            knowledgeUploadError
+              ? "border-red-300 bg-red-50 hover:bg-red-100/80"
               : "border-[#2563EB]/20 bg-blue-50/5 hover:bg-blue-50/15"
           )}
         >
