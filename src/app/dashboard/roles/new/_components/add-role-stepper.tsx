@@ -243,7 +243,7 @@ export function AddRoleStepper() {
         const finalCompanyName = values.jdType === "role"
           ? "General Role"
           : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
-        
+
         const difficultyText = difficultyLevels
           .filter(l => l.selected)
           .map(l => `${l.title}:\n- Question: ${l.exampleQuestion || l.placeholder}`)
@@ -265,8 +265,8 @@ export function AddRoleStepper() {
           employmentType: values.employmentType,
         })
         const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
-        profileId = newId.toString()
-        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId)
+        profileId = String(newId)
+        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId as string)
       }
       router.push("/dashboard/roles/new/questions")
     } catch (e) {
@@ -287,7 +287,7 @@ export function AddRoleStepper() {
       if (!draftJobName) {
         const savedDraftStr = localStorage.getItem("samvaad_saathi_draft_role");
         if (savedDraftStr) {
-           try { draftJobName = JSON.parse(savedDraftStr).jobName || "Unnamed Role"; } catch(e) {}
+          try { draftJobName = JSON.parse(savedDraftStr).jobName || "Unnamed Role"; } catch (e) { }
         }
       }
 
@@ -312,8 +312,8 @@ export function AddRoleStepper() {
         const existingStr = sessionStorage.getItem("samvaad_saathi_last_submission");
         if (existingStr && (!draftJobName || draftJobName === "Unnamed Role")) {
           try {
-             submissionInfo = JSON.parse(existingStr);
-          } catch(e) {}
+            submissionInfo = JSON.parse(existingStr);
+          } catch (e) { }
         }
         sessionStorage.setItem("samvaad_saathi_last_submission", JSON.stringify(submissionInfo));
       }

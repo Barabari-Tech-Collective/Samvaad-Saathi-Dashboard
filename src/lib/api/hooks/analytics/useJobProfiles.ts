@@ -30,14 +30,30 @@ const jobProfilesSummaryPath = "/v2/job-profiles/summary" as const
 
 // ── GET /v2/job-profiles/summary ──────────────────────────────────────────────
 export function useJobProfilesSummary() {
-  const query = api.useQuery<JobProfilesSummaryResponse>({
+  const query = api.useQuery<any>({
     url: jobProfilesSummaryPath,
     method: "GET",
     key: analyticsKey(jobProfilesSummaryPath),
   })
 
+  let jobProfilesSummary: JobProfilesSummaryResponse | undefined = undefined;
+  if (query.data) {
+    if (query.data.kpis) {
+      jobProfilesSummary = query.data;
+    } else {
+      jobProfilesSummary = {
+        kpis: [
+          { key: "total", label: "Total Roles", value: query.data.totalRoles ?? 0, unit: null },
+          { key: "pending", label: "Pending Review", value: query.data.pendingReview ?? 0, unit: null },
+          { key: "approved", label: "Approved", value: query.data.approved ?? 0, unit: null },
+          { key: "rejected", label: "Rejected", value: query.data.rejected ?? 0, unit: null },
+        ]
+      };
+    }
+  }
+
   return {
-    jobProfilesSummary: query.data,
+    jobProfilesSummary,
     isLoadingJobProfilesSummary: query.isLoading,
     ...query,
   }

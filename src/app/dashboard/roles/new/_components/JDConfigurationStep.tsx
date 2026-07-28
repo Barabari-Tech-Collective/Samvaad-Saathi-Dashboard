@@ -65,6 +65,9 @@ export function JDConfigurationStep({
   const jobDescription = form.watch("jobDescription") || ""
   const [isExtractorOpen, setIsExtractorOpen] = useState(false)
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false)
+  const [uploadedJDFileName, setUploadedJDFileName] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [knowledgeUploadError, setKnowledgeUploadError] = useState<string | null>(null)
 
   const { uploadJDAsync, isUploadingJD } = useUploadJobDescription()
   const { uploadKnowledgeAsync, isUploadingKnowledge } = useUploadKnowledgeQuestions()
@@ -127,15 +130,15 @@ export function JDConfigurationStep({
   // Auto extraction mechanism
   async function handleExtractSkills() {
     const jdText = form.getValues("jobDescription")
-    if (!jdText || jdText.length < 10) {
-      toast.error("Please enter a job description of at least 10 characters first.")
+    if (!uploadedJDFileName && (!jdText || jdText.length < 10)) {
+      toast.error("Please enter a job description of at least 10 characters or upload a document first.")
       return
     }
 
     const toastId = toast.loading("Analyzing job description and extracting key skills...")
 
     try {
-      const response = await extractSkillsAsync({ jobDescription: jdText })
+      const response = await extractSkillsAsync({ jobDescription: jdText || `File uploaded: ${uploadedJDFileName}` })
       
       const finalSkills = response.skills && response.skills.length > 0 
         ? response.skills 
@@ -155,11 +158,12 @@ export function JDConfigurationStep({
   async function handleJDFileUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) {
-      const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      setUploadError(null)
       const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
 
-      if (!validTypes.includes(file.type) && !isValidExtension) {
+      if (!isValidExtension) {
         toast.error("Invalid file type. Please upload a PDF or Document (.doc, .docx).")
+        setUploadError("Invalid file type")
         if (e.target) e.target.value = ''
         return
       }
@@ -172,17 +176,13 @@ export function JDConfigurationStep({
         const response = await uploadJDAsync(formData)
         
         toast.dismiss(toastId)
-        toast.success(`"${response.originalFileName}" uploaded successfully. Auto-populating Job Description...`)
+        toast.success(`"${response.originalFileName}" uploaded successfully. You can now extract skills.`)
+        setUploadedJDFileName(response.originalFileName || file.name)
         
-        form.setValue("jobDescription", `Role: Senior Software Engineer\n\nWe are looking for a highly skilled Senior Software Engineer to join our team. You will lead the design and development of complex frontend architectures, drive code quality and design system adoption, and mentor junior engineers.\n\nRequired Skills:\n- Strong experience with React, Next.js, and TypeScript\n- Excellent understanding of RESTful APIs, GraphQL, and modern state management\n- Passion for performance optimization and clean, maintainable code.`, { shouldValidate: true })
-  
-        setIsExtractorOpen(true)
-        setTimeout(() => {
-          handleExtractSkills()
-        }, 500)
       } catch (error) {
         toast.dismiss(toastId)
         toast.error("Failed to upload JD. Please try again.")
+        setUploadError("Upload failed")
         console.error(error)
       }
     }
@@ -191,11 +191,12 @@ export function JDConfigurationStep({
   async function handleSyllabusFileUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) {
-      const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      setKnowledgeUploadError(null)
       const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
 
-      if (!validTypes.includes(file.type) && !isValidExtension) {
+      if (!isValidExtension) {
         toast.error("Invalid file type. Please upload a PDF or Document (.doc, .docx).")
+        setKnowledgeUploadError("Invalid file type")
         if (e.target) e.target.value = ''
         return
       }
@@ -224,6 +225,7 @@ export function JDConfigurationStep({
       } catch (error) {
         toast.dismiss(toastId)
         toast.error("Failed to upload Knowledge Set file.")
+        setKnowledgeUploadError("Upload failed")
         console.error(error)
       }
     }
@@ -291,7 +293,7 @@ export function JDConfigurationStep({
             type="button"
             variant="outline"
             onClick={toggleExtractor}
-            disabled={jobDescription.length < 10}
+            disabled={jobDescription.length < 10 && !uploadedJDFileName}
             className="border border-[#2563EB]/30 hover:bg-blue-50/50 text-[#2563EB] hover:text-blue-700 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <IconSparkles className="size-4" />
@@ -303,10 +305,31 @@ export function JDConfigurationStep({
             type="button"
             variant="outline"
             onClick={() => jdFileInputRef.current?.click()}
-            className="border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-600 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer select-none"
+            className={cn(
+              "border hover:bg-slate-50 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer select-none",
+              uploadError
+                ? "border-red-200 text-red-600 bg-red-50 hover:border-red-300 hover:bg-red-100"
+                : uploadedJDFileName 
+                  ? "border-green-200 text-green-700 bg-green-50 hover:border-green-300 hover:bg-green-100"
+                  : "border-slate-200 text-slate-600 hover:border-slate-300"
+            )}
           >
-            <IconUpload className="size-4 text-slate-400" />
-            Upload Document
+            {uploadError ? (
+              <>
+                <IconAlertCircle className="size-4 text-red-500" />
+                <span className="truncate max-w-[150px]">{uploadError}</span>
+              </>
+            ) : uploadedJDFileName ? (
+              <>
+                <IconCheck className="size-4 text-green-600" />
+                <span className="truncate max-w-[150px]">Uploaded: {uploadedJDFileName}</span>
+              </>
+            ) : (
+              <>
+                <IconUpload className="size-4 text-slate-400" />
+                Upload Document
+              </>
+            )}
           </Button>
         </div>
 
@@ -570,9 +593,26 @@ export function JDConfigurationStep({
         {/* Dashed Dropzone */}
         <div
           onClick={() => syllabusFileInputRef.current?.click()}
-          className="border-2 border-dashed border-[#2563EB]/20 bg-blue-50/5 hover:bg-blue-50/15 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group select-none shadow-sm"
+          className={cn(
+            "border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group select-none shadow-sm",
+            knowledgeUploadError 
+              ? "border-red-300 bg-red-50 hover:bg-red-100/80" 
+              : "border-[#2563EB]/20 bg-blue-50/5 hover:bg-blue-50/15"
+          )}
         >
-          {knowledgeQuestions?.originalFileName ? (
+          {knowledgeUploadError ? (
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-red-100 text-red-600 border border-red-200 mb-1">
+                <IconAlertCircle className="size-5.5" />
+              </div>
+              <h4 className="text-sm font-extrabold text-red-700 text-center">
+                {knowledgeUploadError}
+              </h4>
+              <p className="text-[10px] font-bold text-red-500">
+                Click to upload a valid file
+              </p>
+            </div>
+          ) : knowledgeQuestions?.originalFileName ? (
             <div className="flex flex-col items-center gap-2">
               <div className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 mb-1">
                 <IconFileText className="size-5.5" />
