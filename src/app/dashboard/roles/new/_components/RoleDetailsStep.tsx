@@ -32,7 +32,7 @@ export function RoleDetailsStep({ form }: RoleDetailsStepProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 pb-2 mb-2 border-b">
-        <span className="text-xs text-muted-foreground">Type selected</span>
+        <span className="text-xs text-muted-foreground">Type selected:</span>
         <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize px-2 py-0.5">
           {jdType === "company" ? "Company Specific" : "Role Specific"}
         </Badge>
@@ -51,7 +51,7 @@ export function RoleDetailsStep({ form }: RoleDetailsStepProps) {
           name="jobName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Role Name</FormLabel>
+              <FormLabel>Role Name <span className="text-red-500">*</span></FormLabel>
               <FormControl>
                 <Input placeholder="e.g. Senior Backend Engineer" className="h-12 px-4 text-base" {...field} />
               </FormControl>
@@ -65,7 +65,7 @@ export function RoleDetailsStep({ form }: RoleDetailsStepProps) {
             name="companyName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company Name</FormLabel>
+                <FormLabel>Company Name <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <Input placeholder="e.g. Amazon" className="h-12 px-4 text-base" {...field} />
                 </FormControl>
@@ -84,7 +84,7 @@ export function RoleDetailsStep({ form }: RoleDetailsStepProps) {
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category</FormLabel>
+              <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} value={field.value || undefined}>
                 <FormControl>
                   <SelectTrigger size="custom" className="w-full h-12 px-4 text-base font-normal text-left">
@@ -110,7 +110,7 @@ export function RoleDetailsStep({ form }: RoleDetailsStepProps) {
           name="experienceLevel"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Experience Level</FormLabel>
+              <FormLabel>Experience Level <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} value={field.value || undefined}>
                 <FormControl>
                   <SelectTrigger size="custom" className="w-full h-12 px-4 text-base font-normal text-left">
@@ -138,7 +138,7 @@ export function RoleDetailsStep({ form }: RoleDetailsStepProps) {
           name="employmentType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Employment Type</FormLabel>
+              <FormLabel>Employment Type <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} value={field.value || undefined}>
                 <FormControl>
                   <SelectTrigger size="custom" className="w-full h-12 px-4 text-base font-normal text-left">
