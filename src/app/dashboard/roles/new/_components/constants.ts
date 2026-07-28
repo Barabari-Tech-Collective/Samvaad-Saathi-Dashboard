@@ -17,9 +17,20 @@ export const addRoleSchema = z.object({
   category: z.string().min(1, "Please select a category"),
   experienceLevel: z.string().min(1, "Please select an experience level"),
   employmentType: z.string().min(1, "Please select an employment type"),
-  jobDescription: z.string().min(10, "Description must be at least 10 characters"),
+  jobDescription: z.string().optional(),
   skills: z.array(z.string().min(1)).min(1, "Add at least one skill"),
   additionalContext: z.string().optional(),
+  uploadedJDFileName: z.string().nullable().optional(),
+}).superRefine((data, ctx) => {
+  const hasText = data.jobDescription && data.jobDescription.trim().length >= 10;
+  const hasFile = data.uploadedJDFileName && data.uploadedJDFileName.trim().length > 0;
+  if (!hasText && !hasFile) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Please enter a job description of at least 10 characters or upload a document.",
+      path: ["jobDescription"],
+    });
+  }
 })
 
 export type AddRoleFormValues = z.infer<typeof addRoleSchema>
@@ -36,7 +47,7 @@ export const STEPS = [
 export const STEP_FIELDS: Array<Array<keyof AddRoleFormValues>> = [
   ["jdType"],
   ["jobName", "companyName", "category", "experienceLevel", "employmentType"],
-  ["jobDescription", "skills"],
+  ["jobDescription", "skills", "uploadedJDFileName"],
   [], // Reference Questions Preview
   [], // Questions
   [], // Review & Submit

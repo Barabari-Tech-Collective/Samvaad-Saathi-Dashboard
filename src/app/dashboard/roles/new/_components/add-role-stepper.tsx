@@ -122,6 +122,7 @@ export function AddRoleStepper() {
       employmentType: "",
       jobDescription: "",
       skills: [],
+      uploadedJDFileName: null,
       additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
     },
     mode: "onTouched",
