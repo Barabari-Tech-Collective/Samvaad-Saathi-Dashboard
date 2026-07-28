@@ -185,6 +185,7 @@ export function JDConfigurationStep({
         setUploadedJDText(textFromResponse)
         
         form.setValue("uploadedJDFileName", response.originalFileName || file.name, { shouldValidate: true })
+        form.setValue("uploadedJDText", textFromResponse || "", { shouldValidate: true })
 
       } catch (error) {
         toast.dismiss(toastId)

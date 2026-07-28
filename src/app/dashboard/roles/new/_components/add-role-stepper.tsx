@@ -123,6 +123,7 @@ export function AddRoleStepper() {
       jobDescription: "",
       skills: [],
       uploadedJDFileName: null,
+      uploadedJDText: null,
       additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
     },
     mode: "onTouched",
@@ -257,7 +258,7 @@ export function AddRoleStepper() {
 
         const response = await createJobProfileAsync({
           jobName: values.jobName,
-          jobDescription: values.jobDescription,
+          jobDescription: values.jobDescription || values.uploadedJDText || "",
           companyName: finalCompanyName,
           experienceLevel: values.experienceLevel,
           skills: values.skills,

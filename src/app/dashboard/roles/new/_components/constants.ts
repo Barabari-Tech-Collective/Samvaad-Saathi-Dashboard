@@ -21,6 +21,7 @@ export const addRoleSchema = z.object({
   skills: z.array(z.string().min(1)).min(1, "Add at least one skill"),
   additionalContext: z.string().optional(),
   uploadedJDFileName: z.string().nullable().optional(),
+  uploadedJDText: z.string().nullable().optional(),
 }).superRefine((data, ctx) => {
   const hasText = data.jobDescription && data.jobDescription.trim().length >= 10;
   const hasFile = data.uploadedJDFileName && data.uploadedJDFileName.trim().length > 0;
