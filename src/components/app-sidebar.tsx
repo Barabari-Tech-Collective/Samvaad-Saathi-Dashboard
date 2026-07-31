@@ -25,6 +25,7 @@ import {
     IconSchool,
     IconTargetArrow,
     IconUsers,
+    IconList,
 } from "@tabler/icons-react"
 
 const data = {
@@ -57,6 +58,11 @@ const data = {
         {
             title: "Roles",
             url: "/dashboard/roles",
+            icon: <IconList />,
+        },
+        {
+            title: "Roles Analytics",
+            url: "/dashboard/roles-analytics",
             icon: <IconTargetArrow />,
         },
         {
