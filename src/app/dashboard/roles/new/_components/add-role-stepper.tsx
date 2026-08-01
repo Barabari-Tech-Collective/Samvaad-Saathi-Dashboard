@@ -257,6 +257,8 @@ export function AddRoleStepper() {
         ].filter(Boolean).join("\n\n")
 
         const response = await createJobProfileAsync({
+          title: values.jobName,
+          description: values.jobDescription || values.uploadedJDText || "",
           jobName: values.jobName,
           jobDescription: values.jobDescription || values.uploadedJDText || "",
           companyName: finalCompanyName,
@@ -279,6 +281,7 @@ export function AddRoleStepper() {
 
   async function handleFinalSubmit() {
     try {
+      const values = form.getValues()
       // Ensure company name is never empty for the backend
       const finalCompanyName = values.jdType === "role"
         ? "General Role"
@@ -286,9 +289,9 @@ export function AddRoleStepper() {
 
       await createJobProfileAsync({
         title: values.jobName,
-        description: values.jobDescription,
+        description: values.jobDescription || values.uploadedJDText || "",
         jobName: values.jobName,
-        jobDescription: values.jobDescription,
+        jobDescription: values.jobDescription || values.uploadedJDText || "",
         companyName: finalCompanyName,
         experienceLevel: values.experienceLevel,
         skills: values.skills,
