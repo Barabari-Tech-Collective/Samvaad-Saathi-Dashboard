@@ -98,7 +98,7 @@ export function JobProfileCard({ profile }: { profile: any }) {
         {/* Skills */}
         {profile.skills && profile.skills.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-auto pt-2">
-            {profile.skills.slice(0, 6).map((skill) => (
+            {profile.skills.slice(0, 6).map((skill: string) => (
               <Badge key={skill} variant="outline" className="text-xs">
                 {skill}
               </Badge>
