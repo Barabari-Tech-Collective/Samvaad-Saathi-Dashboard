@@ -166,8 +166,7 @@ export function QuestionsStep() {
          const loadingToast = toast.loading("Generating AI questions based on provided reference...")
          generateQuestionsAsync({ 
              levels: levelsPayload,
-             knowledge_reference_context: knowledgeReferenceContext,
-             ...({ knowledgeReferenceContext } as any)
+             knowledge_reference_context: knowledgeReferenceContext
          })
            .then(() => {
              toast.dismiss(loadingToast)
