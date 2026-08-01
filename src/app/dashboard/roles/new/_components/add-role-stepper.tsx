@@ -257,6 +257,8 @@ export function AddRoleStepper() {
         ].filter(Boolean).join("\n\n")
 
         const response = await createJobProfileAsync({
+          title: values.jobName,
+          description: values.jobDescription || values.uploadedJDText || "",
           jobName: values.jobName,
           jobDescription: values.jobDescription || values.uploadedJDText || "",
           companyName: finalCompanyName,
