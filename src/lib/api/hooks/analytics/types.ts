@@ -529,6 +529,8 @@ export type CreateJobProfileRequest = {
   experienceLevel?: string
   skills?: string[]
   additionalContext?: string
+  category?: string
+  employmentType?: string
 }
 
 export type CreateJobProfileResponse = {
@@ -539,6 +541,8 @@ export type CreateJobProfileResponse = {
   experienceLevel: string | null
   skills: string[] | null
   additionalContext?: string | null
+  category?: string | null
+  employmentType?: string | null
   createdBy: number | null
   createdAt: string
   updatedAt: string
@@ -554,4 +558,165 @@ export type JobProfilesListResponse = {
 export type DeleteJobProfileResponse = {
   deleted: boolean
   jobProfileId: number
+}
+
+export type JobProfilesSummaryResponse = KpiResponse
+
+export type JobProfileActivityRow = Readonly<{
+  id: number | string
+  role: string
+  status: string
+  time: string
+}>
+
+export type JobProfilesRecentActivityResponse = Readonly<{
+  items: readonly JobProfileActivityRow[]
+}>
+
+export type JobProfileUploadResponse = {
+  success: boolean
+  originalFileName: string
+  fileType: string
+  fileSize: number
+  uploadedAt?: string
+  topicsDetected?: string[]
+  totalQuestions?: number
+  topics?: any[]
+  extracted_text?: string
+  extractedText?: string
+}
+
+export type JobProfileExtractSkillsRequest = {
+  jobDescription: string
+}
+
+export type JobProfileExtractSkillsResponse = {
+  skills: string[]
+}
+
+export type JobProfileGenerateQuestionsRequest = {
+  levels: Array<{
+    level: number
+    count: number
+  }>
+  knowledge_reference_context?: string
+}
+
+export type JobProfileGenerateQuestionsResponse = {
+  jobProfileId: string | number
+  status: string
+  generatedCount: number
+}
+
+export type JobProfileQuestionItem = {
+  question_id: string
+  questionId?: string
+  level: number
+  difficulty: string
+  type: string
+  question: string
+  is_ai_generated: boolean
+  isAiGenerated?: boolean
+  keywords?: string[]
+  concepts_covered?: string[]
+  conceptsCovered?: string[]
+  expected_answer?: string
+  expectedAnswer?: string
+  example_output?: string
+  exampleOutput?: string
+}
+
+export type JobProfileQuestionsListResponse = {
+  questions: JobProfileQuestionItem[]
+  total_questions: number
+  totalQuestions?: number
+}
+
+export type JobProfileAddQuestionRequest = {
+  question: string
+  level: number
+  difficulty: string
+  type: string
+  is_ai_generated?: boolean
+}
+
+export type JobProfileAddQuestionResponse = {
+  question_id: string
+  status: string
+}
+
+export type JobProfileUpdateQuestionRequest = {
+  question?: string
+  level?: number
+  difficulty?: string
+  type?: string
+  keywords?: string[]
+  concepts_covered?: string[]
+  expected_answer?: string
+  example_output?: string
+}
+
+export type JobProfileUpdateQuestionResponse = {
+  status: string
+  question: JobProfileQuestionItem
+}
+
+export type JobProfileRegenerateQuestionResponse = {
+  status: string
+  question: JobProfileQuestionItem
+}
+
+export type JobProfileDeleteQuestionResponse = {
+  status: string
+  deleted_question_id: string
+}
+export type JobProfileReviewRoleDetails = {
+  roleName: string
+  companyName?: string
+  category?: string
+  experienceLevel?: string
+  employmentType?: string
+  description?: string
+}
+
+export type JobProfileReviewJdSummary = {
+  extractedSkills: string[]
+  competencies: string[]
+}
+
+export type JobProfileReviewPreviewQuestion = {
+  questionId: number | string
+  question: string
+}
+
+export type JobProfileReviewLevelInfo = {
+  level: number
+  title: string
+  description: string
+  questionCount: number
+  previewQuestions: JobProfileReviewPreviewQuestion[]
+}
+
+export type JobProfileReviewQuestionSummary = {
+  totalQuestions: number
+  totalLevels: number
+  levels: JobProfileReviewLevelInfo[]
+}
+
+export type JobProfileReviewResponse = {
+  jobProfileId: number | string
+  roleDetails: JobProfileReviewRoleDetails
+  jdSummary: JobProfileReviewJdSummary
+  questionSummary: JobProfileReviewQuestionSummary
+  status: string
+}
+
+export type JobProfileSubmitResponse = {
+  jobProfileId: number | string
+  jobName: string
+  status: string
+  submittedAt: string
+  totalQuestions: number
+  totalLevels: number
+  message: string
 }
