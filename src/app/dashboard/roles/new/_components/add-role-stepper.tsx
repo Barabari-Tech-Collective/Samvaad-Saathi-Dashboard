@@ -281,6 +281,24 @@ export function AddRoleStepper() {
 
   async function handleFinalSubmit() {
     try {
+      const values = form.getValues()
+      // Ensure company name is never empty for the backend
+      const finalCompanyName = values.jdType === "role"
+        ? "General Role"
+        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+
+      await createJobProfileAsync({
+        title: values.jobName,
+        description: values.jobDescription || values.uploadedJDText || "",
+        jobName: values.jobName,
+        jobDescription: values.jobDescription || values.uploadedJDText || "",
+        companyName: finalCompanyName,
+        experienceLevel: values.experienceLevel,
+        skills: values.skills,
+        additionalContext: values.additionalContext || undefined,
+      })
+      toast.success("Role created successfully")
+      router.push("/dashboard/roles")
       const profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
       if (!profileId || profileId === "null") {
         toast.error("No profile ID found to submit.");

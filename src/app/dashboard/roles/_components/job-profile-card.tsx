@@ -29,14 +29,18 @@ import {
 import { useDeleteJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
 import type { JobProfileItem } from "@/lib/api/hooks/analytics/types"
 
-export function JobProfileCard({ profile }: { profile: JobProfileItem }) {
+export function JobProfileCard({ profile }: { profile: any }) {
   const { deleteJobProfileAsync, isDeletingJobProfile } = useDeleteJobProfile()
   const [confirmOpen, setConfirmOpen] = React.useState(false)
 
+  const id = profile.jobProfileId || profile.id
+  const name = profile.jobName || profile.title
+  const description = profile.jobDescription || profile.description
+
   async function handleDelete() {
     try {
-      await deleteJobProfileAsync({ id: profile.jobProfileId })
-      toast.success(`"${profile.jobName}" deleted successfully`)
+      await deleteJobProfileAsync({ id })
+      toast.success(`"${name}" deleted successfully`)
       setConfirmOpen(false)
     } catch {
       toast.error("Failed to delete role. Please try again.")
@@ -50,7 +54,7 @@ export function JobProfileCard({ profile }: { profile: JobProfileItem }) {
           <div className="flex items-center gap-2 min-w-0">
             <IconBriefcase className="size-4 shrink-0 text-muted-foreground" />
             <CardTitle className="text-sm font-semibold leading-tight truncate">
-              {profile.jobName}
+              {name}
             </CardTitle>
           </div>
 
@@ -88,7 +92,7 @@ export function JobProfileCard({ profile }: { profile: JobProfileItem }) {
 
         {/* Job description preview */}
         <p className="text-sm text-muted-foreground line-clamp-2">
-          {profile.jobDescription}
+          {description}
         </p>
 
         {/* Skills */}
@@ -112,7 +116,7 @@ export function JobProfileCard({ profile }: { profile: JobProfileItem }) {
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete &quot;{profile.jobName}&quot;?</DialogTitle>
+            <DialogTitle>Delete &quot;{name}&quot;?</DialogTitle>
             <DialogDescription>
               This will permanently delete this job profile. This action cannot be undone.
             </DialogDescription>
