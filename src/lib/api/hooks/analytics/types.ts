@@ -521,11 +521,13 @@ export type InterviewSpeechTimelineResponse = Readonly<{
 }>
 
 export type CreateJobProfileRequest = {
-  jobName: string
-  jobDescription: string
-  companyName: string
-  experienceLevel: string
-  skills: string[]
+  title: string
+  description: string
+  jobName?: string
+  jobDescription?: string
+  companyName?: string
+  experienceLevel?: string
+  skills?: string[]
   additionalContext?: string
 }
 
