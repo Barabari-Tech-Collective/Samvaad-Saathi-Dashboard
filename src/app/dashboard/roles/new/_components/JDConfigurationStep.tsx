@@ -179,7 +179,7 @@ export function JDConfigurationStep({
         toast.dismiss(toastId)
         toast.success(`"${response.originalFileName}" uploaded successfully. You can now extract skills.`)
         
-        const textFromResponse = response.extracted_text || response.extractedText || response.extractedtext || null
+        const textFromResponse = response.extracted_text || response.extractedText || null
         
         setUploadedJDFileName(response.originalFileName || file.name)
         setUploadedJDText(textFromResponse)
