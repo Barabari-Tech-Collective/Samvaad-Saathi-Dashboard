@@ -133,7 +133,7 @@ export function ReviewSubmitStep({
           </div>
 
           {/* Competencies */}
-          <div className="space-y-3">
+          {/* <div className="space-y-3">
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Competencies</div>
             <div className="flex flex-wrap gap-1.5">
               {competenciesList.map(comp => (
@@ -146,7 +146,7 @@ export function ReviewSubmitStep({
                 </Badge>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

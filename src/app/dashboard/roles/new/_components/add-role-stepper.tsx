@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AnimatePresence, motion } from "motion/react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
+import { analyticsKey } from "@/lib/api/hooks/analytics/query-keys"
 import {
   IconCheck,
   IconChevronLeft,
@@ -46,6 +48,7 @@ export function StepIndicator({
 
 export function AddRoleStepper() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const searchParams = useSearchParams()
   const [step, setStep] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -257,16 +260,16 @@ export function AddRoleStepper() {
         ].filter(Boolean).join("\n\n")
 
         const response = await createJobProfileAsync({
-          title: values.jobName,
+          title: values.jobName || "",
           description: values.jobDescription || values.uploadedJDText || "",
-          jobName: values.jobName,
+          jobName: values.jobName || "",
           jobDescription: values.jobDescription || values.uploadedJDText || "",
           companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel,
-          skills: values.skills,
+          experienceLevel: values.experienceLevel || "",
+          skills: values.skills || [],
           additionalContext: finalContext || undefined,
-          category: values.category,
-          employmentType: values.employmentType,
+          category: values.category || "",
+          employmentType: values.employmentType || "",
         })
         const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
         profileId = String(newId)
@@ -281,27 +284,33 @@ export function AddRoleStepper() {
 
   async function handleFinalSubmit() {
     try {
-      const values = form.getValues()
+      const values = form.getValues();
       // Ensure company name is never empty for the backend
       const finalCompanyName = values.jdType === "role"
         ? "General Role"
         : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
 
-      await createJobProfileAsync({
-        title: values.jobName,
-        description: values.jobDescription || values.uploadedJDText || "",
-        jobName: values.jobName,
-        jobDescription: values.jobDescription || values.uploadedJDText || "",
-        companyName: finalCompanyName,
-        experienceLevel: values.experienceLevel,
-        skills: values.skills,
-        additionalContext: values.additionalContext || undefined,
-      })
-      toast.success("Role created successfully")
-      router.push("/dashboard/roles")
-      const profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
+      let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
+
+
       if (!profileId || profileId === "null") {
-        toast.error("No profile ID found to submit.");
+        const response = await createJobProfileAsync({
+          title: values.jobName || "",
+          description: values.jobDescription || "",
+          jobName: values.jobName || "",
+          jobDescription: values.jobDescription || "",
+          companyName: finalCompanyName,
+          experienceLevel: values.experienceLevel || "",
+          skills: values.skills || [],
+          additionalContext: values.additionalContext || undefined,
+        });
+        const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
+        profileId = String(newId);
+        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
+      }
+
+      if (!profileId || profileId === "null") {
+        toast.error("Failed to create or retrieve profile ID.");
         return;
       }
 
@@ -342,6 +351,8 @@ export function AddRoleStepper() {
 
       try {
         await submitProfileAsync({ jobProfileId: profileId });
+        queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
+        queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles/summary") });
       } catch (apiError) {
         console.warn("Backend API not connected/available or failed to submit, proceeding with frontend flow:", apiError);
       }
