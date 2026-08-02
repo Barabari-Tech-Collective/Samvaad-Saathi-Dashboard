@@ -154,9 +154,10 @@ export function QuestionsStep() {
        if (typeof window !== "undefined") {
          const k = localStorage.getItem("samvaad_saathi_knowledge_questions");
          if (k) {
-           try {
-             knowledgeReferenceContext = JSON.parse(k).extractedText;
-           } catch (e) {
+            try {
+              const parsed = JSON.parse(k);
+              knowledgeReferenceContext = parsed.extractedText || JSON.stringify(parsed.topics);
+            } catch (e) {
              knowledgeReferenceContext = k;
            }
          }
@@ -166,8 +167,7 @@ export function QuestionsStep() {
          const loadingToast = toast.loading("Generating AI questions based on provided reference...")
          generateQuestionsAsync({ 
              levels: levelsPayload,
-             knowledge_reference_context: knowledgeReferenceContext,
-             ...({ knowledgeReferenceContext } as any)
+             knowledge_reference_context: knowledgeReferenceContext
          })
            .then(() => {
              toast.dismiss(loadingToast)
