@@ -9,6 +9,7 @@ import {
   IconPlus,
   IconSparkles,
   IconUpload,
+  IconPaperclip,
   IconX,
   IconFileText,
 } from "@tabler/icons-react"
@@ -163,7 +164,10 @@ export function JDConfigurationStep({
       const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
 
       if (!isValidExtension) {
-        toast.error("Please upload a PDF or Document (.doc, .docx).")
+        toast.error("Unsupported File Format", {
+          description: "Please upload your Job Description as a PDF (.pdf) or Word Document (.doc, .docx). Other formats are not allowed.",
+          duration: 6000,
+        })
         setUploadError("Only PDF or DOC/DOCX allowed")
         if (e.target) e.target.value = ''
         return
@@ -178,12 +182,12 @@ export function JDConfigurationStep({
 
         toast.dismiss(toastId)
         toast.success(`"${response.originalFileName}" uploaded successfully. You can now extract skills.`)
-        
+
         const textFromResponse = response.extracted_text || response.extractedText || null
-        
+
         setUploadedJDFileName(response.originalFileName || file.name)
         setUploadedJDText(textFromResponse)
-        
+
         form.setValue("uploadedJDFileName", response.originalFileName || file.name, { shouldValidate: true })
         form.setValue("uploadedJDText", textFromResponse || "", { shouldValidate: true })
 
@@ -203,7 +207,10 @@ export function JDConfigurationStep({
       const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
 
       if (!isValidExtension) {
-        toast.error("Invalid file type. Please upload a PDF or Document (.doc, .docx).")
+        toast.error("Unsupported File Format", {
+          description: "Please upload your Knowledge Set as a PDF (.pdf) or Word Document (.doc, .docx). Other formats are not allowed.",
+          duration: 6000,
+        })
         setKnowledgeUploadError("Invalid file type")
         if (e.target) e.target.value = ''
         return
@@ -313,8 +320,9 @@ export function JDConfigurationStep({
             type="button"
             variant="outline"
             onClick={() => jdFileInputRef.current?.click()}
+            title={uploadError || uploadedJDFileName || "Attach Document"}
             className={cn(
-              "border hover:bg-slate-50 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer select-none",
+              "border hover:bg-slate-50 size-9 p-0 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer select-none",
               uploadError
                 ? "border-red-200 text-red-600 bg-red-50 hover:border-red-300 hover:bg-red-100"
                 : uploadedJDFileName
@@ -323,20 +331,11 @@ export function JDConfigurationStep({
             )}
           >
             {uploadError ? (
-              <>
-                <IconAlertCircle className="size-4 text-red-500" />
-                <span className="truncate max-w-[150px]">{uploadError}</span>
-              </>
+              <IconAlertCircle className="size-4 text-red-500" />
             ) : uploadedJDFileName ? (
-              <>
-                <IconCheck className="size-4 text-green-600" />
-                <span className="truncate max-w-[150px]">Uploaded: {uploadedJDFileName}</span>
-              </>
+              <IconCheck className="size-4 text-green-600" />
             ) : (
-              <>
-                <IconUpload className="size-4 text-slate-400" />
-                Upload Document
-              </>
+              <IconFileText className="size-4 text-slate-600" />
             )}
           </Button>
         </div>
@@ -637,10 +636,10 @@ export function JDConfigurationStep({
               <Button
                 type="button"
                 variant="outline"
-                className="flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all cursor-pointer"
+                title="Attach PDF"
+                className="flex items-center justify-center size-10 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 rounded-lg shadow-sm transition-all cursor-pointer p-0"
               >
-                <IconUpload className="size-4 text-slate-400" />
-                Upload PDF
+                <IconFileText className="size-5 text-slate-600" />
               </Button>
 
               <div className="text-center space-y-1">
