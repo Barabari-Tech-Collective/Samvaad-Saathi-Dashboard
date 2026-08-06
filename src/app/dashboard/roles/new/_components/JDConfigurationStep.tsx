@@ -82,20 +82,12 @@ const SAMPLE_KNOWLEDGE_SETS = [
     pdfUrl: "/sample-pdfs/data_analytics_question_bank.pdf"
   },
   {
-    id: "product-manager",
-    title: "Product Manager",
-    description: "Sample product manager knowledge set questions document format",
-    icon: IconTarget,
-    color: "bg-purple-50 text-purple-500",
-    pdfUrl: "/sample-pdfs/product-manager.pdf"
-  },
-  {
     id: "hr",
     title: "HR & Talent",
     description: "Sample hr knowledge set questions document format",
     icon: IconHeartHandshake,
     color: "bg-rose-50 text-rose-500",
-    pdfUrl: "/sample-pdfs/hr.pdf"
+    pdfUrl: "coming_soon"
   }
 ]
 
@@ -760,12 +752,19 @@ export function JDConfigurationStep({
                   <div className="w-20" /> {/* Spacer for centering */}
                 </div>
                 
-                <div className="flex-1 w-full bg-slate-100 overflow-hidden relative p-4">
-                  <iframe 
-                    src={selectedPdfUrl} 
-                    className="w-full h-full rounded-xl border border-slate-200 shadow-sm bg-white"
-                    title="PDF Preview"
-                  />
+                <div className="flex-1 w-full bg-slate-100 overflow-hidden relative p-4 flex items-center justify-center">
+                  {selectedPdfUrl === "coming_soon" ? (
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <IconSparkles className="size-8 text-slate-400" />
+                      <p className="text-sm font-bold text-slate-500">Coming soon ..</p>
+                    </div>
+                  ) : (
+                    <iframe 
+                      src={selectedPdfUrl} 
+                      className="w-full h-full rounded-xl border border-slate-200 shadow-sm bg-white"
+                      title="PDF Preview"
+                    />
+                  )}
                 </div>
               </div>
             )}
