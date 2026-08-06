@@ -404,34 +404,7 @@ export function JDConfigurationStep({
         {/* Suggested & Extracted Skills Section (Collapsible) */}
         {isExtractorOpen && (
           <div className="space-y-6 pt-4 border-t border-slate-100 animate-in fade-in duration-300">
-            {/* 1. Suggested Skills */}
-            <div className="space-y-3">
-              <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-                Suggested Skills <span className="text-[10px] text-slate-400 font-normal lowercase">(click to select)</span>
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {suggestedSkills.map((skill) => {
-                  const isSelected = skills.includes(skill)
-                  return (
-                    <Badge
-                      key={skill}
-                      variant="outline"
-                      className={cn(
-                        "cursor-pointer transition-all duration-200 px-3 py-1 text-xs font-semibold rounded-full border-none select-none",
-                        isSelected
-                          ? "bg-[#2563EB] text-white ring-1 ring-blue-300"
-                          : "bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 hover:ring-1 hover:ring-blue-200"
-                      )}
-                      onClick={() => toggleSkillSelection(skill)}
-                    >
-                      {skill}
-                    </Badge>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* 2. Extracted Skills & Custom Input */}
+            {/* Extracted Skills & Custom Input */}
             <div className="space-y-3">
               <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
                 Extracted Skills <span className="text-[10px] text-slate-400 font-normal lowercase">(click cross to remove)</span>
