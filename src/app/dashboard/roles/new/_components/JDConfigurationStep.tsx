@@ -12,6 +12,14 @@ import {
   IconPaperclip,
   IconX,
   IconFileText,
+  IconPalette,
+  IconDeviceDesktop,
+  IconChartLine,
+  IconChartBar,
+  IconTarget,
+  IconHeartHandshake,
+  IconArrowLeft,
+  IconStarFilled,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
@@ -40,6 +48,57 @@ import {
   useExtractSkills,
 } from "@/lib/api/hooks/analytics/useJobProfiles"
 
+const SAMPLE_KNOWLEDGE_SETS = [
+  {
+    id: "ui-ux",
+    title: "UI / UX Designer",
+    description: "Sample ui/ux knowledge set questions document format",
+    icon: IconPalette,
+    color: "bg-pink-50 text-pink-500",
+    pdfUrl: "/sample-pdfs/ui_ux_question_bank.pdf"
+  },
+  {
+    id: "fullstack",
+    title: "Full Stack Developer",
+    description: "Sample full stack knowledge set questions document format",
+    icon: IconDeviceDesktop,
+    color: "bg-blue-50 text-blue-500",
+    pdfUrl: "/sample-pdfs/full_stack_developer_question_bank.pdf"
+  },
+  {
+    id: "sales",
+    title: "Sales Executive",
+    description: "Sample sales knowledge set questions document format",
+    icon: IconChartLine,
+    color: "bg-emerald-50 text-emerald-500",
+    pdfUrl: "/sample-pdfs/sales_executive_question_bank.pdf"
+  },
+  {
+    id: "data-analyst",
+    title: "Data Analyst",
+    description: "Sample data analyst knowledge set questions document format",
+    icon: IconChartBar,
+    color: "bg-amber-50 text-amber-500",
+    pdfUrl: "/sample-pdfs/data_analytics_question_bank.pdf"
+  },
+  {
+    id: "product-manager",
+    title: "Product Manager",
+    description: "Sample product manager knowledge set questions document format",
+    icon: IconTarget,
+    color: "bg-purple-50 text-purple-500",
+    pdfUrl: "/sample-pdfs/product-manager.pdf"
+  },
+  {
+    id: "hr",
+    title: "HR & Talent",
+    description: "Sample hr knowledge set questions document format",
+    icon: IconHeartHandshake,
+    color: "bg-rose-50 text-rose-500",
+    pdfUrl: "/sample-pdfs/hr.pdf"
+  }
+]
+
 interface JDConfigurationStepProps {
   form: UseFormReturn<AddRoleFormValues>
   skillInput: string
@@ -66,6 +125,7 @@ export function JDConfigurationStep({
   const jobDescription = form.watch("jobDescription") || ""
   const [isExtractorOpen, setIsExtractorOpen] = useState(false)
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false)
+  const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null)
   const [uploadedJDFileName, setUploadedJDFileName] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [knowledgeUploadError, setKnowledgeUploadError] = useState<string | null>(null)
@@ -285,7 +345,8 @@ export function JDConfigurationStep({
               <FormControl>
                 <Textarea
                   placeholder="Paste job description here..."
-                  className="min-h-36 w-full border border-slate-200 rounded-2xl p-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none shadow-sm placeholder:text-slate-300 leading-relaxed bg-white transition-all font-medium select-text"
+                  className="h-48 overflow-y-auto w-full border border-slate-200 rounded-2xl p-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none shadow-sm placeholder:text-slate-300 leading-relaxed bg-white transition-all font-medium select-text"
+                  style={{ fieldSizing: "fixed" } as any}
                   {...field}
                 />
               </FormControl>
@@ -655,157 +716,86 @@ export function JDConfigurationStep({
         </div>
 
         {/* Modal for Follow This Format */}
-        <Dialog open={isFormatModalOpen} onOpenChange={setIsFormatModalOpen}>
-          <DialogContent className="sm:max-w-2xl md:max-w-3xl max-h-[85vh] overflow-y-auto p-6 bg-white rounded-2xl border border-slate-100 shadow-2xl flex flex-col gap-6">
-            <DialogHeader className="border-b border-slate-100 pb-4">
-              <DialogTitle className="text-lg font-black text-slate-800 tracking-tight">
-                Recommended Question Format
-              </DialogTitle>
-              <p className="text-xs text-slate-400 font-medium leading-relaxed">
-                Structure your uploaded document or custom questions following this format to guide AI generation.
-              </p>
-            </DialogHeader>
-
-            {/* Modal Content Scrollable Area */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto pr-1">
-              {/* JavaScript Column */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <span className="flex size-6 items-center justify-center rounded-lg bg-amber-50 text-amber-600 font-black text-[10px]">
-                    JS
-                  </span>
-                  <h4 className="text-sm font-extrabold text-slate-800">JavaScript</h4>
+        <Dialog 
+          open={isFormatModalOpen} 
+          onOpenChange={(open) => {
+            setIsFormatModalOpen(open)
+            if (!open) setTimeout(() => setSelectedPdfUrl(null), 200) // Reset after close animation
+          }}
+        >
+          <DialogContent className={cn(
+            "p-0 bg-white rounded-2xl border border-slate-100 shadow-2xl flex flex-col overflow-hidden transition-all duration-300",
+            selectedPdfUrl ? "sm:max-w-4xl h-[85vh]" : "sm:max-w-3xl max-h-[85vh]"
+          )}>
+            {!selectedPdfUrl ? (
+              // GRID VIEW
+              <div className="flex flex-col h-full">
+                <div className="p-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <IconStarFilled className="size-5 text-amber-400" />
+                    <DialogTitle className="text-lg font-black text-slate-800 tracking-tight">
+                      Sample Knowledge Sets
+                    </DialogTitle>
+                  </div>
                 </div>
-
-                <div className="space-y-3">
-                  {[
-                    {
-                      level: "Level-1",
-                      questions: [
-                        "What is a variable in JavaScript?",
-                        "Difference between var, let, and const?",
-                        "What are primitive data types?",
-                        "What is the use of console.log()?"
-                      ]
-                    },
-                    {
-                      level: "Level-2",
-                      questions: [
-                        "What is hoisting in JavaScript?",
-                        "Explain scope and block scope.",
-                        "What is the difference between == and ===?",
-                        "What are template literals?"
-                      ]
-                    },
-                    {
-                      level: "Level-3",
-                      questions: [
-                        "What are closures in JavaScript?",
-                        "Explain callback functions with an example.",
-                        "What is event bubbling?",
-                        "Explain synchronous vs asynchronous JavaScript."
-                      ]
-                    },
-                    {
-                      level: "Level-4",
-                      questions: [
-                        "How does the JavaScript event loop work?",
-                        "Explain promises and async/await.",
-                        "How would you optimize JavaScript performance?",
-                        "Explain memory leaks in JavaScript."
-                      ]
-                    }
-                  ].map((item, index) => (
-                    <div key={index} className="bg-slate-50 border border-slate-100/60 rounded-xl p-3.5 space-y-2">
-                      <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase">
-                        {item.level}
-                      </span>
-                      <ol className="list-decimal pl-4 text-xs font-semibold text-slate-600 space-y-1">
-                        {item.questions.map((q, idx) => (
-                          <li key={idx} className="leading-relaxed">
-                            {q}
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  ))}
+                
+                <div className="p-6 pt-4 overflow-y-auto">
+                  <p className="text-xs text-slate-400 font-medium leading-relaxed mb-6">
+                    Browse role-specific sample question banks. Click any card to preview the full document format.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {SAMPLE_KNOWLEDGE_SETS.map((item) => (
+                      <div 
+                        key={item.id}
+                        onClick={() => setSelectedPdfUrl(item.pdfUrl)}
+                        className="border border-slate-100 rounded-xl p-5 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer group flex flex-col gap-3"
+                      >
+                        <div className={cn("size-10 rounded-lg flex items-center justify-center mb-2", item.color)}>
+                          <item.icon className="size-5" />
+                        </div>
+                        <h4 className="text-sm font-extrabold text-slate-800 group-hover:text-blue-600 transition-colors">
+                          {item.title}
+                        </h4>
+                        <p className="text-[10px] font-semibold text-slate-400 leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-2 text-xs font-bold text-slate-500">
+                  <IconSparkles className="size-4 text-blue-500" />
+                  These are sample formats. Upload your own PDF to set custom knowledge set questions.
                 </div>
               </div>
-
-              {/* React Column */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <span className="flex size-6 items-center justify-center rounded-lg bg-blue-50 text-blue-600 font-black text-[10px]">
-                    RE
-                  </span>
-                  <h4 className="text-sm font-extrabold text-slate-800">React</h4>
+            ) : (
+              // PDF PREVIEW VIEW
+              <div className="flex flex-col h-full bg-slate-50/50">
+                <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-white">
+                  <button 
+                    onClick={() => setSelectedPdfUrl(null)}
+                    className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
+                  >
+                    <IconArrowLeft className="size-4" />
+                    Back to Samples
+                  </button>
+                  <div className="text-xs font-extrabold text-slate-800">
+                    {SAMPLE_KNOWLEDGE_SETS.find(s => s.pdfUrl === selectedPdfUrl)?.title} Format Preview
+                  </div>
+                  <div className="w-20" /> {/* Spacer for centering */}
                 </div>
-
-                <div className="space-y-3">
-                  {[
-                    {
-                      level: "Level-1",
-                      questions: [
-                        "React is what?",
-                        "What are components in React?",
-                        "What are props?",
-                        "What is JSX?"
-                      ]
-                    },
-                    {
-                      level: "Level-2",
-                      questions: [
-                        "Difference between props and state?",
-                        "What is useState?",
-                        "What is useEffect?",
-                        "What is conditional rendering?"
-                      ]
-                    },
-                    {
-                      level: "Level-3",
-                      questions: [
-                        "Explain controlled and uncontrolled components.",
-                        "What is prop drilling?",
-                        "How does React Router work?",
-                        "What are React hooks?"
-                      ]
-                    },
-                    {
-                      level: "Level-4",
-                      questions: [
-                        "How would you optimize a React application?",
-                        "Explain useMemo and useCallback.",
-                        "How do you handle API errors in React?",
-                        "Explain React reconciliation."
-                      ]
-                    }
-                  ].map((item, index) => (
-                    <div key={index} className="bg-slate-50 border border-slate-100/60 rounded-xl p-3.5 space-y-2">
-                      <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase">
-                        {item.level}
-                      </span>
-                      <ol className="list-decimal pl-4 text-xs font-semibold text-slate-600 space-y-1">
-                        {item.questions.map((q, idx) => (
-                          <li key={idx} className="leading-relaxed">
-                            {q}
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  ))}
+                
+                <div className="flex-1 w-full bg-slate-100 overflow-hidden relative p-4">
+                  <iframe 
+                    src={selectedPdfUrl} 
+                    className="w-full h-full rounded-xl border border-slate-200 shadow-sm bg-white"
+                    title="PDF Preview"
+                  />
                 </div>
               </div>
-            </div>
-
-            <DialogFooter>
-              <button
-                type="button"
-                onClick={() => setIsFormatModalOpen(false)}
-                className="w-full sm:w-auto px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-lg transition-colors cursor-pointer"
-              >
-                Close
-              </button>
-            </DialogFooter>
+            )}
           </DialogContent>
         </Dialog>
       </div>
