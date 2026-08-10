@@ -274,6 +274,21 @@ export function JDConfigurationStep({
         formData.append("file", file)
         const response = await uploadKnowledgeAsync(formData)
 
+        const topics = response.topics || []
+        const isSingleHugeQuestion = topics.length === 1 && topics[0].levels?.length === 1 && topics[0].levels[0].questions?.length === 1 && topics[0].levels[0].questions[0].length > 500;
+        const isMissingQuestions = topics.length === 0 || response.totalQuestions === 0;
+
+        if (isSingleHugeQuestion || isMissingQuestions) {
+          toast.dismiss(toastId)
+          toast.error("Incorrect Document Format", {
+            description: "Hey boss, this is not a correct format of the document. If you want to check, please check out the format that we provided in the above 'Follow this format' link.",
+            duration: 8000,
+          })
+          setKnowledgeUploadError("Incorrect document format")
+          if (e.target) e.target.value = ''
+          return
+        }
+
         toast.dismiss(toastId)
         toast.success(`"${response.originalFileName}" uploaded successfully as custom Knowledge Set!`)
 
