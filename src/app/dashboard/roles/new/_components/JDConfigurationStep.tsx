@@ -194,14 +194,15 @@ export function JDConfigurationStep({
     try {
       const response = await extractSkillsAsync({ jobDescription: jdText || uploadedJDText || `File uploaded: ${uploadedJDFileName}` })
 
-      const finalSkills = response.skills && response.skills.length > 0
-        ? response.skills
-        : ["React", "TypeScript", "Next.js", "Tailwind CSS", "RESTful APIs"]
-
-      form.setValue("skills", finalSkills, { shouldValidate: true })
-
       toast.dismiss(toastId)
-      toast.success(`Successfully extracted ${finalSkills.length} key skills!`)
+
+      if (response.skills && response.skills.length > 0) {
+        form.setValue("skills", response.skills, { shouldValidate: true })
+        toast.success(`Successfully extracted ${response.skills.length} key skills!`)
+      } else {
+        form.setValue("skills", [], { shouldValidate: true })
+        toast.info("No skills detected from your job description.")
+      }
     } catch (error) {
       toast.dismiss(toastId)
       toast.error("Failed to extract skills. Please try again.")
