@@ -390,7 +390,7 @@ export function JDConfigurationStep({
             onClick={() => jdFileInputRef.current?.click()}
             title={uploadError || uploadedJDFileName || "Attach Document"}
             className={cn(
-              "border hover:bg-slate-50 size-9 p-0 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer select-none",
+              "border hover:bg-slate-50 px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer select-none text-xs font-bold",
               uploadError
                 ? "border-red-200 text-red-600 bg-red-50 hover:border-red-300 hover:bg-red-100"
                 : uploadedJDFileName
@@ -405,6 +405,7 @@ export function JDConfigurationStep({
             ) : (
               <IconFileText className="size-4 text-slate-600" />
             )}
+            Upload JD
           </Button>
         </div>
 
