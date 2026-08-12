@@ -9,8 +9,17 @@ import {
   IconPlus,
   IconSparkles,
   IconUpload,
+  IconPaperclip,
   IconX,
   IconFileText,
+  IconPalette,
+  IconDeviceDesktop,
+  IconChartLine,
+  IconChartBar,
+  IconTarget,
+  IconHeartHandshake,
+  IconArrowLeft,
+  IconStarFilled,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
@@ -39,6 +48,49 @@ import {
   useExtractSkills,
 } from "@/lib/api/hooks/analytics/useJobProfiles"
 
+const SAMPLE_KNOWLEDGE_SETS = [
+  {
+    id: "ui-ux",
+    title: "UI / UX Designer",
+    description: "Sample ui/ux knowledge set questions document format",
+    icon: IconPalette,
+    color: "bg-pink-50 text-pink-500",
+    pdfUrl: "/sample-pdfs/ui_ux_question_bank.pdf"
+  },
+  {
+    id: "fullstack",
+    title: "Full Stack Developer",
+    description: "Sample full stack knowledge set questions document format",
+    icon: IconDeviceDesktop,
+    color: "bg-blue-50 text-blue-500",
+    pdfUrl: "/sample-pdfs/full_stack_developer_question_bank.pdf"
+  },
+  {
+    id: "sales",
+    title: "Sales Executive",
+    description: "Sample sales knowledge set questions document format",
+    icon: IconChartLine,
+    color: "bg-emerald-50 text-emerald-500",
+    pdfUrl: "/sample-pdfs/sales_executive_question_bank.pdf"
+  },
+  {
+    id: "data-analyst",
+    title: "Data Analyst",
+    description: "Sample data analyst knowledge set questions document format",
+    icon: IconChartBar,
+    color: "bg-amber-50 text-amber-500",
+    pdfUrl: "/sample-pdfs/data_analytics_question_bank.pdf"
+  },
+  {
+    id: "hr",
+    title: "HR & Talent",
+    description: "Sample hr knowledge set questions document format",
+    icon: IconHeartHandshake,
+    color: "bg-rose-50 text-rose-500",
+    pdfUrl: "coming_soon"
+  }
+]
+
 interface JDConfigurationStepProps {
   form: UseFormReturn<AddRoleFormValues>
   skillInput: string
@@ -65,6 +117,7 @@ export function JDConfigurationStep({
   const jobDescription = form.watch("jobDescription") || ""
   const [isExtractorOpen, setIsExtractorOpen] = useState(false)
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false)
+  const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null)
   const [uploadedJDFileName, setUploadedJDFileName] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [knowledgeUploadError, setKnowledgeUploadError] = useState<string | null>(null)
@@ -141,14 +194,15 @@ export function JDConfigurationStep({
     try {
       const response = await extractSkillsAsync({ jobDescription: jdText || uploadedJDText || `File uploaded: ${uploadedJDFileName}` })
 
-      const finalSkills = response.skills && response.skills.length > 0
-        ? response.skills
-        : ["React", "TypeScript", "Next.js", "Tailwind CSS", "RESTful APIs"]
-
-      form.setValue("skills", finalSkills, { shouldValidate: true })
-
       toast.dismiss(toastId)
-      toast.success(`Successfully extracted ${finalSkills.length} key skills!`)
+
+      if (response.skills && response.skills.length > 0) {
+        form.setValue("skills", response.skills, { shouldValidate: true })
+        toast.success(`Successfully extracted ${response.skills.length} key skills!`)
+      } else {
+        form.setValue("skills", [], { shouldValidate: true })
+        toast.info("No skills detected from your job description.")
+      }
     } catch (error) {
       toast.dismiss(toastId)
       toast.error("Failed to extract skills. Please try again.")
@@ -163,7 +217,10 @@ export function JDConfigurationStep({
       const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
 
       if (!isValidExtension) {
-        toast.error("Please upload a PDF or Document (.doc, .docx).")
+        toast.error("Unsupported File Format", {
+          description: "Please upload your Job Description as a PDF (.pdf) or Word Document (.doc, .docx). Other formats are not allowed.",
+          duration: 6000,
+        })
         setUploadError("Only PDF or DOC/DOCX allowed")
         if (e.target) e.target.value = ''
         return
@@ -178,12 +235,12 @@ export function JDConfigurationStep({
 
         toast.dismiss(toastId)
         toast.success(`"${response.originalFileName}" uploaded successfully. You can now extract skills.`)
-        
+
         const textFromResponse = response.extracted_text || response.extractedText || null
-        
+
         setUploadedJDFileName(response.originalFileName || file.name)
         setUploadedJDText(textFromResponse)
-        
+
         form.setValue("uploadedJDFileName", response.originalFileName || file.name, { shouldValidate: true })
         form.setValue("uploadedJDText", textFromResponse || "", { shouldValidate: true })
 
@@ -203,7 +260,10 @@ export function JDConfigurationStep({
       const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
 
       if (!isValidExtension) {
-        toast.error("Invalid file type. Please upload a PDF or Document (.doc, .docx).")
+        toast.error("Unsupported File Format", {
+          description: "Please upload your Knowledge Set as a PDF (.pdf) or Word Document (.doc, .docx). Other formats are not allowed.",
+          duration: 6000,
+        })
         setKnowledgeUploadError("Invalid file type")
         if (e.target) e.target.value = ''
         return
@@ -214,6 +274,21 @@ export function JDConfigurationStep({
         const formData = new FormData()
         formData.append("file", file)
         const response = await uploadKnowledgeAsync(formData)
+
+        const topics = response.topics || []
+        const isSingleHugeQuestion = topics.length === 1 && topics[0].levels?.length === 1 && topics[0].levels[0].questions?.length === 1 && topics[0].levels[0].questions[0].length > 500;
+        const isMissingQuestions = topics.length === 0 || response.totalQuestions === 0;
+
+        if (isSingleHugeQuestion || isMissingQuestions) {
+          toast.dismiss(toastId)
+          toast.error("Incorrect Document Format", {
+            description: "Hey boss, this is not a correct format of the document. If you want to check, please check out the format that we provided in the above 'Follow this format' link.",
+            duration: 8000,
+          })
+          setKnowledgeUploadError("Incorrect document format")
+          if (e.target) e.target.value = ''
+          return
+        }
 
         toast.dismiss(toastId)
         toast.success(`"${response.originalFileName}" uploaded successfully as custom Knowledge Set!`)
@@ -278,7 +353,8 @@ export function JDConfigurationStep({
               <FormControl>
                 <Textarea
                   placeholder="Paste job description here..."
-                  className="min-h-36 w-full border border-slate-200 rounded-2xl p-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none shadow-sm placeholder:text-slate-300 leading-relaxed bg-white transition-all font-medium select-text"
+                  className="h-48 overflow-y-auto w-full border border-slate-200 rounded-2xl p-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none shadow-sm placeholder:text-slate-300 leading-relaxed bg-white transition-all font-medium select-text"
+                  style={{ fieldSizing: "fixed" } as any}
                   {...field}
                 />
               </FormControl>
@@ -313,8 +389,9 @@ export function JDConfigurationStep({
             type="button"
             variant="outline"
             onClick={() => jdFileInputRef.current?.click()}
+            title={uploadError || uploadedJDFileName || "Attach Document"}
             className={cn(
-              "border hover:bg-slate-50 text-xs font-bold px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer select-none",
+              "border hover:bg-slate-50 px-4 py-2 h-9 rounded-full flex items-center gap-1.5 shadow-sm transition-all cursor-pointer select-none text-xs font-bold",
               uploadError
                 ? "border-red-200 text-red-600 bg-red-50 hover:border-red-300 hover:bg-red-100"
                 : uploadedJDFileName
@@ -323,55 +400,20 @@ export function JDConfigurationStep({
             )}
           >
             {uploadError ? (
-              <>
-                <IconAlertCircle className="size-4 text-red-500" />
-                <span className="truncate max-w-[150px]">{uploadError}</span>
-              </>
+              <IconAlertCircle className="size-4 text-red-500" />
             ) : uploadedJDFileName ? (
-              <>
-                <IconCheck className="size-4 text-green-600" />
-                <span className="truncate max-w-[150px]">Uploaded: {uploadedJDFileName}</span>
-              </>
+              <IconCheck className="size-4 text-green-600" />
             ) : (
-              <>
-                <IconUpload className="size-4 text-slate-400" />
-                Upload Document
-              </>
+              <IconFileText className="size-4 text-slate-600" />
             )}
+            Upload JD
           </Button>
         </div>
 
         {/* Suggested & Extracted Skills Section (Collapsible) */}
         {isExtractorOpen && (
           <div className="space-y-6 pt-4 border-t border-slate-100 animate-in fade-in duration-300">
-            {/* 1. Suggested Skills */}
-            <div className="space-y-3">
-              <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-                Suggested Skills <span className="text-[10px] text-slate-400 font-normal lowercase">(click to select)</span>
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {suggestedSkills.map((skill) => {
-                  const isSelected = skills.includes(skill)
-                  return (
-                    <Badge
-                      key={skill}
-                      variant="outline"
-                      className={cn(
-                        "cursor-pointer transition-all duration-200 px-3 py-1 text-xs font-semibold rounded-full border-none select-none",
-                        isSelected
-                          ? "bg-[#2563EB] text-white ring-1 ring-blue-300"
-                          : "bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 hover:ring-1 hover:ring-blue-200"
-                      )}
-                      onClick={() => toggleSkillSelection(skill)}
-                    >
-                      {skill}
-                    </Badge>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* 2. Extracted Skills & Custom Input */}
+            {/* Extracted Skills & Custom Input */}
             <div className="space-y-3">
               <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
                 Extracted Skills <span className="text-[10px] text-slate-400 font-normal lowercase">(click cross to remove)</span>
@@ -637,10 +679,10 @@ export function JDConfigurationStep({
               <Button
                 type="button"
                 variant="outline"
-                className="flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all cursor-pointer"
+                title="Attach PDF"
+                className="flex items-center justify-center size-10 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 rounded-lg shadow-sm transition-all cursor-pointer p-0"
               >
-                <IconUpload className="size-4 text-slate-400" />
-                Upload PDF
+                <IconFileText className="size-5 text-slate-600" />
               </Button>
 
               <div className="text-center space-y-1">
@@ -656,157 +698,93 @@ export function JDConfigurationStep({
         </div>
 
         {/* Modal for Follow This Format */}
-        <Dialog open={isFormatModalOpen} onOpenChange={setIsFormatModalOpen}>
-          <DialogContent className="sm:max-w-2xl md:max-w-3xl max-h-[85vh] overflow-y-auto p-6 bg-white rounded-2xl border border-slate-100 shadow-2xl flex flex-col gap-6">
-            <DialogHeader className="border-b border-slate-100 pb-4">
-              <DialogTitle className="text-lg font-black text-slate-800 tracking-tight">
-                Recommended Question Format
-              </DialogTitle>
-              <p className="text-xs text-slate-400 font-medium leading-relaxed">
-                Structure your uploaded document or custom questions following this format to guide AI generation.
-              </p>
-            </DialogHeader>
-
-            {/* Modal Content Scrollable Area */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto pr-1">
-              {/* JavaScript Column */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <span className="flex size-6 items-center justify-center rounded-lg bg-amber-50 text-amber-600 font-black text-[10px]">
-                    JS
-                  </span>
-                  <h4 className="text-sm font-extrabold text-slate-800">JavaScript</h4>
+        <Dialog 
+          open={isFormatModalOpen} 
+          onOpenChange={(open) => {
+            setIsFormatModalOpen(open)
+            if (!open) setTimeout(() => setSelectedPdfUrl(null), 200) // Reset after close animation
+          }}
+        >
+          <DialogContent className={cn(
+            "p-0 bg-white rounded-2xl border border-slate-100 shadow-2xl flex flex-col overflow-hidden transition-all duration-300",
+            selectedPdfUrl ? "sm:max-w-4xl h-[85vh]" : "sm:max-w-3xl max-h-[85vh]"
+          )}>
+            {!selectedPdfUrl ? (
+              // GRID VIEW
+              <div className="flex flex-col h-full">
+                <div className="p-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <IconStarFilled className="size-5 text-amber-400" />
+                    <DialogTitle className="text-lg font-black text-slate-800 tracking-tight">
+                      Sample Knowledge Sets
+                    </DialogTitle>
+                  </div>
                 </div>
-
-                <div className="space-y-3">
-                  {[
-                    {
-                      level: "Level-1",
-                      questions: [
-                        "What is a variable in JavaScript?",
-                        "Difference between var, let, and const?",
-                        "What are primitive data types?",
-                        "What is the use of console.log()?"
-                      ]
-                    },
-                    {
-                      level: "Level-2",
-                      questions: [
-                        "What is hoisting in JavaScript?",
-                        "Explain scope and block scope.",
-                        "What is the difference between == and ===?",
-                        "What are template literals?"
-                      ]
-                    },
-                    {
-                      level: "Level-3",
-                      questions: [
-                        "What are closures in JavaScript?",
-                        "Explain callback functions with an example.",
-                        "What is event bubbling?",
-                        "Explain synchronous vs asynchronous JavaScript."
-                      ]
-                    },
-                    {
-                      level: "Level-4",
-                      questions: [
-                        "How does the JavaScript event loop work?",
-                        "Explain promises and async/await.",
-                        "How would you optimize JavaScript performance?",
-                        "Explain memory leaks in JavaScript."
-                      ]
-                    }
-                  ].map((item, index) => (
-                    <div key={index} className="bg-slate-50 border border-slate-100/60 rounded-xl p-3.5 space-y-2">
-                      <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase">
-                        {item.level}
-                      </span>
-                      <ol className="list-decimal pl-4 text-xs font-semibold text-slate-600 space-y-1">
-                        {item.questions.map((q, idx) => (
-                          <li key={idx} className="leading-relaxed">
-                            {q}
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  ))}
+                
+                <div className="p-6 pt-4 overflow-y-auto">
+                  <p className="text-xs text-slate-400 font-medium leading-relaxed mb-6">
+                    Browse role-specific sample question banks. Click any card to preview the full document format.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {SAMPLE_KNOWLEDGE_SETS.map((item) => (
+                      <div 
+                        key={item.id}
+                        onClick={() => setSelectedPdfUrl(item.pdfUrl)}
+                        className="border border-slate-100 rounded-xl p-5 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer group flex flex-col gap-3"
+                      >
+                        <div className={cn("size-10 rounded-lg flex items-center justify-center mb-2", item.color)}>
+                          <item.icon className="size-5" />
+                        </div>
+                        <h4 className="text-sm font-extrabold text-slate-800 group-hover:text-blue-600 transition-colors">
+                          {item.title}
+                        </h4>
+                        <p className="text-[10px] font-semibold text-slate-400 leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-2 text-xs font-bold text-slate-500">
+                  <IconSparkles className="size-4 text-blue-500" />
+                  These are sample formats. Upload your own PDF to set custom knowledge set questions.
                 </div>
               </div>
-
-              {/* React Column */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <span className="flex size-6 items-center justify-center rounded-lg bg-blue-50 text-blue-600 font-black text-[10px]">
-                    RE
-                  </span>
-                  <h4 className="text-sm font-extrabold text-slate-800">React</h4>
+            ) : (
+              // PDF PREVIEW VIEW
+              <div className="flex flex-col h-full bg-slate-50/50">
+                <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-white">
+                  <button 
+                    onClick={() => setSelectedPdfUrl(null)}
+                    className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
+                  >
+                    <IconArrowLeft className="size-4" />
+                    Back to Samples
+                  </button>
+                  <div className="text-xs font-extrabold text-slate-800">
+                    {SAMPLE_KNOWLEDGE_SETS.find(s => s.pdfUrl === selectedPdfUrl)?.title} Format Preview
+                  </div>
+                  <div className="w-20" /> {/* Spacer for centering */}
                 </div>
-
-                <div className="space-y-3">
-                  {[
-                    {
-                      level: "Level-1",
-                      questions: [
-                        "React is what?",
-                        "What are components in React?",
-                        "What are props?",
-                        "What is JSX?"
-                      ]
-                    },
-                    {
-                      level: "Level-2",
-                      questions: [
-                        "Difference between props and state?",
-                        "What is useState?",
-                        "What is useEffect?",
-                        "What is conditional rendering?"
-                      ]
-                    },
-                    {
-                      level: "Level-3",
-                      questions: [
-                        "Explain controlled and uncontrolled components.",
-                        "What is prop drilling?",
-                        "How does React Router work?",
-                        "What are React hooks?"
-                      ]
-                    },
-                    {
-                      level: "Level-4",
-                      questions: [
-                        "How would you optimize a React application?",
-                        "Explain useMemo and useCallback.",
-                        "How do you handle API errors in React?",
-                        "Explain React reconciliation."
-                      ]
-                    }
-                  ].map((item, index) => (
-                    <div key={index} className="bg-slate-50 border border-slate-100/60 rounded-xl p-3.5 space-y-2">
-                      <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase">
-                        {item.level}
-                      </span>
-                      <ol className="list-decimal pl-4 text-xs font-semibold text-slate-600 space-y-1">
-                        {item.questions.map((q, idx) => (
-                          <li key={idx} className="leading-relaxed">
-                            {q}
-                          </li>
-                        ))}
-                      </ol>
+                
+                <div className="flex-1 w-full bg-slate-100 overflow-hidden relative p-4 flex items-center justify-center">
+                  {selectedPdfUrl === "coming_soon" ? (
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <IconSparkles className="size-8 text-slate-400" />
+                      <p className="text-sm font-bold text-slate-500">Coming soon ..</p>
                     </div>
-                  ))}
+                  ) : (
+                    <iframe 
+                      src={selectedPdfUrl} 
+                      className="w-full h-full rounded-xl border border-slate-200 shadow-sm bg-white"
+                      title="PDF Preview"
+                    />
+                  )}
                 </div>
               </div>
-            </div>
-
-            <DialogFooter>
-              <button
-                type="button"
-                onClick={() => setIsFormatModalOpen(false)}
-                className="w-full sm:w-auto px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-lg transition-colors cursor-pointer"
-              >
-                Close
-              </button>
-            </DialogFooter>
+            )}
           </DialogContent>
         </Dialog>
       </div>

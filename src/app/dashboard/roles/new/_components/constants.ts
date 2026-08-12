@@ -66,6 +66,8 @@ export const CATEGORY_OPTIONS = [
 ]
 
 export const EXPERIENCE_OPTIONS = [
+  { value: "fresher", label: "Fresher" },
+  { value: "0-1", label: "0–1 Years" },
   { value: "1-2", label: "1–2 Years" },
   { value: "2-3", label: "2–3 Years" },
   { value: "3-4", label: "3–4 Years" },
