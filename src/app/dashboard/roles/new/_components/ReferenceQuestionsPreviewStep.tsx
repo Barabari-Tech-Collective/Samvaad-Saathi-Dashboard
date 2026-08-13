@@ -15,91 +15,6 @@ import { cn } from "@/lib/utils"
 import { UseFormReturn } from "react-hook-form"
 import { AddRoleFormValues, DifficultyLevel } from "./constants"
 
-const defaultTopics = [
-  {
-    topicName: "JavaScript",
-    levels: [
-      {
-        level: 1,
-        questions: [
-          "What is a variable in JavaScript?",
-          "Difference between var, let, and const?",
-          "What are primitive data types?",
-          "What is the use of console.log()?"
-        ]
-      },
-      {
-        level: 2,
-        questions: [
-          "What is hoisting in JavaScript?",
-          "Explain scope and block scope.",
-          "What is the difference between == and ===?",
-          "What are template literals?"
-        ]
-      },
-      {
-        level: 3,
-        questions: [
-          "What are closures in JavaScript?",
-          "Explain callback functions with an example.",
-          "What is event bubbling?",
-          "Explain synchronous vs asynchronous JavaScript."
-        ]
-      },
-      {
-        level: 4,
-        questions: [
-          "How does the JavaScript event loop work?",
-          "Explain promises and async/await.",
-          "How would you optimize JavaScript performance?",
-          "Explain memory leaks in JavaScript."
-        ]
-      }
-    ]
-  },
-  {
-    topicName: "React",
-    levels: [
-      {
-        level: 1,
-        questions: [
-          "What is React?",
-          "What are components in React?",
-          "What are props?",
-          "What is JSX?"
-        ]
-      },
-      {
-        level: 2,
-        questions: [
-          "Difference between props and state?",
-          "What is useState?",
-          "What is useEffect?",
-          "What is conditional rendering?"
-        ]
-      },
-      {
-        level: 3,
-        questions: [
-          "Explain controlled and uncontrolled components.",
-          "What is prop drilling?",
-          "How does React Router work?",
-          "What are React hooks?"
-        ]
-      },
-      {
-        level: 4,
-        questions: [
-          "How would you optimize a React application?",
-          "Explain useMemo and useCallback.",
-          "How do you handle API errors in React?",
-          "Explain React reconciliation."
-        ]
-      }
-    ]
-  }
-]
-
 interface ReferenceQuestionsPreviewStepProps {
   form: UseFormReturn<AddRoleFormValues>
   difficultyLevels: DifficultyLevel[]
@@ -401,20 +316,13 @@ export function ReferenceQuestionsPreviewStep({
       </Card>
 
       {/* Skip/Back Links */}
-      <div className="flex items-center justify-between px-1 pt-2 select-none">
+      <div className="flex items-center px-1 pt-2 select-none">
         <button
           type="button"
           onClick={() => router.push("/dashboard/roles/new?step=2")}
           className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors flex items-center gap-1"
         >
           <span>&lt; Back to JD & Configuration</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push("/dashboard/roles/new/questions")}
-          className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors flex items-center gap-1"
-        >
-          <span>Skip to generation &gt;</span>
         </button>
       </div>
     </div>
