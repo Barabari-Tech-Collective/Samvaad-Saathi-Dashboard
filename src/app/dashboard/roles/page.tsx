@@ -201,18 +201,28 @@ export default function RolesManagementPage() {
                 onClick={() => {
                   const savedStep = localStorage.getItem(`samvaad_saathi_draft_step_${act.jobProfileId}`);
                   const targetStep = savedStep ? savedStep : "5";
-                  localStorage.setItem("samvaad_saathi_draft_profile_id", act.jobProfileId.toString())
                   
                   // Restore the basic form details from the backend profile so they display correctly on the steps
+                  const previousProfileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
+                  let existingDraft = {}
+                  if (previousProfileId === act.jobProfileId.toString()) {
+                    const savedDraft = localStorage.getItem("samvaad_saathi_draft_role");
+                    if (savedDraft) {
+                      try { existingDraft = JSON.parse(savedDraft) } catch (e) {}
+                    }
+                  }
+
+                  localStorage.setItem("samvaad_saathi_draft_profile_id", act.jobProfileId.toString())
+
                   const formDraft = {
                     jdType: "role",
-                    jobName: act.jobName || "",
-                    companyName: act.companyName || "",
-                    category: act.category || "",
-                    experienceLevel: act.experienceLevel || "",
-                    employmentType: act.employmentType || "",
-                    jobDescription: act.description || "",
-                    skills: act.skills || [],
+                    jobName: act.jobName || (existingDraft as any).jobName || "",
+                    companyName: act.companyName || (existingDraft as any).companyName || "",
+                    category: act.category || (existingDraft as any).category || "",
+                    experienceLevel: act.experienceLevel || (existingDraft as any).experienceLevel || "",
+                    employmentType: act.employmentType || (existingDraft as any).employmentType || "",
+                    jobDescription: act.jobDescription || (existingDraft as any).jobDescription || "",
+                    skills: (act.skills?.length ? act.skills : (existingDraft as any).skills) || [],
                   };
                   localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(formDraft));
                   
