@@ -240,6 +240,55 @@ export function AddRoleStepper() {
     setStep((s) => s - 1)
   }
 
+  async function handleSaveDraft() {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
+      localStorage.setItem("samvaad_saathi_difficulty_levels", JSON.stringify(difficultyLevels))
+      if (knowledgeQuestions) {
+         localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(knowledgeQuestions))
+      }
+    }
+
+    const values = form.getValues()
+    let profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null;
+    
+    if ((!profileId || profileId === "null") && values.jobName && values.jobName.trim() !== "") {
+        const finalCompanyName = values.jdType === "role"
+          ? "General Role"
+          : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+        
+        try {
+          const response = await createJobProfileAsync({
+            title: values.jobName || "",
+            description: values.jobDescription || values.uploadedJDText || "",
+            jobName: values.jobName || "",
+            jobDescription: values.jobDescription || values.uploadedJDText || "",
+            companyName: finalCompanyName,
+            experienceLevel: values.experienceLevel || "",
+            skills: values.skills || [],
+            additionalContext: values.additionalContext || undefined,
+            category: values.category || "",
+            employmentType: values.employmentType || "",
+          })
+          const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
+          profileId = String(newId);
+          if (typeof window !== "undefined") {
+             localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
+          }
+        } catch (e) {
+          console.error("Failed to save draft profile to backend:", e)
+        }
+    }
+
+    if (typeof window !== "undefined") {
+        if (profileId && profileId !== "null") {
+            localStorage.setItem(`samvaad_saathi_draft_step_${profileId}`, step.toString());
+        }
+        toast.success("Draft saved successfully")
+        router.push("/dashboard/roles")
+    }
+  }
+
   async function handleGenerateQuestionsClick() {
     try {
       let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
@@ -395,10 +444,7 @@ export function AddRoleStepper() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  toast.success("Draft saved successfully")
-                  router.push("/dashboard/roles")
-                }}
+                onClick={handleSaveDraft}
                 className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-4 h-9 shadow-sm text-xs transition-colors"
               >
                 Save draft
@@ -505,10 +551,7 @@ export function AddRoleStepper() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    toast.success("Draft saved successfully")
-                    router.push("/dashboard/roles")
-                  }}
+                  onClick={handleSaveDraft}
                   className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 select-none"
                 >
                   Save as draft
@@ -564,6 +607,15 @@ export function AddRoleStepper() {
                 >
                   Edit Knowledge Set
                 </Button>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSaveDraft}
+                  className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors"
+                >
+                  Save as draft
+                </Button>
 
                 <Button
                   type="button"
@@ -598,53 +650,66 @@ export function AddRoleStepper() {
                 Step {step + 1} of 6
               </span>
 
-              {isLastStep ? (
-                <Button
-                  type="button"
-                  disabled={isCreatingJobProfile}
-                  className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[150px]"
-                  onClick={form.handleSubmit(
-                    onSubmit,
-                    (errors) => {
-                      console.log("Validation Errors:", errors);
-                      const firstError = Object.values(errors)[0] as any;
-                      if (firstError) {
-                        toast.error(firstError.message || "Please check all fields");
+              <div className="flex items-center gap-2">
+                {step > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleSaveDraft}
+                    className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors"
+                  >
+                    Save as draft
+                  </Button>
+                )}
+
+                {isLastStep ? (
+                  <Button
+                    type="button"
+                    disabled={isCreatingJobProfile}
+                    className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[150px]"
+                    onClick={form.handleSubmit(
+                      onSubmit,
+                      (errors) => {
+                        console.log("Validation Errors:", errors);
+                        const firstError = Object.values(errors)[0] as any;
+                        if (firstError) {
+                          toast.error(firstError.message || "Please check all fields");
+                        }
                       }
-                    }
-                  )}
-                >
-                  {isCreatingJobProfile ? (
-                    <>
-                      <IconLoader2 className="size-4 animate-spin" />
-                      Finalizing...
-                    </>
-                  ) : (
-                    <>
-                      <IconCheck className="size-4" />
-                      Confirm and Create
-                    </>
-                  )}
-                </Button>
-              ) : step === 2 ? (
-                <Button
-                  type="button"
-                  onClick={goNext}
-                  className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-2 select-none shadow-sm cursor-pointer"
-                >
-                  <IconSparkles className="size-4" />
-                  Generate questions
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={goNext}
-                  className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5"
-                >
-                  Next
-                  <IconChevronRight className="size-4" />
-                </Button>
-              )}
+                    )}
+                  >
+                    {isCreatingJobProfile ? (
+                      <>
+                        <IconLoader2 className="size-4 animate-spin" />
+                        Finalizing...
+                      </>
+                    ) : (
+                      <>
+                        <IconCheck className="size-4" />
+                        Confirm and Create
+                      </>
+                    )}
+                  </Button>
+                ) : step === 2 ? (
+                  <Button
+                    type="button"
+                    onClick={goNext}
+                    className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-2 select-none cursor-pointer"
+                  >
+                    <IconSparkles className="size-4" />
+                    Generate questions
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={goNext}
+                    className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5"
+                  >
+                    Next
+                    <IconChevronRight className="size-4" />
+                  </Button>
+                )}
+              </div>
             </>
           )}
         </div>

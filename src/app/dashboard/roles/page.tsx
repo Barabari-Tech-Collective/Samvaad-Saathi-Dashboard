@@ -202,23 +202,32 @@ export default function RolesManagementPage() {
               const meta = getActivityMeta("approved") // Default styling for job profiles
               return (
               <div
+                onClick={() => {
+                  const savedStep = localStorage.getItem(`samvaad_saathi_draft_step_${act.jobProfileId}`);
+                  const targetStep = savedStep ? savedStep : "5";
+                  localStorage.setItem("samvaad_saathi_draft_profile_id", act.jobProfileId.toString())
+                  router.push(`/dashboard/roles/new?step=${targetStep}`)
+                }}
                 key={act.jobProfileId}
-                className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4 group transition-all"
+                className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4 group transition-all hover:bg-slate-50/50 -mx-4 px-4 rounded-xl cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-xl flex items-center justify-center shrink-0 ${meta.bg}`}>
                     {meta.icon}
                   </div>
                   <div className="space-y-0.5">
-                    <p className="text-xs font-bold text-slate-700 leading-none">
-                      Role '<span className="text-slate-800 font-extrabold">{act.jobName}</span>' created
+                    <p className="text-xs font-bold text-slate-700 leading-none group-hover:text-blue-600 transition-colors">
+                      Role '<span className="text-slate-800 font-extrabold group-hover:text-blue-700">{act.jobName}</span>' created
                     </p>
                   </div>
                 </div>
 
-                <span className="text-[11px] font-semibold text-slate-400 shrink-0">
-                  {new Date(act.createdAt).toLocaleDateString()}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] font-semibold text-slate-400 shrink-0">
+                    {new Date(act.createdAt).toLocaleDateString()}
+                  </span>
+                  <IconArrowUpRight className="size-4 text-slate-300 opacity-0 group-hover:opacity-100 group-hover:text-blue-500 transition-all -translate-x-2 group-hover:translate-x-0" />
+                </div>
               </div>
             )})}
           </div>
