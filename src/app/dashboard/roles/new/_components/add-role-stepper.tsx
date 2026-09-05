@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Form } from "@/components/ui/form"
-import { useCreateJobProfile, useSubmitJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
+import { useCreateJobProfile, useSubmitJobProfile, useUpdateJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
 import { RoleCreationStepper } from "./RoleCreationStepper"
 
 import {
@@ -55,6 +55,7 @@ export function AddRoleStepper() {
   const [skillInput, setSkillInput] = useState("")
   const [knowledgeQuestions, setKnowledgeQuestions] = useState<any>(null)
   const { createJobProfileAsync, isCreatingJobProfile } = useCreateJobProfile()
+  const { updateJobProfileAsync, isUpdatingJobProfile } = useUpdateJobProfile()
   const { submitProfileAsync, isSubmittingProfile } = useSubmitJobProfile()
 
   useEffect(() => {
@@ -146,39 +147,23 @@ export function AddRoleStepper() {
       const isNewRole = parsedStep === 0
 
       if (isNewRole) {
-        // If they explicitly clicked "New Role", we should probably use the existing draft if they have one,
-        // or we can just load the draft by default.
-        const draft = localStorage.getItem("samvaad_saathi_draft_role")
-        if (draft) {
-          try {
-            const parsed = JSON.parse(draft)
-            form.reset(parsed)
-          } catch (e) {
-            form.reset({
-              jdType: undefined,
-              jobName: "",
-              companyName: "",
-              category: "",
-              experienceLevel: "",
-              employmentType: "",
-              jobDescription: "",
-              skills: [],
-              additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
-            })
-          }
-        } else {
-          form.reset({
-            jdType: undefined,
-            jobName: "",
-            companyName: "",
-            category: "",
-            experienceLevel: "",
-            employmentType: "",
-            jobDescription: "",
-            skills: [],
-            additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
-          })
-        }
+        // Brand new start or refresh at Step 1: clear draft storage and initialize clean form
+        localStorage.removeItem("samvaad_saathi_draft_role")
+        localStorage.removeItem("samvaad_saathi_difficulty_levels")
+        localStorage.removeItem("samvaad_saathi_knowledge_questions")
+        setKnowledgeQuestions(null)
+
+        form.reset({
+          jdType: undefined,
+          jobName: "",
+          companyName: "",
+          category: "",
+          experienceLevel: "",
+          employmentType: "",
+          jobDescription: "",
+          skills: [],
+          additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
+        })
       } else {
         // Navigating back/forward (e.g. returning to Step 5 review page): restore form details
         const draft = localStorage.getItem("samvaad_saathi_draft_role")
@@ -261,43 +246,94 @@ export function AddRoleStepper() {
       localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
       localStorage.setItem("samvaad_saathi_difficulty_levels", JSON.stringify(difficultyLevels))
       if (knowledgeQuestions) {
-         localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(knowledgeQuestions))
+        localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(knowledgeQuestions))
       }
     }
 
+    const values = form.getValues()
     let profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null;
 
-    if (typeof window !== "undefined") {
-        if (profileId && profileId !== "null") {
-            localStorage.setItem(`samvaad_saathi_draft_step_${profileId}`, step.toString());
-        } else {
-            // If it hasn't been created in the backend yet, just use a generic 'new' key
-            localStorage.setItem(`samvaad_saathi_draft_step_new`, step.toString());
+    if ((!profileId || profileId === "null") && values.jobName && values.jobName.trim() !== "") {
+      const finalCompanyName = values.jdType === "role"
+        ? "General Role"
+        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+
+      try {
+        const response = await createJobProfileAsync({
+          title: values.jobName || "",
+          description: values.jobDescription || values.uploadedJDText || "",
+          jobName: values.jobName || "",
+          jobDescription: values.jobDescription || values.uploadedJDText || "",
+          companyName: finalCompanyName,
+          experienceLevel: values.experienceLevel || "",
+          skills: values.skills || [],
+          additionalContext: values.additionalContext || undefined,
+          category: values.category || "",
+          employmentType: values.employmentType || "",
+        })
+        const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
+        profileId = String(newId);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
         }
-        toast.success("Draft saved successfully")
-        router.push("/dashboard/roles")
+      } catch (e) {
+        console.error("Failed to save draft profile to backend:", e)
+      }
+    } else if (profileId && profileId !== "null") {
+      const finalCompanyName = values.jdType === "role"
+        ? "General Role"
+        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+
+      try {
+        await updateJobProfileAsync({
+          jobProfileId: profileId,
+          title: values.jobName || "",
+          description: values.jobDescription || values.uploadedJDText || "",
+          jobName: values.jobName || "",
+          jobDescription: values.jobDescription || values.uploadedJDText || "",
+          companyName: finalCompanyName,
+          experienceLevel: values.experienceLevel || "",
+          skills: values.skills || [],
+          additionalContext: values.additionalContext || undefined,
+          category: values.category || "",
+          employmentType: values.employmentType || "",
+        })
+      } catch (e) {
+        console.error("Failed to update draft profile in backend:", e)
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      if (profileId && profileId !== "null") {
+        localStorage.setItem(`samvaad_saathi_draft_step_${profileId}`, step.toString());
+      } else {
+        // If it hasn't been created in the backend yet, just use a generic 'new' key
+        localStorage.setItem(`samvaad_saathi_draft_step_new`, step.toString());
+      }
+      toast.success("Draft saved successfully")
+      router.push("/dashboard/roles")
     }
   }
 
   async function handleGenerateQuestionsClick() {
     try {
       let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
+      const values = form.getValues()
+      const finalCompanyName = values.jdType === "role"
+        ? "General Role"
+        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+
+      const difficultyText = difficultyLevels
+        .filter(l => l.selected)
+        .map(l => `${l.title}:\n- Question: ${l.exampleQuestion || l.placeholder}`)
+        .join("\n\n")
+
+      const finalContext = [
+        values.additionalContext,
+        difficultyText ? `Difficulty Levels:\n${difficultyText}` : ""
+      ].filter(Boolean).join("\n\n")
+
       if (!profileId || profileId === "null") {
-        const values = form.getValues()
-        const finalCompanyName = values.jdType === "role"
-          ? "General Role"
-          : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
-
-        const difficultyText = difficultyLevels
-          .filter(l => l.selected)
-          .map(l => `${l.title}:\n- Question: ${l.exampleQuestion || l.placeholder}`)
-          .join("\n\n")
-
-        const finalContext = [
-          values.additionalContext,
-          difficultyText ? `Difficulty Levels:\n${difficultyText}` : ""
-        ].filter(Boolean).join("\n\n")
-
         const response = await createJobProfileAsync({
           title: values.jobName || "",
           description: values.jobDescription || values.uploadedJDText || "",
@@ -313,6 +349,20 @@ export function AddRoleStepper() {
         const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
         profileId = String(newId)
         localStorage.setItem("samvaad_saathi_draft_profile_id", profileId as string)
+      } else {
+        await updateJobProfileAsync({
+          jobProfileId: profileId,
+          title: values.jobName || "",
+          description: values.jobDescription || values.uploadedJDText || "",
+          jobName: values.jobName || "",
+          jobDescription: values.jobDescription || values.uploadedJDText || "",
+          companyName: finalCompanyName,
+          experienceLevel: values.experienceLevel || "",
+          skills: values.skills || [],
+          additionalContext: finalContext || undefined,
+          category: values.category || "",
+          employmentType: values.employmentType || "",
+        })
       }
       router.push("/dashboard/roles/new/questions")
     } catch (e) {
@@ -346,6 +396,18 @@ export function AddRoleStepper() {
         const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
         profileId = String(newId);
         localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
+      } else {
+        await updateJobProfileAsync({
+          jobProfileId: profileId,
+          title: values.jobName || "",
+          description: values.jobDescription || "",
+          jobName: values.jobName || "",
+          jobDescription: values.jobDescription || "",
+          companyName: finalCompanyName,
+          experienceLevel: values.experienceLevel || "",
+          skills: values.skills || [],
+          additionalContext: values.additionalContext || undefined,
+        });
       }
 
       if (!profileId || profileId === "null") {
@@ -611,7 +673,7 @@ export function AddRoleStepper() {
                 >
                   Edit Knowledge Set
                 </Button>
-                
+
                 <Button
                   type="button"
                   variant="outline"

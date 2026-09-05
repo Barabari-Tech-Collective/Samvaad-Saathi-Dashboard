@@ -548,6 +548,11 @@ export type CreateJobProfileResponse = {
   updatedAt: string
 }
 
+export type UpdateJobProfileRequest = Partial<CreateJobProfileRequest> & {
+  jobProfileId: string
+}
+
+
 // JobProfileOut matches the backend JobProfileOut schema exactly
 export type JobProfileItem = CreateJobProfileResponse
 
