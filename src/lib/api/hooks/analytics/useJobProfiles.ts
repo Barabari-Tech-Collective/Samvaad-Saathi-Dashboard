@@ -23,6 +23,7 @@ import type {
   JobProfileReviewResponse,
   JobProfileSubmitResponse,
   UpdateJobProfileRequest,
+  JobProfileItem,
 } from "./types"
 import { analyticsKey } from "./query-keys"
 

@@ -241,6 +241,25 @@ export function AddRoleStepper() {
     setStep((s) => s - 1)
   }
 
+  const getJobProfilePayload = (values: AddRoleFormValues, extraContext?: string) => {
+    const finalCompanyName = values.jdType === "role"
+      ? "General Role"
+      : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+
+    return {
+      title: values.jobName || "",
+      description: values.jobDescription || values.uploadedJDText || "",
+      jobName: values.jobName || "",
+      jobDescription: values.jobDescription || values.uploadedJDText || "",
+      companyName: finalCompanyName,
+      experienceLevel: values.experienceLevel || "",
+      skills: values.skills || [],
+      additionalContext: extraContext || values.additionalContext || undefined,
+      category: values.category || "",
+      employmentType: values.employmentType || "",
+    }
+  }
+
   async function handleSaveDraft() {
     if (typeof window !== "undefined") {
       localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
@@ -254,23 +273,8 @@ export function AddRoleStepper() {
     let profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null;
 
     if ((!profileId || profileId === "null") && values.jobName && values.jobName.trim() !== "") {
-      const finalCompanyName = values.jdType === "role"
-        ? "General Role"
-        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
-
       try {
-        const response = await createJobProfileAsync({
-          title: values.jobName || "",
-          description: values.jobDescription || values.uploadedJDText || "",
-          jobName: values.jobName || "",
-          jobDescription: values.jobDescription || values.uploadedJDText || "",
-          companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel || "",
-          skills: values.skills || [],
-          additionalContext: values.additionalContext || undefined,
-          category: values.category || "",
-          employmentType: values.employmentType || "",
-        })
+        const response = await createJobProfileAsync(getJobProfilePayload(values))
         const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
         profileId = String(newId);
         if (typeof window !== "undefined") {
@@ -278,28 +282,19 @@ export function AddRoleStepper() {
         }
       } catch (e) {
         console.error("Failed to save draft profile to backend:", e)
+        toast.error("Failed to save draft. Please try again.")
+        return
       }
     } else if (profileId && profileId !== "null") {
-      const finalCompanyName = values.jdType === "role"
-        ? "General Role"
-        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
-
       try {
         await updateJobProfileAsync({
           jobProfileId: profileId,
-          title: values.jobName || "",
-          description: values.jobDescription || values.uploadedJDText || "",
-          jobName: values.jobName || "",
-          jobDescription: values.jobDescription || values.uploadedJDText || "",
-          companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel || "",
-          skills: values.skills || [],
-          additionalContext: values.additionalContext || undefined,
-          category: values.category || "",
-          employmentType: values.employmentType || "",
+          ...getJobProfilePayload(values)
         })
       } catch (e) {
         console.error("Failed to update draft profile in backend:", e)
+        toast.error("Failed to save draft. Please try again.")
+        return
       }
     }
 
@@ -319,9 +314,6 @@ export function AddRoleStepper() {
     try {
       let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
       const values = form.getValues()
-      const finalCompanyName = values.jdType === "role"
-        ? "General Role"
-        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
 
       const difficultyText = difficultyLevels
         .filter(l => l.selected)
@@ -334,34 +326,14 @@ export function AddRoleStepper() {
       ].filter(Boolean).join("\n\n")
 
       if (!profileId || profileId === "null") {
-        const response = await createJobProfileAsync({
-          title: values.jobName || "",
-          description: values.jobDescription || values.uploadedJDText || "",
-          jobName: values.jobName || "",
-          jobDescription: values.jobDescription || values.uploadedJDText || "",
-          companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel || "",
-          skills: values.skills || [],
-          additionalContext: finalContext || undefined,
-          category: values.category || "",
-          employmentType: values.employmentType || "",
-        })
+        const response = await createJobProfileAsync(getJobProfilePayload(values, finalContext))
         const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
         profileId = String(newId)
         localStorage.setItem("samvaad_saathi_draft_profile_id", profileId as string)
       } else {
         await updateJobProfileAsync({
           jobProfileId: profileId,
-          title: values.jobName || "",
-          description: values.jobDescription || values.uploadedJDText || "",
-          jobName: values.jobName || "",
-          jobDescription: values.jobDescription || values.uploadedJDText || "",
-          companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel || "",
-          skills: values.skills || [],
-          additionalContext: finalContext || undefined,
-          category: values.category || "",
-          employmentType: values.employmentType || "",
+          ...getJobProfilePayload(values, finalContext)
         })
       }
       router.push("/dashboard/roles/new/questions")
@@ -374,39 +346,17 @@ export function AddRoleStepper() {
   async function handleFinalSubmit() {
     try {
       const values = form.getValues();
-      // Ensure company name is never empty for the backend
-      const finalCompanyName = values.jdType === "role"
-        ? "General Role"
-        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
-
       let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
 
-
       if (!profileId || profileId === "null") {
-        const response = await createJobProfileAsync({
-          title: values.jobName || "",
-          description: values.jobDescription || "",
-          jobName: values.jobName || "",
-          jobDescription: values.jobDescription || "",
-          companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel || "",
-          skills: values.skills || [],
-          additionalContext: values.additionalContext || undefined,
-        });
+        const response = await createJobProfileAsync(getJobProfilePayload(values));
         const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
         profileId = String(newId);
         localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
       } else {
         await updateJobProfileAsync({
           jobProfileId: profileId,
-          title: values.jobName || "",
-          description: values.jobDescription || "",
-          jobName: values.jobName || "",
-          jobDescription: values.jobDescription || "",
-          companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel || "",
-          skills: values.skills || [],
-          additionalContext: values.additionalContext || undefined,
+          ...getJobProfilePayload(values)
         });
       }
 
