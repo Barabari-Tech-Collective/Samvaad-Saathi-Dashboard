@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useJobProfilesSummary, useJobProfilesList } from "@/lib/api/hooks/analytics/useJobProfiles"
+import { navigateToJobProfileStep } from "./utils"
 
 export default function RolesManagementPage() {
   const router = useRouter()
@@ -198,40 +199,7 @@ export default function RolesManagementPage() {
               const meta = getActivityMeta("approved") // Default styling for job profiles
               return (
               <div
-                onClick={() => {
-                  const savedStep = localStorage.getItem(`samvaad_saathi_draft_step_${act.jobProfileId}`);
-                  const targetStep = savedStep ? savedStep : "5";
-                  
-                  // Restore the basic form details from the backend profile so they display correctly on the steps
-                  const previousProfileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
-                  let existingDraft = {}
-                  if (previousProfileId === act.jobProfileId.toString()) {
-                    const savedDraft = localStorage.getItem("samvaad_saathi_draft_role");
-                    if (savedDraft) {
-                      try { existingDraft = JSON.parse(savedDraft) } catch (e) {}
-                    }
-                  }
-
-                  localStorage.setItem("samvaad_saathi_draft_profile_id", act.jobProfileId.toString())
-
-                  const formDraft = {
-                    jdType: "role",
-                    jobName: act.jobName || (existingDraft as any).jobName || "",
-                    companyName: act.companyName || (existingDraft as any).companyName || "",
-                    category: act.category || (existingDraft as any).category || "",
-                    experienceLevel: act.experienceLevel || (existingDraft as any).experienceLevel || "",
-                    employmentType: act.employmentType || (existingDraft as any).employmentType || "",
-                    jobDescription: act.jobDescription || (existingDraft as any).jobDescription || "",
-                    skills: (act.skills?.length ? act.skills : (existingDraft as any).skills) || [],
-                  };
-                  localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(formDraft));
-                  
-                  if (targetStep === "4") {
-                    router.push("/dashboard/roles/new/questions")
-                  } else {
-                    router.push(`/dashboard/roles/new?step=${targetStep}`)
-                  }
-                }}
+                onClick={() => navigateToJobProfileStep(act, router)}
                 key={act.jobProfileId}
                 className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4 group transition-all hover:bg-slate-50/50 -mx-4 px-4 rounded-xl cursor-pointer"
               >
