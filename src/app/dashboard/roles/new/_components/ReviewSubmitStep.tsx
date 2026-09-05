@@ -15,6 +15,8 @@ import {
 } from "./constants"
 import { useGetJobProfileReview } from "@/lib/api/hooks/analytics/useJobProfiles"
 
+import { useSearchParams } from "next/navigation"
+
 interface ReviewSubmitStepProps {
   form: UseFormReturn<AddRoleFormValues>
   difficultyLevels: Array<DifficultyLevel>
@@ -25,7 +27,9 @@ export function ReviewSubmitStep({
   difficultyLevels,
 }: ReviewSubmitStepProps) {
   const [isMounted, setIsMounted] = useState(false)
-  const profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null
+  const searchParams = useSearchParams()
+  const urlProfileId = searchParams.get("profileId")
+  const profileId = urlProfileId || (typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null)
 
   useEffect(() => {
     setIsMounted(true)
