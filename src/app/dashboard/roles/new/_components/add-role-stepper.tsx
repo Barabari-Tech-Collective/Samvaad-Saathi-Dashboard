@@ -260,6 +260,26 @@ export function AddRoleStepper() {
     }
   }
 
+  const handleUpsertJobProfile = async (values: AddRoleFormValues, extraContext?: string) => {
+    let profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null;
+
+    if (!profileId || profileId === "null") {
+      const response = await createJobProfileAsync(getJobProfilePayload(values, extraContext));
+      const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
+      profileId = String(newId);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
+      }
+    } else {
+      await updateJobProfileAsync({
+        jobProfileId: profileId,
+        ...getJobProfilePayload(values, extraContext)
+      });
+    }
+
+    return profileId;
+  };
+
   async function handleSaveDraft() {
     if (typeof window !== "undefined") {
       localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
@@ -272,27 +292,13 @@ export function AddRoleStepper() {
     const values = form.getValues()
     let profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null;
 
-    if ((!profileId || profileId === "null") && values.jobName && values.jobName.trim() !== "") {
+    if ((!profileId || profileId === "null") && (!values.jobName || values.jobName.trim() === "")) {
+      // Do not hit backend yet if there is no profile and jobName is missing
+    } else {
       try {
-        const response = await createJobProfileAsync(getJobProfilePayload(values))
-        const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
-        profileId = String(newId);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
-        }
+        profileId = await handleUpsertJobProfile(values);
       } catch (e) {
         console.error("Failed to save draft profile to backend:", e)
-        toast.error("Failed to save draft. Please try again.")
-        return
-      }
-    } else if (profileId && profileId !== "null") {
-      try {
-        await updateJobProfileAsync({
-          jobProfileId: profileId,
-          ...getJobProfilePayload(values)
-        })
-      } catch (e) {
-        console.error("Failed to update draft profile in backend:", e)
         toast.error("Failed to save draft. Please try again.")
         return
       }
@@ -312,7 +318,6 @@ export function AddRoleStepper() {
 
   async function handleGenerateQuestionsClick() {
     try {
-      let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
       const values = form.getValues()
 
       const difficultyText = difficultyLevels
@@ -325,17 +330,8 @@ export function AddRoleStepper() {
         difficultyText ? `Difficulty Levels:\n${difficultyText}` : ""
       ].filter(Boolean).join("\n\n")
 
-      if (!profileId || profileId === "null") {
-        const response = await createJobProfileAsync(getJobProfilePayload(values, finalContext))
-        const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
-        profileId = String(newId)
-        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId as string)
-      } else {
-        await updateJobProfileAsync({
-          jobProfileId: profileId,
-          ...getJobProfilePayload(values, finalContext)
-        })
-      }
+      await handleUpsertJobProfile(values, finalContext);
+      
       router.push("/dashboard/roles/new/questions")
     } catch (e) {
       console.error("Failed to create profile before generating questions:", e)
@@ -346,19 +342,7 @@ export function AddRoleStepper() {
   async function handleFinalSubmit() {
     try {
       const values = form.getValues();
-      let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
-
-      if (!profileId || profileId === "null") {
-        const response = await createJobProfileAsync(getJobProfilePayload(values));
-        const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
-        profileId = String(newId);
-        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
-      } else {
-        await updateJobProfileAsync({
-          jobProfileId: profileId,
-          ...getJobProfilePayload(values)
-        });
-      }
+      const profileId = await handleUpsertJobProfile(values);
 
       if (!profileId || profileId === "null") {
         toast.error("Failed to create or retrieve profile ID.");
@@ -422,7 +406,8 @@ export function AddRoleStepper() {
         queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
         queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles/summary") });
       } catch (apiError) {
-        console.warn("Backend API not connected/available or failed to submit, proceeding with frontend flow:", apiError);
+        console.error("Backend API failed to submit:", apiError);
+        throw apiError;
       }
       toast.success("Role submitted successfully");
       router.push("/dashboard/roles/new/success");
