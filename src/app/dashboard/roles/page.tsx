@@ -1,16 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Link } from "next-view-transitions"
 import { useRouter } from "next/navigation"
 import {
   IconPlus,
   IconClock,
   IconCheck,
   IconX,
-  IconChevronDown,
   IconBriefcase,
-  IconEye,
   IconAlertCircle,
   IconFileText,
   IconArrowUpRight,
@@ -19,7 +16,6 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -235,7 +231,7 @@ export default function RolesManagementPage() {
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-xs font-bold text-slate-700 leading-none group-hover:text-blue-600 transition-colors">
-                      Role '<span className="text-slate-800 font-extrabold group-hover:text-blue-700">{act.jobName}</span>' created
+                      Role &apos;<span className="text-slate-800 font-extrabold group-hover:text-blue-700">{act.jobName}</span>&apos; created
                     </p>
                   </div>
                 </div>
