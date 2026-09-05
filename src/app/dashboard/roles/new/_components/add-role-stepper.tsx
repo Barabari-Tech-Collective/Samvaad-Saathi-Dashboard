@@ -466,6 +466,9 @@ export function AddRoleStepper() {
 
       try {
         await submitProfileAsync({ jobProfileId: profileId });
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`samvaad_saathi_draft_step_${profileId}`, "5");
+        }
         queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
         queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles/summary") });
       } catch (apiError) {

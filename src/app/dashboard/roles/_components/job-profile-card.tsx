@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
   IconBriefcase,
@@ -30,6 +31,7 @@ import { useDeleteJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
 import type { JobProfileItem } from "@/lib/api/hooks/analytics/types"
 
 export function JobProfileCard({ profile }: { profile: any }) {
+  const router = useRouter()
   const { deleteJobProfileAsync, isDeletingJobProfile } = useDeleteJobProfile()
   const [confirmOpen, setConfirmOpen] = React.useState(false)
 
@@ -47,8 +49,44 @@ export function JobProfileCard({ profile }: { profile: any }) {
     }
   }
 
+  function handleCardClick() {
+    if (typeof window !== "undefined") {
+      const savedStep = localStorage.getItem(`samvaad_saathi_draft_step_${id}`);
+      const targetStep = savedStep ? savedStep : "5";
+      
+      const previousProfileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
+      let existingDraft = {}
+      if (previousProfileId === id.toString()) {
+        const savedDraft = localStorage.getItem("samvaad_saathi_draft_role");
+        if (savedDraft) {
+          try { existingDraft = JSON.parse(savedDraft) } catch (e) {}
+        }
+      }
+
+      localStorage.setItem("samvaad_saathi_draft_profile_id", id.toString())
+
+      const formDraft = {
+        jdType: "role",
+        jobName: profile.jobName || (existingDraft as any).jobName || "",
+        companyName: profile.companyName || (existingDraft as any).companyName || "",
+        category: profile.category || (existingDraft as any).category || "",
+        experienceLevel: profile.experienceLevel || (existingDraft as any).experienceLevel || "",
+        employmentType: profile.employmentType || (existingDraft as any).employmentType || "",
+        jobDescription: profile.jobDescription || (existingDraft as any).jobDescription || "",
+        skills: (profile.skills?.length ? profile.skills : (existingDraft as any).skills) || [],
+      };
+      localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(formDraft));
+      
+      if (targetStep === "4") {
+        router.push("/dashboard/roles/new/questions")
+      } else {
+        router.push(`/dashboard/roles/new?step=${targetStep}`)
+      }
+    }
+  }
+
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col cursor-pointer transition-all hover:bg-slate-50/50 hover:shadow-md" onClick={handleCardClick}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -64,7 +102,10 @@ export function JobProfileCard({ profile }: { profile: any }) {
             size="icon"
             className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
             disabled={isDeletingJobProfile}
-            onClick={() => setConfirmOpen(true)}
+            onClick={(e) => {
+              e.stopPropagation()
+              setConfirmOpen(true)
+            }}
           >
             {isDeletingJobProfile ? (
               <IconLoader2 className="size-3.5 animate-spin" />
