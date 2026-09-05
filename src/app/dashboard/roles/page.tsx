@@ -207,6 +207,19 @@ export default function RolesManagementPage() {
                   const targetStep = savedStep ? savedStep : "5";
                   localStorage.setItem("samvaad_saathi_draft_profile_id", act.jobProfileId.toString())
                   
+                  // Restore the basic form details from the backend profile so they display correctly on the steps
+                  const formDraft = {
+                    jdType: "role",
+                    jobName: act.jobName || "",
+                    companyName: act.companyName || "",
+                    category: act.category || "",
+                    experienceLevel: act.experienceLevel || "",
+                    employmentType: act.employmentType || "",
+                    jobDescription: act.description || "",
+                    skills: act.skills || [],
+                  };
+                  localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(formDraft));
+                  
                   if (targetStep === "4") {
                     router.push("/dashboard/roles/new/questions")
                   } else {
