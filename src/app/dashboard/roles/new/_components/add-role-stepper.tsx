@@ -371,10 +371,20 @@ export function AddRoleStepper() {
         }
       }
 
-      const activeLevelsCount = difficultyLevels.filter(l => l.selected).length;
-      const totalQuestionsCount = difficultyLevels
+      let activeLevelsCount = difficultyLevels.filter(l => l.selected).length;
+      let totalQuestionsCount = difficultyLevels
         .filter(l => l.selected)
         .reduce((sum, l) => sum + l.count, 0);
+
+      // Fallback: If they skipped the question generation step directly to review, local state might be 0.
+      // We can grab the real values from the cached review data if available.
+      if (totalQuestionsCount === 0 && profileId) {
+        const cachedReview = queryClient.getQueryData(["job-profile-review", profileId]) as any;
+        if (cachedReview && cachedReview.questionSummary) {
+          activeLevelsCount = cachedReview.questionSummary.totalLevels || 0;
+          totalQuestionsCount = cachedReview.questionSummary.totalQuestions || 0;
+        }
+      }
 
       let submissionInfo = {
         roleName: draftJobName || "Unnamed Role",
@@ -392,7 +402,11 @@ export function AddRoleStepper() {
         const existingStr = sessionStorage.getItem("samvaad_saathi_last_submission");
         if (existingStr && (!draftJobName || draftJobName === "Unnamed Role")) {
           try {
-            submissionInfo = JSON.parse(existingStr);
+            submissionInfo = { ...JSON.parse(existingStr), ...submissionInfo };
+            if (submissionInfo.totalQuestions === 0) {
+              submissionInfo.totalQuestions = JSON.parse(existingStr).totalQuestions || 0;
+              submissionInfo.activeLevels = JSON.parse(existingStr).activeLevels || 0;
+            }
           } catch (e) { }
         }
         sessionStorage.setItem("samvaad_saathi_last_submission", JSON.stringify(submissionInfo));
