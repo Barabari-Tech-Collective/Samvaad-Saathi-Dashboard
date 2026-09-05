@@ -50,13 +50,15 @@ export function ReviewSubmitStep({
 
   const { roleDetails, jdSummary, questionSummary } = reviewData
 
-  const jobName = roleDetails?.roleName || "New Role"
-  const category = roleDetails?.category || "Engineering"
-  const experienceRange = roleDetails?.experienceLevel || "Not specified"
-  const employmentType = roleDetails?.employmentType || "Full-time"
-  const jobDescription = roleDetails?.description || "No description provided."
+  const formValues = form.getValues()
 
-  const skillsList = jdSummary?.extractedSkills || []
+  const jobName = roleDetails?.roleName || formValues.jobName || "New Role"
+  const category = roleDetails?.category || formValues.category || "Engineering"
+  const experienceRange = roleDetails?.experienceLevel || formValues.experienceLevel || "Not specified"
+  const employmentType = roleDetails?.employmentType || formValues.employmentType || "Full-time"
+  const jobDescription = roleDetails?.description || formValues.jobDescription || formValues.uploadedJDText || "No description provided."
+
+  const skillsList = jdSummary?.extractedSkills?.length ? jdSummary.extractedSkills : (formValues.skills || [])
   const competenciesList = jdSummary?.competencies || []
 
   const levels = (questionSummary?.levels || []).map((level: any) => {
