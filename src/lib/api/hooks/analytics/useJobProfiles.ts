@@ -22,6 +22,8 @@ import type {
   JobProfileDeleteQuestionResponse,
   JobProfileReviewResponse,
   JobProfileSubmitResponse,
+  UpdateJobProfileRequest,
+  JobProfileItem,
 } from "./types"
 import { analyticsKey } from "./query-keys"
 
@@ -110,6 +112,22 @@ export function useCreateJobProfile() {
     createJobProfile: mutation.mutate,
     createJobProfileAsync: mutation.mutateAsync,
     isCreatingJobProfile: mutation.isPending,
+    ...mutation,
+  }
+}
+
+// ── PUT /v2/job-profiles/{id} ─────────────────────────────────────────────────
+export function useUpdateJobProfile() {
+  const mutation = api.useMutation<JobProfileItem, unknown, UpdateJobProfileRequest>({
+    url: ({ jobProfileId }) => `${jobProfilesPath}/${jobProfileId}`,
+    method: "PUT",
+    keyToInvalidate: analyticsKey(jobProfilesPath),
+  })
+
+  return {
+    updateJobProfile: mutation.mutate,
+    updateJobProfileAsync: mutation.mutateAsync,
+    isUpdatingJobProfile: mutation.isPending,
     ...mutation,
   }
 }

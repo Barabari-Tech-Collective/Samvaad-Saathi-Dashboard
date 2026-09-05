@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
   IconBriefcase,
@@ -29,7 +30,10 @@ import {
 import { useDeleteJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
 import type { JobProfileItem } from "@/lib/api/hooks/analytics/types"
 
+import { navigateToJobProfileStep } from "../utils"
+
 export function JobProfileCard({ profile }: { profile: any }) {
+  const router = useRouter()
   const { deleteJobProfileAsync, isDeletingJobProfile } = useDeleteJobProfile()
   const [confirmOpen, setConfirmOpen] = React.useState(false)
 
@@ -47,8 +51,12 @@ export function JobProfileCard({ profile }: { profile: any }) {
     }
   }
 
+  function handleCardClick() {
+    navigateToJobProfileStep(profile, router)
+  }
+
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col cursor-pointer transition-all hover:bg-slate-50/50 hover:shadow-md" onClick={handleCardClick}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -64,7 +72,10 @@ export function JobProfileCard({ profile }: { profile: any }) {
             size="icon"
             className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
             disabled={isDeletingJobProfile}
-            onClick={() => setConfirmOpen(true)}
+            onClick={(e) => {
+              e.stopPropagation()
+              setConfirmOpen(true)
+            }}
           >
             {isDeletingJobProfile ? (
               <IconLoader2 className="size-3.5 animate-spin" />

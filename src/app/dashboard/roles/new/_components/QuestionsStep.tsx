@@ -282,6 +282,17 @@ export function QuestionsStep() {
     }
   }
 
+  const handleSaveDraft = () => {
+    if (typeof window !== "undefined") {
+      let draftProfileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
+      if (draftProfileId && draftProfileId !== "null") {
+        localStorage.setItem(`samvaad_saathi_draft_step_${draftProfileId}`, "4");
+      }
+    }
+    toast.success("Draft saved successfully")
+    router.push("/dashboard/roles")
+  }
+
   const [isMounted, setIsMounted] = useState(false)
   useEffect(() => {
     setIsMounted(true)
@@ -310,10 +321,7 @@ export function QuestionsStep() {
           <Button
             variant="outline"
             className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-4 py-2 h-9 text-xs transition-colors shadow-sm"
-            onClick={() => {
-              toast.success("Draft saved successfully")
-              router.push("/dashboard/roles")
-            }}
+            onClick={handleSaveDraft}
           >
             Save draft
           </Button>
@@ -496,10 +504,7 @@ export function QuestionsStep() {
           <Button
             variant="outline"
             className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11"
-            onClick={() => {
-              toast.success("Draft saved successfully")
-              router.push("/dashboard/roles")
-            }}
+            onClick={handleSaveDraft}
           >
             Save draft
           </Button>

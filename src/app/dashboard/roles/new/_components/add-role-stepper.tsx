@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Form } from "@/components/ui/form"
-import { useCreateJobProfile, useSubmitJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
+import { useCreateJobProfile, useSubmitJobProfile, useUpdateJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
 import { RoleCreationStepper } from "./RoleCreationStepper"
 
 import {
@@ -55,6 +55,7 @@ export function AddRoleStepper() {
   const [skillInput, setSkillInput] = useState("")
   const [knowledgeQuestions, setKnowledgeQuestions] = useState<any>(null)
   const { createJobProfileAsync, isCreatingJobProfile } = useCreateJobProfile()
+  const { updateJobProfileAsync, isUpdatingJobProfile } = useUpdateJobProfile()
   const { submitProfileAsync, isSubmittingProfile } = useSubmitJobProfile()
 
   useEffect(() => {
@@ -240,41 +241,97 @@ export function AddRoleStepper() {
     setStep((s) => s - 1)
   }
 
+  const getJobProfilePayload = (values: AddRoleFormValues, extraContext?: string) => {
+    const finalCompanyName = values.jdType === "role"
+      ? "General Role"
+      : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+
+    return {
+      title: values.jobName || "",
+      description: values.jobDescription || values.uploadedJDText || "",
+      jobName: values.jobName || "",
+      jobDescription: values.jobDescription || values.uploadedJDText || "",
+      companyName: finalCompanyName,
+      experienceLevel: values.experienceLevel || "",
+      skills: values.skills || [],
+      additionalContext: extraContext || values.additionalContext || undefined,
+      category: values.category || "",
+      employmentType: values.employmentType || "",
+    }
+  }
+
+  const handleUpsertJobProfile = async (values: AddRoleFormValues, extraContext?: string) => {
+    let profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null;
+
+    if (!profileId || profileId === "null") {
+      const response = await createJobProfileAsync(getJobProfilePayload(values, extraContext));
+      const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
+      profileId = String(newId);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
+      }
+    } else {
+      await updateJobProfileAsync({
+        jobProfileId: profileId,
+        ...getJobProfilePayload(values, extraContext)
+      });
+    }
+
+    return profileId;
+  };
+
+  async function handleSaveDraft() {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(form.getValues()))
+      localStorage.setItem("samvaad_saathi_difficulty_levels", JSON.stringify(difficultyLevels))
+      if (knowledgeQuestions) {
+        localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(knowledgeQuestions))
+      }
+    }
+
+    const values = form.getValues()
+    let profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null;
+
+    if ((!profileId || profileId === "null") && (!values.jobName || values.jobName.trim() === "")) {
+      // Do not hit backend yet if there is no profile and jobName is missing
+    } else {
+      try {
+        profileId = await handleUpsertJobProfile(values);
+      } catch (e) {
+        console.error("Failed to save draft profile to backend:", e)
+        toast.error("Failed to save draft. Please try again.")
+        return
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      if (profileId && profileId !== "null") {
+        localStorage.setItem(`samvaad_saathi_draft_step_${profileId}`, step.toString());
+      } else {
+        // If it hasn't been created in the backend yet, just use a generic 'new' key
+        localStorage.setItem(`samvaad_saathi_draft_step_new`, step.toString());
+      }
+      toast.success("Draft saved successfully")
+      router.push("/dashboard/roles")
+    }
+  }
+
   async function handleGenerateQuestionsClick() {
     try {
-      let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
-      if (!profileId || profileId === "null") {
-        const values = form.getValues()
-        const finalCompanyName = values.jdType === "role"
-          ? "General Role"
-          : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
+      const values = form.getValues()
 
-        const difficultyText = difficultyLevels
-          .filter(l => l.selected)
-          .map(l => `${l.title}:\n- Question: ${l.exampleQuestion || l.placeholder}`)
-          .join("\n\n")
+      const difficultyText = difficultyLevels
+        .filter(l => l.selected)
+        .map(l => `${l.title}:\n- Question: ${l.exampleQuestion || l.placeholder}`)
+        .join("\n\n")
 
-        const finalContext = [
-          values.additionalContext,
-          difficultyText ? `Difficulty Levels:\n${difficultyText}` : ""
-        ].filter(Boolean).join("\n\n")
+      const finalContext = [
+        values.additionalContext,
+        difficultyText ? `Difficulty Levels:\n${difficultyText}` : ""
+      ].filter(Boolean).join("\n\n")
 
-        const response = await createJobProfileAsync({
-          title: values.jobName || "",
-          description: values.jobDescription || values.uploadedJDText || "",
-          jobName: values.jobName || "",
-          jobDescription: values.jobDescription || values.uploadedJDText || "",
-          companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel || "",
-          skills: values.skills || [],
-          additionalContext: finalContext || undefined,
-          category: values.category || "",
-          employmentType: values.employmentType || "",
-        })
-        const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
-        profileId = String(newId)
-        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId as string)
-      }
+      await handleUpsertJobProfile(values, finalContext);
+      
       router.push("/dashboard/roles/new/questions")
     } catch (e) {
       console.error("Failed to create profile before generating questions:", e)
@@ -285,29 +342,7 @@ export function AddRoleStepper() {
   async function handleFinalSubmit() {
     try {
       const values = form.getValues();
-      // Ensure company name is never empty for the backend
-      const finalCompanyName = values.jdType === "role"
-        ? "General Role"
-        : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
-
-      let profileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
-
-
-      if (!profileId || profileId === "null") {
-        const response = await createJobProfileAsync({
-          title: values.jobName || "",
-          description: values.jobDescription || "",
-          jobName: values.jobName || "",
-          jobDescription: values.jobDescription || "",
-          companyName: finalCompanyName,
-          experienceLevel: values.experienceLevel || "",
-          skills: values.skills || [],
-          additionalContext: values.additionalContext || undefined,
-        });
-        const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
-        profileId = String(newId);
-        localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
-      }
+      const profileId = await handleUpsertJobProfile(values);
 
       if (!profileId || profileId === "null") {
         toast.error("Failed to create or retrieve profile ID.");
@@ -322,10 +357,20 @@ export function AddRoleStepper() {
         }
       }
 
-      const activeLevelsCount = difficultyLevels.filter(l => l.selected).length;
-      const totalQuestionsCount = difficultyLevels
+      let activeLevelsCount = difficultyLevels.filter(l => l.selected).length;
+      let totalQuestionsCount = difficultyLevels
         .filter(l => l.selected)
         .reduce((sum, l) => sum + l.count, 0);
+
+      // Fallback: If they skipped the question generation step directly to review, local state might be 0.
+      // We can grab the real values from the cached review data if available.
+      if (totalQuestionsCount === 0 && profileId) {
+        const cachedReview = queryClient.getQueryData(["job-profile-review", profileId]) as any;
+        if (cachedReview && cachedReview.questionSummary) {
+          activeLevelsCount = cachedReview.questionSummary.totalLevels || 0;
+          totalQuestionsCount = cachedReview.questionSummary.totalQuestions || 0;
+        }
+      }
 
       let submissionInfo = {
         roleName: draftJobName || "Unnamed Role",
@@ -343,7 +388,11 @@ export function AddRoleStepper() {
         const existingStr = sessionStorage.getItem("samvaad_saathi_last_submission");
         if (existingStr && (!draftJobName || draftJobName === "Unnamed Role")) {
           try {
-            submissionInfo = JSON.parse(existingStr);
+            submissionInfo = { ...JSON.parse(existingStr), ...submissionInfo };
+            if (submissionInfo.totalQuestions === 0) {
+              submissionInfo.totalQuestions = JSON.parse(existingStr).totalQuestions || 0;
+              submissionInfo.activeLevels = JSON.parse(existingStr).activeLevels || 0;
+            }
           } catch (e) { }
         }
         sessionStorage.setItem("samvaad_saathi_last_submission", JSON.stringify(submissionInfo));
@@ -351,10 +400,14 @@ export function AddRoleStepper() {
 
       try {
         await submitProfileAsync({ jobProfileId: profileId });
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`samvaad_saathi_draft_step_${profileId}`, "5");
+        }
         queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
         queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles/summary") });
       } catch (apiError) {
-        console.warn("Backend API not connected/available or failed to submit, proceeding with frontend flow:", apiError);
+        console.error("Backend API failed to submit:", apiError);
+        throw apiError;
       }
       toast.success("Role submitted successfully");
       router.push("/dashboard/roles/new/success");
@@ -395,10 +448,7 @@ export function AddRoleStepper() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  toast.success("Draft saved successfully")
-                  router.push("/dashboard/roles")
-                }}
+                onClick={handleSaveDraft}
                 className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-4 h-9 shadow-sm text-xs transition-colors"
               >
                 Save draft
@@ -505,10 +555,7 @@ export function AddRoleStepper() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    toast.success("Draft saved successfully")
-                    router.push("/dashboard/roles")
-                  }}
+                  onClick={handleSaveDraft}
                   className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 select-none"
                 >
                   Save as draft
@@ -567,6 +614,15 @@ export function AddRoleStepper() {
 
                 <Button
                   type="button"
+                  variant="outline"
+                  onClick={handleSaveDraft}
+                  className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors"
+                >
+                  Save as draft
+                </Button>
+
+                <Button
+                  type="button"
                   onClick={handleGenerateQuestionsClick}
                   className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors flex items-center gap-1.5"
                 >
@@ -598,53 +654,66 @@ export function AddRoleStepper() {
                 Step {step + 1} of 6
               </span>
 
-              {isLastStep ? (
-                <Button
-                  type="button"
-                  disabled={isCreatingJobProfile}
-                  className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[150px]"
-                  onClick={form.handleSubmit(
-                    onSubmit,
-                    (errors) => {
-                      console.log("Validation Errors:", errors);
-                      const firstError = Object.values(errors)[0] as any;
-                      if (firstError) {
-                        toast.error(firstError.message || "Please check all fields");
+              <div className="flex items-center gap-2">
+                {step > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleSaveDraft}
+                    className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors"
+                  >
+                    Save as draft
+                  </Button>
+                )}
+
+                {isLastStep ? (
+                  <Button
+                    type="button"
+                    disabled={isCreatingJobProfile}
+                    className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[150px]"
+                    onClick={form.handleSubmit(
+                      onSubmit,
+                      (errors) => {
+                        console.log("Validation Errors:", errors);
+                        const firstError = Object.values(errors)[0] as any;
+                        if (firstError) {
+                          toast.error(firstError.message || "Please check all fields");
+                        }
                       }
-                    }
-                  )}
-                >
-                  {isCreatingJobProfile ? (
-                    <>
-                      <IconLoader2 className="size-4 animate-spin" />
-                      Finalizing...
-                    </>
-                  ) : (
-                    <>
-                      <IconCheck className="size-4" />
-                      Confirm and Create
-                    </>
-                  )}
-                </Button>
-              ) : step === 2 ? (
-                <Button
-                  type="button"
-                  onClick={goNext}
-                  className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-2 select-none shadow-sm cursor-pointer"
-                >
-                  <IconSparkles className="size-4" />
-                  Generate questions
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={goNext}
-                  className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5"
-                >
-                  Next
-                  <IconChevronRight className="size-4" />
-                </Button>
-              )}
+                    )}
+                  >
+                    {isCreatingJobProfile ? (
+                      <>
+                        <IconLoader2 className="size-4 animate-spin" />
+                        Finalizing...
+                      </>
+                    ) : (
+                      <>
+                        <IconCheck className="size-4" />
+                        Confirm and Create
+                      </>
+                    )}
+                  </Button>
+                ) : step === 2 ? (
+                  <Button
+                    type="button"
+                    onClick={goNext}
+                    className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-2 select-none cursor-pointer"
+                  >
+                    <IconSparkles className="size-4" />
+                    Generate questions
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={goNext}
+                    className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-1.5"
+                  >
+                    Next
+                    <IconChevronRight className="size-4" />
+                  </Button>
+                )}
+              </div>
             </>
           )}
         </div>
