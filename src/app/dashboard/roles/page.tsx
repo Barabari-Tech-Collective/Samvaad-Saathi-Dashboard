@@ -206,7 +206,12 @@ export default function RolesManagementPage() {
                   const savedStep = localStorage.getItem(`samvaad_saathi_draft_step_${act.jobProfileId}`);
                   const targetStep = savedStep ? savedStep : "5";
                   localStorage.setItem("samvaad_saathi_draft_profile_id", act.jobProfileId.toString())
-                  router.push(`/dashboard/roles/new?step=${targetStep}`)
+                  
+                  if (targetStep === "4") {
+                    router.push("/dashboard/roles/new/questions")
+                  } else {
+                    router.push(`/dashboard/roles/new?step=${targetStep}`)
+                  }
                 }}
                 key={act.jobProfileId}
                 className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4 group transition-all hover:bg-slate-50/50 -mx-4 px-4 rounded-xl cursor-pointer"
