@@ -146,23 +146,39 @@ export function AddRoleStepper() {
       const isNewRole = parsedStep === 0
 
       if (isNewRole) {
-        // Brand new start or refresh at Step 1: clear draft storage and initialize clean form
-        localStorage.removeItem("samvaad_saathi_draft_role")
-        localStorage.removeItem("samvaad_saathi_difficulty_levels")
-        localStorage.removeItem("samvaad_saathi_knowledge_questions")
-        setKnowledgeQuestions(null)
-
-        form.reset({
-          jdType: undefined,
-          jobName: "",
-          companyName: "",
-          category: "",
-          experienceLevel: "",
-          employmentType: "",
-          jobDescription: "",
-          skills: [],
-          additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
-        })
+        // If they explicitly clicked "New Role", we should probably use the existing draft if they have one,
+        // or we can just load the draft by default.
+        const draft = localStorage.getItem("samvaad_saathi_draft_role")
+        if (draft) {
+          try {
+            const parsed = JSON.parse(draft)
+            form.reset(parsed)
+          } catch (e) {
+            form.reset({
+              jdType: undefined,
+              jobName: "",
+              companyName: "",
+              category: "",
+              experienceLevel: "",
+              employmentType: "",
+              jobDescription: "",
+              skills: [],
+              additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
+            })
+          }
+        } else {
+          form.reset({
+            jdType: undefined,
+            jobName: "",
+            companyName: "",
+            category: "",
+            experienceLevel: "",
+            employmentType: "",
+            jobDescription: "",
+            skills: [],
+            additionalContext: `Topic-1 Javascript\n• What is var?\n• Diff between var, let and const\n\nTopic -2 REACT\n• What are states and props?`,
+          })
+        }
       } else {
         // Navigating back/forward (e.g. returning to Step 5 review page): restore form details
         const draft = localStorage.getItem("samvaad_saathi_draft_role")
@@ -249,40 +265,14 @@ export function AddRoleStepper() {
       }
     }
 
-    const values = form.getValues()
     let profileId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null;
-    
-    if ((!profileId || profileId === "null") && values.jobName && values.jobName.trim() !== "") {
-        const finalCompanyName = values.jdType === "role"
-          ? "General Role"
-          : (values.companyName && values.companyName.trim() !== "" ? values.companyName : "Unnamed Company");
-        
-        try {
-          const response = await createJobProfileAsync({
-            title: values.jobName || "",
-            description: values.jobDescription || values.uploadedJDText || "",
-            jobName: values.jobName || "",
-            jobDescription: values.jobDescription || values.uploadedJDText || "",
-            companyName: finalCompanyName,
-            experienceLevel: values.experienceLevel || "",
-            skills: values.skills || [],
-            additionalContext: values.additionalContext || undefined,
-            category: values.category || "",
-            employmentType: values.employmentType || "",
-          })
-          const newId = (response as any).id ?? (response as any).jobProfileId ?? (response as any).job_profile_id;
-          profileId = String(newId);
-          if (typeof window !== "undefined") {
-             localStorage.setItem("samvaad_saathi_draft_profile_id", profileId);
-          }
-        } catch (e) {
-          console.error("Failed to save draft profile to backend:", e)
-        }
-    }
 
     if (typeof window !== "undefined") {
         if (profileId && profileId !== "null") {
             localStorage.setItem(`samvaad_saathi_draft_step_${profileId}`, step.toString());
+        } else {
+            // If it hasn't been created in the backend yet, just use a generic 'new' key
+            localStorage.setItem(`samvaad_saathi_draft_step_new`, step.toString());
         }
         toast.success("Draft saved successfully")
         router.push("/dashboard/roles")
