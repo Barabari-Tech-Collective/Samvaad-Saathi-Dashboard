@@ -136,6 +136,8 @@ export type RecentInterviewRow = Readonly<{
   role: string
   difficulty: string
   score: number | null
+  speech_score?: number | null
+  knowledge_score?: number | null
   duration_seconds: number | null
   date: string
   status?: string
