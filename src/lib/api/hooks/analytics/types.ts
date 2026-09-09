@@ -211,6 +211,8 @@ export type StudentTableRow = Readonly<{
   name: string
   college: string
   average_score: number | null
+  avg_speech_score?: number | null
+  avg_knowledge_score?: number | null
   latest_score: number | null
   improvement_percent: number | null
   interviews_count: number
@@ -345,6 +347,8 @@ export type InterviewTableRow = Readonly<{
   role: string
   difficulty: string
   score: number | null
+  speech_score?: number | null
+  knowledge_score?: number | null
   duration: number | null
   date: string
   status?: string

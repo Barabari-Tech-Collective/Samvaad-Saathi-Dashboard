@@ -50,7 +50,7 @@ function Loading() {
     return (
         <div className="flex min-h-screen">
             {/* Sidebar skeleton */}
-            <div className="hidden md:flex w-72 shrink-0 flex-col border-r bg-sidebar p-4 gap-4">
+            <div className="hidden md:flex w-60 shrink-0 flex-col border-r bg-sidebar p-4 gap-4">
                 <div className="flex items-center gap-3 px-2 py-1">
                     <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
                     <Skeleton className="h-5 w-32" />
