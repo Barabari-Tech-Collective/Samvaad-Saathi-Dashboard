@@ -50,11 +50,11 @@ const data = {
             url: "/dashboard/interviews",
             icon: <IconMicrophone />,
         },
-        {
-            title: "Alerts",
-            url: "/dashboard/alerts",
-            icon: <IconAlertTriangle />,
-        },
+        // {
+        //     title: "Alerts",
+        //     url: "/dashboard/alerts",
+        //     icon: <IconAlertTriangle />,
+        // },
         {
             title: "Roles",
             url: "/dashboard/roles",
@@ -65,11 +65,11 @@ const data = {
             url: "/dashboard/roles-analytics",
             icon: <IconTargetArrow />,
         },
-        {
-            title: "Rankings",
-            url: "/dashboard/rankings",
-            icon: <IconMedal />,
-        },
+        // {
+        //     title: "Rankings",
+        //     url: "/dashboard/rankings",
+        //     icon: <IconMedal />,
+        // },
     ],
     navSecondary: [
         // {

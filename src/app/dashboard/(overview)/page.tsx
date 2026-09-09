@@ -53,7 +53,7 @@ export default function DashboardPage() {
             <DashboardForecasting />
           </div>
           
-          <DashboardQuestionsAnalytics />
+          {/* <DashboardQuestionsAnalytics /> */}
         </div>
       </div>
     </DashboardOverviewProvider>

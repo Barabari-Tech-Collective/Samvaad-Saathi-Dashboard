@@ -48,10 +48,18 @@ function toDateLabel(value: string): string {
 }
 
 function useStudentScoreMap(studentIds: readonly number[], filters: CompareFilters) {
-  const datasets = studentIds.map((studentId) => ({
-    studentId,
-    query: useStudentScoreHistory(studentId, filters),
-  }))
+  const query0 = useStudentScoreHistory(studentIds[0], filters)
+  const query1 = useStudentScoreHistory(studentIds[1], filters)
+  const query2 = useStudentScoreHistory(studentIds[2], filters)
+  const query3 = useStudentScoreHistory(studentIds[3], filters)
+
+  const datasets = React.useMemo(() => {
+    const queries = [query0, query1, query2, query3]
+    return studentIds.map((studentId, idx) => ({
+      studentId,
+      query: queries[idx],
+    }))
+  }, [studentIds, query0, query1, query2, query3])
 
   const rows = React.useMemo(() => {
     const allDates = new Set<string>()
@@ -75,10 +83,18 @@ function useStudentScoreMap(studentIds: readonly number[], filters: CompareFilte
 }
 
 function useSkillMetricRows(studentIds: readonly number[], filters: CompareFilters) {
-  const datasets = studentIds.map((studentId) => ({
-    studentId,
-    query: useStudentSkillAverages(studentId, filters),
-  }))
+  const query0 = useStudentSkillAverages(studentIds[0], filters)
+  const query1 = useStudentSkillAverages(studentIds[1], filters)
+  const query2 = useStudentSkillAverages(studentIds[2], filters)
+  const query3 = useStudentSkillAverages(studentIds[3], filters)
+
+  const datasets = React.useMemo(() => {
+    const queries = [query0, query1, query2, query3]
+    return studentIds.map((studentId, idx) => ({
+      studentId,
+      query: queries[idx],
+    }))
+  }, [studentIds, query0, query1, query2, query3])
 
   return React.useMemo(() => {
     const metrics = new Set<string>()
