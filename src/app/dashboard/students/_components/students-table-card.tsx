@@ -170,7 +170,7 @@ export function StudentsTableCard() {
                         <StudentsTableSkeleton rows={10} />
                     ) : (
                         <table
-                            className={`w-full min-w-[720px] text-sm transition-opacity ${showFetching ? "opacity-60" : ""}`}
+                            className={`w-full min-w-[900px] text-sm transition-opacity ${showFetching ? "opacity-60" : ""}`}
                             aria-busy={showFetching ? true : undefined}
                         >
                             <thead>
@@ -178,11 +178,11 @@ export function StudentsTableCard() {
                                     <th className="pb-2 pr-3 font-medium">Student ID</th>
                                     <th className="pb-2 pr-3 font-medium">Name</th>
                                     <th className="pb-2 pr-3 font-medium">College</th>
-                                    <th className="pb-2 pr-3 text-right font-medium">Avg score</th>
-                                    <th className="pb-2 pr-3 text-right font-medium">Latest</th>
-                                    <th className="pb-2 pr-3 text-right font-medium">Improvement</th>
-                                    <th className="pb-2 pr-3 text-right font-medium">Interviews</th>
-                                    <th className="pb-2 font-medium">Last active</th>
+                                    <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Avg score</th>
+                                    <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Latest</th>
+                                    <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Improvement</th>
+                                    <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Interviews</th>
+                                    <th className="pb-2 pl-4 font-medium whitespace-nowrap">Last active</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -233,7 +233,7 @@ export function StudentsTableCard() {
                                             )}
                                         </td>
                                         <td className="py-2 pr-3 text-right tabular-nums">{s.interviews_count}</td>
-                                        <td className="py-2 text-muted-foreground">{s.last_active}</td>
+                                        <td className="py-2 pl-4 text-muted-foreground whitespace-nowrap">{s.last_active?.slice(0, 10) ?? "—"}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -98,19 +98,20 @@ export function InterviewsTableCard() {
             <DashboardRecentTableSkeleton rows={8} />
           ) : (
             <table
-              className={`w-full min-w-[880px] text-sm transition-opacity ${showFetching ? "opacity-60" : ""}`}
+              className={`w-full min-w-[1000px] text-sm transition-opacity ${showFetching ? "opacity-60" : ""}`}
               aria-busy={showFetching ? true : undefined}
             >
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-2 pr-3 font-medium">Interview ID</th>
+                  <th className="pb-2 pr-3 font-medium whitespace-nowrap">Interview ID</th>
                   <th className="pb-2 pr-3 font-medium">Student</th>
                   <th className="pb-2 pr-3 font-medium">College</th>
                   <th className="pb-2 pr-3 font-medium">Role</th>
                   <th className="pb-2 pr-3 font-medium">Difficulty</th>
-                  <th className="pb-2 pr-3 text-right font-medium">Score</th>
-                  <th className="pb-2 pr-3 text-right font-medium">Duration</th>
-                  <th className="pb-2 font-medium">Date</th>
+                  <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Speech</th>
+                  <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Knowledge</th>
+                  <th className="pb-2 pl-6 pr-3 text-right font-medium whitespace-nowrap">Duration</th>
+                  <th className="pb-2 pl-6 font-medium whitespace-nowrap">Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,7 +131,7 @@ export function InterviewsTableCard() {
                           "bg-emerald-500/10 dark:bg-emerald-500/15",
                       )}
                     >
-                      <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">
+                      <td className="py-2 pr-3 font-mono text-xs text-muted-foreground whitespace-nowrap">
                         <Link href={interviewHref} className="text-primary underline-offset-4 hover:underline">
                           {row.interview_id}
                         </Link>
@@ -163,13 +164,16 @@ export function InterviewsTableCard() {
                       <td className="py-2 pr-3">
                         <DifficultyBadge difficulty={row.difficulty} />
                       </td>
-                      <td className="py-2 pr-3 text-right tabular-nums font-medium">
-                        {row.score ?? "—"}
+                      <td className="py-2 pr-3 text-right tabular-nums">
+                        {row.speech_score ?? "—"}
                       </td>
                       <td className="py-2 pr-3 text-right tabular-nums">
+                        {row.knowledge_score ?? "—"}
+                      </td>
+                      <td className="py-2 pl-6 pr-3 text-right tabular-nums whitespace-nowrap">
                         {formatInterviewListDuration(row.duration)}
                       </td>
-                      <td className="py-2 text-muted-foreground">
+                      <td className="py-2 pl-6 text-muted-foreground whitespace-nowrap">
                         {row.date ? formatDashboardDateTime(row.date) : "—"}
                       </td>
                     </tr>

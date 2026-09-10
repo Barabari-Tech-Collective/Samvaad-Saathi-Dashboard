@@ -42,9 +42,9 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4 ">
           <DashboardRecentInterviews />
           <DashboardRecentStudents />
-          <DashboardAttentionRequired />
+          {/* <DashboardAttentionRequired /> */}
           
-            <DashboardPredictiveAlerts />
+            {/* <DashboardPredictiveAlerts /> */}
             <DashboardBenchmarking />
          
           
@@ -53,7 +53,7 @@ export default function DashboardPage() {
             <DashboardForecasting />
           </div>
           
-          <DashboardQuestionsAnalytics />
+          {/* <DashboardQuestionsAnalytics /> */}
         </div>
       </div>
     </DashboardOverviewProvider>

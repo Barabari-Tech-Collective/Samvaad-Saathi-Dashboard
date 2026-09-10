@@ -52,18 +52,19 @@ export function DashboardRecentInterviews() {
         {isLoadingRecentInterviews ? (
           <DashboardRecentTableSkeleton rows={6} />
         ) : (
-          <table className="w-full min-w-[640px] text-sm">
+          <table className="w-full min-w-[800px] text-sm">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
-                <th className="pb-2 pr-2 font-medium">ID</th>
+                <th className="pb-2 pr-2 font-medium whitespace-nowrap">ID</th>
                 <th className="pb-2 pr-2 font-medium">Student</th>
                 <th className="pb-2 pr-2 font-medium">College</th>
                 <th className="pb-2 pr-2 font-medium">Role</th>
                 <th className="pb-2 pr-2 font-medium">Difficulty</th>
-                <th className="pb-2 pr-2 text-right font-medium">Score</th>
-                <th className="pb-2 pr-2 font-medium">Duration</th>
+                <th className="pb-2 pr-2 text-right font-medium whitespace-nowrap">Speech</th>
+                <th className="pb-2 pr-2 text-right font-medium whitespace-nowrap">Knowledge</th>
+                <th className="pb-2 pl-6 pr-2 font-medium whitespace-nowrap">Duration</th>
                 <th className="pb-2 pr-2 font-medium">Status</th>
-                <th className="pb-2 font-medium">Date</th>
+                <th className="pb-2 font-medium whitespace-nowrap">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -78,7 +79,7 @@ export function DashboardRecentInterviews() {
                       "bg-emerald-500/10 dark:bg-emerald-500/15",
                   )}
                 >
-                  <td className="py-2 pr-2 font-mono text-xs text-muted-foreground">
+                  <td className="py-2 pr-2 font-mono text-xs text-muted-foreground whitespace-nowrap">
                     <Link href={interviewHref} className="text-primary underline-offset-4 hover:underline">
                       {row.interview_id}
                     </Link>
@@ -111,10 +112,13 @@ export function DashboardRecentInterviews() {
                   <td className="py-2 pr-2">
                     <DifficultyBadge difficulty={row.difficulty} className="text-xs" />
                   </td>
-                  <td className="py-2 pr-2 text-right tabular-nums">
-                    {row.score ?? "—"}
+                  <td className="py-2 pr-2 text-right tabular-nums whitespace-nowrap">
+                    {row.speech_score ?? "—"}
                   </td>
-                  <td className="py-2 pr-2 tabular-nums text-muted-foreground">
+                  <td className="py-2 pr-2 text-right tabular-nums whitespace-nowrap">
+                    {row.knowledge_score ?? "—"}
+                  </td>
+                  <td className="py-2 pl-6 pr-2 tabular-nums text-muted-foreground whitespace-nowrap">
                     {formatDurationSeconds(row.duration_seconds)}
                   </td>
                   <td className="py-2 pr-2">
@@ -126,7 +130,7 @@ export function DashboardRecentInterviews() {
                       "—"
                     )}
                   </td>
-                  <td className="py-2 text-muted-foreground">
+                  <td className="py-2 text-muted-foreground whitespace-nowrap">
                     {formatDashboardDateTime(row.date)}
                   </td>
                 </tr>

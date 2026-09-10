@@ -32,6 +32,8 @@ import {
 } from "@/lib/api/hooks/analytics"
 
 const EMPTY = "__all__"
+// NOTE: If MAX_COMPARE is increased, the fixed number of query hooks in
+// useStudentScoreMap and useSkillMetricRows must also be increased accordingly.
 const MAX_COMPARE = 4
 const COLORS = ["#6366f1", "#0ea5e9", "#10b981", "#f59e0b"] as const
 
@@ -48,10 +50,18 @@ function toDateLabel(value: string): string {
 }
 
 function useStudentScoreMap(studentIds: readonly number[], filters: CompareFilters) {
-  const datasets = studentIds.map((studentId) => ({
-    studentId,
-    query: useStudentScoreHistory(studentId, filters),
-  }))
+  const query0 = useStudentScoreHistory(studentIds[0], filters)
+  const query1 = useStudentScoreHistory(studentIds[1], filters)
+  const query2 = useStudentScoreHistory(studentIds[2], filters)
+  const query3 = useStudentScoreHistory(studentIds[3], filters)
+
+  const datasets = React.useMemo(() => {
+    const queries = [query0, query1, query2, query3]
+    return studentIds.map((studentId, idx) => ({
+      studentId,
+      query: queries[idx],
+    }))
+  }, [studentIds, query0, query1, query2, query3])
 
   const rows = React.useMemo(() => {
     const allDates = new Set<string>()
@@ -75,12 +85,20 @@ function useStudentScoreMap(studentIds: readonly number[], filters: CompareFilte
 }
 
 function useSkillMetricRows(studentIds: readonly number[], filters: CompareFilters) {
-  const datasets = studentIds.map((studentId) => ({
-    studentId,
-    query: useStudentSkillAverages(studentId, filters),
-  }))
+  const query0 = useStudentSkillAverages(studentIds[0], filters)
+  const query1 = useStudentSkillAverages(studentIds[1], filters)
+  const query2 = useStudentSkillAverages(studentIds[2], filters)
+  const query3 = useStudentSkillAverages(studentIds[3], filters)
 
-  return React.useMemo(() => {
+  const datasets = React.useMemo(() => {
+    const queries = [query0, query1, query2, query3]
+    return studentIds.map((studentId, idx) => ({
+      studentId,
+      query: queries[idx],
+    }))
+  }, [studentIds, query0, query1, query2, query3])
+
+  const rows = React.useMemo(() => {
     const metrics = new Set<string>()
     for (const { query } of datasets) {
       for (const item of query.skillAverages?.items ?? []) {
@@ -96,6 +114,8 @@ function useSkillMetricRows(studentIds: readonly number[], filters: CompareFilte
       return row
     })
   }, [datasets])
+
+  return { datasets, rows }
 }
 
 export default function StudentComparePage() {
@@ -114,8 +134,20 @@ export default function StudentComparePage() {
   })
 
   const candidateStudents = studentsTable?.items ?? []
-  const { rows: scoreRows } = useStudentScoreMap(selectedStudents, filters)
-  const skillRows = useSkillMetricRows(selectedStudents, filters)
+  const { rows: scoreRows, datasets: scoreDatasets } = useStudentScoreMap(selectedStudents, filters)
+  const { rows: skillRows, datasets: skillDatasets } = useSkillMetricRows(selectedStudents, filters)
+
+  const scoreMissingStudents = React.useMemo(() => {
+    return scoreDatasets
+      .filter((d) => d.studentId && !d.query.isLoadingScoreHistory && (!d.query.scoreHistory?.points || d.query.scoreHistory.points.length === 0))
+      .map((d) => d.studentId)
+  }, [scoreDatasets])
+
+  const skillMissingStudents = React.useMemo(() => {
+    return skillDatasets
+      .filter((d) => d.studentId && !d.query.isLoadingSkillAverages && (!d.query.skillAverages?.items || d.query.skillAverages.items.length === 0))
+      .map((d) => d.studentId)
+  }, [skillDatasets])
 
   const toggleStudent = React.useCallback((studentId: number) => {
     setSelectedStudents((prev) => {
@@ -242,70 +274,94 @@ export default function StudentComparePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Overall score trend</CardTitle>
-            <CardDescription>Line comparison by student over time.</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[320px]">
-            {selectedStudents.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Pick students to render trend comparison.</p>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={scoreRows}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  {selectedStudents.map((studentId, idx) => (
-                    <Line
-                      key={studentId}
-                      type="monotone"
-                      dataKey={`student_${studentId}`}
-                      name={`Student ${studentId}`}
-                      stroke={COLORS[idx % COLORS.length]}
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
-                      connectNulls
-                    />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+      {selectedStudents.length === 0 ? (
+        <div className="px-4 lg:px-6 text-center py-12">
+          <p className="text-muted-foreground">Please select at least one student to view comparisons.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Overall score trend</CardTitle>
+              <CardDescription>Line comparison by student over time.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[320px] flex flex-col">
+              {scoreRows.length > 0 && scoreMissingStudents.length > 0 && (
+                <div className="mb-4 text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                  Note: Student(s) {scoreMissingStudents.map(id => `#${id}`).join(", ")} do not have any data to display yet.
+                </div>
+              )}
+              {scoreRows.length === 0 ? (
+                <div className="flex flex-1 items-center justify-center">
+                  <p className="text-sm text-muted-foreground">No interview data available for the selected student(s) yet.</p>
+                </div>
+              ) : (
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={scoreRows}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="date" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip />
+                    {selectedStudents.map((studentId, idx) => (
+                      <Line
+                        key={studentId}
+                        type="monotone"
+                        dataKey={`student_${studentId}`}
+                        name={`Student ${studentId}`}
+                        stroke={COLORS[idx % COLORS.length]}
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        connectNulls
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Skill metric comparison</CardTitle>
-            <CardDescription>Grouped bar view of skill averages.</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[320px]">
-            {selectedStudents.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Pick students to render skill comparison.</p>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={skillRows}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis dataKey="metric" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  {selectedStudents.map((studentId, idx) => (
-                    <Bar
-                      key={studentId}
-                      dataKey={`student_${studentId}`}
-                      name={`Student ${studentId}`}
-                      fill={COLORS[idx % COLORS.length]}
-                      radius={[3, 3, 0, 0]}
-                    />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Skill metric comparison</CardTitle>
+              <CardDescription>Grouped bar view of skill averages.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[320px] flex flex-col">
+              {skillRows.length > 0 && skillMissingStudents.length > 0 && (
+                <div className="mb-4 text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                  Note: Student(s) {skillMissingStudents.map(id => `#${id}`).join(", ")} do not have any data to display yet.
+                </div>
+              )}
+              {skillRows.length === 0 ? (
+                <div className="flex flex-1 items-center justify-center">
+                  <p className="text-sm text-muted-foreground">No interview data available for the selected student(s) yet.</p>
+                </div>
+              ) : (
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={skillRows}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="metric" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip />
+                    {selectedStudents.map((studentId, idx) => (
+                      <Bar
+                        key={studentId}
+                        dataKey={`student_${studentId}`}
+                        name={`Student ${studentId}`}
+                        fill={COLORS[idx % COLORS.length]}
+                        radius={[3, 3, 0, 0]}
+                      />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
