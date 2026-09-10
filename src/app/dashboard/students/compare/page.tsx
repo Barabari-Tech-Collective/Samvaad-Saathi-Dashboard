@@ -32,6 +32,8 @@ import {
 } from "@/lib/api/hooks/analytics"
 
 const EMPTY = "__all__"
+// NOTE: If MAX_COMPARE is increased, the fixed number of query hooks in
+// useStudentScoreMap and useSkillMetricRows must also be increased accordingly.
 const MAX_COMPARE = 4
 const COLORS = ["#6366f1", "#0ea5e9", "#10b981", "#f59e0b"] as const
 
