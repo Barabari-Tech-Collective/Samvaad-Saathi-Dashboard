@@ -17,8 +17,6 @@ import {
 } from "@/components/ui/sidebar"
 import {
     IconDashboard,
-    IconAlertTriangle,
-    IconMedal,
     IconMessageChatbot,
     IconMicrophone,
     IconSettingsSearch,
