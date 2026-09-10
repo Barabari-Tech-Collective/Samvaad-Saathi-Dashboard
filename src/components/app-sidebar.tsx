@@ -24,7 +24,14 @@ import {
     IconTargetArrow,
     IconUsers,
     IconList,
+    IconAlertTriangle,
+    IconMedal,
 } from "@tabler/icons-react"
+
+const FEATURE_FLAGS = {
+    showAlerts: false,
+    showRankings: false,
+}
 
 const data = {
     navMain: [
@@ -48,11 +55,11 @@ const data = {
             url: "/dashboard/interviews",
             icon: <IconMicrophone />,
         },
-        // {
-        //     title: "Alerts",
-        //     url: "/dashboard/alerts",
-        //     icon: <IconAlertTriangle />,
-        // },
+        ...(FEATURE_FLAGS.showAlerts ? [{
+            title: "Alerts",
+            url: "/dashboard/alerts",
+            icon: <IconAlertTriangle />,
+        }] : []),
         {
             title: "Roles",
             url: "/dashboard/roles",
@@ -63,11 +70,11 @@ const data = {
             url: "/dashboard/roles-analytics",
             icon: <IconTargetArrow />,
         },
-        // {
-        //     title: "Rankings",
-        //     url: "/dashboard/rankings",
-        //     icon: <IconMedal />,
-        // },
+        ...(FEATURE_FLAGS.showRankings ? [{
+            title: "Rankings",
+            url: "/dashboard/rankings",
+            icon: <IconMedal />,
+        }] : []),
     ],
     navSecondary: [
         // {
