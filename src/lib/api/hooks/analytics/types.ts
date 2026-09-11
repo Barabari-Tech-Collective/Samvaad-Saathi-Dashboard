@@ -215,6 +215,8 @@ export type StudentTableRow = Readonly<{
   average_score: number | null
   avg_speech_score?: number | null
   avg_knowledge_score?: number | null
+  knowledge_score?: number | null
+  speech_score?: number | null
   latest_score: number | null
   improvement_percent: number | null
   interviews_count: number
