@@ -179,6 +179,8 @@ export function StudentsTableCard() {
                                     <th className="pb-2 pr-3 font-medium">Name</th>
                                     <th className="pb-2 pr-3 font-medium">College</th>
                                     <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Avg score</th>
+                                    <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Knowledge score</th>
+                                    <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Speech score</th>
                                     <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Latest</th>
                                     <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Improvement</th>
                                     <th className="pb-2 pr-3 text-right font-medium whitespace-nowrap">Interviews</th>
@@ -217,6 +219,8 @@ export function StudentsTableCard() {
                                             )}
                                         </td>
                                         <td className="py-2 pr-3 text-right tabular-nums">{s.average_score ?? "—"}</td>
+                                        <td className="py-2 pr-3 text-right tabular-nums">{s.knowledge_score ?? "—"}</td>
+                                        <td className="py-2 pr-3 text-right tabular-nums">{s.speech_score ?? "—"}</td>
                                         <td className="py-2 pr-3 text-right tabular-nums">{s.latest_score ?? "—"}</td>
                                         <td className="py-2 pr-3 text-right tabular-nums">
                                             {s.improvement_percent != null ? (
