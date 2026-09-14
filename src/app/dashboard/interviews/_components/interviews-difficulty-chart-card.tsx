@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select"
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useDifficultyMetrics, useJobProfilesList } from "@/lib/api/hooks/analytics"
+import { ROLES } from "@/lib/constants"
 
 const difficultyConfig = {
   avgScore: { label: "Avg score", color: "var(--primary)" },
@@ -30,7 +31,7 @@ export function InterviewsDifficultyChartCard() {
 
   const { jobProfiles } = useJobProfilesList()
   const dynamicRoles = React.useMemo(() => {
-    const rolesSet = new Set<string>()
+    const rolesSet = new Set<string>(ROLES)
     jobProfiles.forEach((p) => {
       if (p.jobName) {
         rolesSet.add(p.jobName)
