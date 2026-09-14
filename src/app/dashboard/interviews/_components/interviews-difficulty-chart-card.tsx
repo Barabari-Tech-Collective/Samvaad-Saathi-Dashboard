@@ -18,17 +18,26 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
-import { useDifficultyMetrics } from "@/lib/api/hooks/analytics"
+import { useDifficultyMetrics, useJobProfilesList } from "@/lib/api/hooks/analytics"
 
 const difficultyConfig = {
   avgScore: { label: "Avg score", color: "var(--primary)" },
   completionRate: { label: "Completion %", color: "var(--chart-2)" },
 } satisfies ChartConfig
 
-import { ROLES } from "@/lib/constants"
-
 export function InterviewsDifficultyChartCard() {
   const [selectedRole, setSelectedRole] = React.useState<string>("all")
+
+  const { jobProfiles } = useJobProfilesList()
+  const dynamicRoles = React.useMemo(() => {
+    const rolesSet = new Set<string>()
+    jobProfiles.forEach((p) => {
+      if (p.jobName) {
+        rolesSet.add(p.jobName)
+      }
+    })
+    return Array.from(rolesSet).sort()
+  }, [jobProfiles])
 
   const {
     difficultyMetrics,
@@ -64,7 +73,7 @@ export function InterviewsDifficultyChartCard() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Roles</SelectItem>
-              {ROLES.map((role) => (
+              {dynamicRoles.map((role) => (
                 <SelectItem key={role} value={role} className="truncate">
                   {role}
                 </SelectItem>
