@@ -10,6 +10,13 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useDifficultyMetrics } from "@/lib/api/hooks/analytics"
 
@@ -18,8 +25,20 @@ const difficultyConfig = {
   completionRate: { label: "Completion %", color: "var(--chart-2)" },
 } satisfies ChartConfig
 
+const ROLES = [
+  "React Developer",
+  "Node.js Developer",
+  "Frontend Engineer",
+  "Backend Engineer",
+  "Full Stack Developer",
+]
+
 export function InterviewsDifficultyChartCard() {
-  const { difficultyMetrics, isLoadingDifficultyMetrics, isError, error } = useDifficultyMetrics()
+  const [selectedRole, setSelectedRole] = React.useState<string>("all")
+
+  const { difficultyMetrics, isLoadingDifficultyMetrics, isError, error } = useDifficultyMetrics(
+    selectedRole !== "all" ? { role: selectedRole } : undefined
+  )
 
   const chartData = React.useMemo(
     () =>
@@ -44,9 +63,24 @@ export function InterviewsDifficultyChartCard() {
   return (
     <div className="px-4 lg:px-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Average score by difficulty</CardTitle>
-          <CardDescription>Score and completion rate by difficulty band</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between pb-2">
+          <div className="flex flex-col space-y-1.5">
+            <CardTitle className="text-base">Average score by difficulty</CardTitle>
+            <CardDescription>Score and completion rate by difficulty band</CardDescription>
+          </div>
+          <Select value={selectedRole} onValueChange={setSelectedRole}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Roles</SelectItem>
+              {ROLES.map((role) => (
+                <SelectItem key={role} value={role}>
+                  {role}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardHeader>
         <CardContent>
           {isLoadingDifficultyMetrics ? (
