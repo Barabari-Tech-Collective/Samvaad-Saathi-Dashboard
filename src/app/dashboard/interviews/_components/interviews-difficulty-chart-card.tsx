@@ -25,20 +25,20 @@ const difficultyConfig = {
   completionRate: { label: "Completion %", color: "var(--chart-2)" },
 } satisfies ChartConfig
 
-const ROLES = [
-  "React Developer",
-  "Node.js Developer",
-  "Frontend Engineer",
-  "Backend Engineer",
-  "Full Stack Developer",
-]
+import { ROLES } from "@/lib/constants"
 
 export function InterviewsDifficultyChartCard() {
   const [selectedRole, setSelectedRole] = React.useState<string>("all")
 
-  const { difficultyMetrics, isLoadingDifficultyMetrics, isError, error } = useDifficultyMetrics(
-    selectedRole !== "all" ? { role: selectedRole } : undefined
-  )
+  const {
+    difficultyMetrics,
+    isLoadingDifficultyMetrics,
+    isError,
+    error,
+    isFetching,
+  } = useDifficultyMetrics({
+    ...(selectedRole !== "all" && { role: selectedRole }),
+  })
 
   const chartData = React.useMemo(
     () =>
@@ -50,32 +50,22 @@ export function InterviewsDifficultyChartCard() {
     [difficultyMetrics?.items],
   )
 
-  if (isError) {
-    return (
-      <div className="px-4 lg:px-6">
-        <p className="text-sm text-destructive">
-          {error instanceof Error ? error.message : "Failed to load difficulty metrics"}
-        </p>
-      </div>
-    )
-  }
-
   return (
     <div className="px-4 lg:px-6">
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between pb-2">
+        <CardHeader className="flex flex-row items-start justify-between pb-2 gap-4">
           <div className="flex flex-col space-y-1.5">
             <CardTitle className="text-base">Average score by difficulty</CardTitle>
             <CardDescription>Score and completion rate by difficulty band</CardDescription>
           </div>
           <Select value={selectedRole} onValueChange={setSelectedRole}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select role" />
+            <SelectTrigger className="w-[180px] shrink-0 truncate">
+              <SelectValue placeholder="Select role" className="truncate" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Roles</SelectItem>
               {ROLES.map((role) => (
-                <SelectItem key={role} value={role}>
+                <SelectItem key={role} value={role} className="truncate">
                   {role}
                 </SelectItem>
               ))}
@@ -83,25 +73,31 @@ export function InterviewsDifficultyChartCard() {
           </Select>
         </CardHeader>
         <CardContent>
-          {isLoadingDifficultyMetrics ? (
+          {isError ? (
+            <p className="text-sm text-destructive">
+              {error instanceof Error ? error.message : "Failed to load difficulty metrics"}
+            </p>
+          ) : isLoadingDifficultyMetrics ? (
             <ChartBarSkeleton className="h-[240px] w-full" />
           ) : chartData.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No difficulty metrics for this period.</p>
+            <p className="text-sm text-muted-foreground">No data available for this role.</p>
           ) : (
-            <ChartContainer config={difficultyConfig} className="aspect-auto h-[240px] w-full">
-              <BarChart data={chartData}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="difficulty" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} domain={[0, 100]} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="avgScore" fill="var(--color-avgScore)" radius={[4, 4, 0, 0]} />
-                <Bar
-                  dataKey="completionRate"
-                  fill="var(--color-completionRate)"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ChartContainer>
+            <div className={`transition-opacity duration-200 ${isFetching ? "opacity-50" : "opacity-100"}`}>
+              <ChartContainer config={difficultyConfig} className="aspect-auto h-[240px] w-full">
+                <BarChart data={chartData}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="difficulty" tickLine={false} axisLine={false} />
+                  <YAxis tickLine={false} axisLine={false} domain={[0, 100]} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="avgScore" fill="var(--color-avgScore)" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="completionRate"
+                    fill="var(--color-completionRate)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ChartContainer>
+            </div>
           )}
         </CardContent>
       </Card>
