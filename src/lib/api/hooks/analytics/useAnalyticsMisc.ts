@@ -43,7 +43,7 @@ export function useAnalyticsSearch(params: AnalyticsSearchParams) {
   }
 }
 
-export function useDifficultyMetrics(filters?: DateRangeParams) {
+export function useDifficultyMetrics(filters?: DateRangeParams & { role?: string }) {
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<DifficultyMetricsResponse>({
     url: difficultyMetricsPath,
