@@ -99,8 +99,8 @@ export function QuestionsStep() {
       }
     }
     return [
-      { level: 1, selected: true, count: 15, badgeLabel: "Foundational", title: "General Fundamentals" },
-      { level: 2, selected: true, count: 15, badgeLabel: "Intermediate", title: "Project & Resume Based" },
+      { level: 1, selected: true, count: 10, badgeLabel: "Foundational", title: "General Fundamentals" },
+      { level: 2, selected: true, count: 10, badgeLabel: "Intermediate", title: "Project & Resume Based" },
       { level: 3, selected: true, count: 10, badgeLabel: "Advanced", title: "Production & Scenario Based" },
       { level: 4, selected: true, count: 10, badgeLabel: "Expert", title: "Advanced / Pressure Scenarios" }
     ]
@@ -473,7 +473,7 @@ export function QuestionsStep() {
         <div className="fixed bottom-6 right-6 z-50 bg-[#EFF6FF] border border-blue-200 rounded-xl px-4 py-3 shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
           <div className="flex items-center gap-2">
             <IconCheck className="size-4 text-blue-600" />
-            <p className="text-xs font-extrabold text-blue-800">{questions.length > 0 ? `${questions.length} questions generated successfully` : 'Generating questions...'}</p>
+            <p className="text-xs font-extrabold text-blue-800">{questions.length > 0 ? `${totalQuestions} questions generated successfully` : 'Generating questions...'}</p>
           </div>
           <button
             onClick={() => setShowToast(false)}
