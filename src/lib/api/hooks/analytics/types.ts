@@ -27,8 +27,7 @@ export type StudentsSearchParams = PaginationParams &
     college?: string
   }>
 
-export type InterviewsTableParams = PaginationParams &
-  DashboardDateRoleFilter
+export type InterviewsTableParams = PaginationParams & DashboardDateRoleFilter
 
 export type DateRangeParams = Readonly<{
   start_date?: string
@@ -53,14 +52,15 @@ export type DashboardTopParams = DashboardDateRoleFilter &
     limit?: number
   }>
 
-export type DashboardAttentionParams = PaginationParams & Readonly<{
-  start_date?: string
-  end_date?: string
-  role?: string
-  difficulty?: string
-  college?: string
-  user_id?: number | string
-}>
+export type DashboardAttentionParams = PaginationParams &
+  Readonly<{
+    start_date?: string
+    end_date?: string
+    role?: string
+    difficulty?: string
+    college?: string
+    user_id?: number | string
+  }>
 
 export type AnalyticsSearchParams = Readonly<{
   q: string
@@ -210,7 +210,8 @@ export type AnalyticsAlertsResponse = Readonly<{
   systemAlerts: readonly AnalyticsAlertItem[]
 }>
 
-export type StudentsSummaryResponse = KpiResponse & Readonly<{ tableType?: string }>
+export type StudentsSummaryResponse = KpiResponse &
+  Readonly<{ tableType?: string }>
 
 export type StudentTableRow = Readonly<{
   student_id: number
@@ -405,8 +406,8 @@ export type RolePerformanceRow = Readonly<{
   avg_score: number | null
   drop_off_rate: number | null
   common_weaknesses: readonly string[]
-  avg_knowledge_score:number 
-  total_students:number
+  avg_knowledge_score: number
+  total_students: number
 }>
 
 export type RolesPerformanceResponse = Readonly<{
@@ -419,9 +420,24 @@ export type RolesWeakSkillsResponse = Readonly<{
   items: readonly { x: string; y: string; value: number }[]
 }>
 
+/* Change: Added RoleDetailRow type with the 7 specific KPI metrics.
+   Why: Strictly types the 7 KPI metrics required by RoleDetail (role, interviews, total_students, avg_score, avg_knowledge_score, drop_off_rate, avg_time_spent_seconds) for compile-time safety. */
+export type RoleDetailRow = Readonly<{
+  role: string
+  interviews?: number | null
+  total_students?: number | null
+  avg_score?: number | null
+  avg_knowledge_score?: number | null
+  drop_off_rate?: number | null
+  avg_time_spent_seconds?: number | null
+  common_weaknesses?: readonly string[]
+}>
+
+/* Change: Updated RoleDetailResponse.items from `readonly unknown[]` to `readonly RoleDetailRow[]`.
+   Why: Replaces untyped `unknown[]` so useRoleDetail consumers can access detail fields safely without type assertions. */
 export type RoleDetailResponse = Readonly<{
-  tableType: "role_detail"
-  items: readonly unknown[]
+  tableType?: "role_detail" | string
+  items: readonly RoleDetailRow[]
 }>
 
 export type DifficultyMetricsRow = Readonly<{
@@ -566,7 +582,6 @@ export type UpdateJobProfileRequest = Partial<CreateJobProfileRequest> & {
   jobProfileId: string
 }
 
-
 // JobProfileOut matches the backend JobProfileOut schema exactly
 export type JobProfileItem = CreateJobProfileResponse
 
@@ -592,6 +607,18 @@ export type JobProfilesRecentActivityResponse = Readonly<{
   items: readonly JobProfileActivityRow[]
 }>
 
+/* Change: Added KnowledgeTopicLevel and KnowledgeTopic types, and typed topics as KnowledgeTopic[].
+   Why: Replaces `topics?: any[]` to resolve ESLint `@typescript-eslint/no-explicit-any` while safely preserving typed property access in JDConfigurationStep (e.g. topics[0].levels[0].questions). */
+export type KnowledgeTopicLevel = {
+  questions?: string[]
+  [key: string]: unknown
+}
+
+export type KnowledgeTopic = {
+  levels?: KnowledgeTopicLevel[]
+  [key: string]: unknown
+}
+
 export type JobProfileUploadResponse = {
   success: boolean
   originalFileName: string
@@ -600,7 +627,7 @@ export type JobProfileUploadResponse = {
   uploadedAt?: string
   topicsDetected?: string[]
   totalQuestions?: number
-  topics?: any[]
+  topics?: KnowledgeTopic[]
   extracted_text?: string
   extractedText?: string
 }
