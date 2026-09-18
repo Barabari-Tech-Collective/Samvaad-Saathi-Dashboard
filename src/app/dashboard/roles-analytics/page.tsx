@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button"
 
 import { RolesSummary } from "../roles/_components/roles-summary"
 import { RolesPerformance } from "../roles/_components/roles-performance"
-import { RolesWeakSkillsHeatmap } from "../roles/_components/roles-weak-skills-heatmap"
 import { RoleDetail } from "../roles/_components/role-detail"
 import { JobProfilesList } from "../roles/_components/job-profiles-list"
+// import { RolesWeakSkillsHeatmap } from "../roles/_components/roles-weak-skills-heatmap"
 
 function RolesPageContent() {
   return (
@@ -38,10 +38,10 @@ function RolesPageContent() {
       </div>
 
       <RolesSummary />
+      <JobProfilesList />   
       <RolesPerformance />
-      <RolesWeakSkillsHeatmap />
+      {/* <RolesWeakSkillsHeatmap /> */}
       <RoleDetail />
-      <JobProfilesList />
     </div>
   )
 }

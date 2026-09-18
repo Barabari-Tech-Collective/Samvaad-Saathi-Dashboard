@@ -5,6 +5,8 @@ export type DashboardDateRoleFilter = Readonly<{
   role?: string
   difficulty?: string
   college?: string
+  domain?: string
+  category?: string
 }>
 
 export type PaginationParams = Readonly<{
@@ -34,6 +36,8 @@ export type DateRangeParams = Readonly<{
   role?: string
   difficulty?: string
   college?: string
+  domain?: string
+  category?: string
 }>
 
 export type StudentDetailDateParams = DateRangeParams
@@ -401,6 +405,8 @@ export type RolePerformanceRow = Readonly<{
   avg_score: number | null
   drop_off_rate: number | null
   common_weaknesses: readonly string[]
+  avg_knowledge_score:number 
+  total_students:number
 }>
 
 export type RolesPerformanceResponse = Readonly<{
