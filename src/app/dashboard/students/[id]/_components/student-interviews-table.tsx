@@ -27,7 +27,7 @@ const PAGE_SIZE = 20
 function statusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
     const s = status.toLowerCase()
     if (s === "completed") return "outline"
-    if (s === "active") return "default"
+    if (s === "active" || s === "incomplete") return "default"
     if (s === "failed" || s === "cancelled") return "destructive"
     return "outline"
 }

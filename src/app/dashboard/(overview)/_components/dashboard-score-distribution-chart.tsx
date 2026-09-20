@@ -42,7 +42,6 @@ export function DashboardScoreDistributionChart() {
             (scoreDistribution?.buckets ?? []).map((b, i) => ({
                 id: `bucket-${i}`,
                 label: b.label,
-                tickLabel: b.label === "0-0" ? `#${i + 1}` : b.label,
                 count: b.count,
             })),
         [scoreDistribution?.buckets],
@@ -66,7 +65,7 @@ export function DashboardScoreDistributionChart() {
                         <BarChart data={data} margin={{ left: 4, right: 4, top: 2, bottom: 2 }}>
                             <CartesianGrid vertical={false} />
                             <XAxis
-                                dataKey="tickLabel"
+                                dataKey="label"
                                 tickLine={false}
                                 axisLine={false}
                                 tickMargin={8}

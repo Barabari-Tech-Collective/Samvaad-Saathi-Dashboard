@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Bar, CartesianGrid, Cell, ComposedChart, Line, XAxis, YAxis } from "recharts"
 
 import { ChartAreaSkeleton } from "@/components/dashboard/analytics-skeletons"
 import {
@@ -14,7 +14,6 @@ import {
 import {
     ChartContainer,
     ChartTooltip,
-    ChartTooltipContent,
     type ChartConfig,
 } from "@/components/ui/chart"
 import { useDashboardActiveUsersTrend } from "@/lib/api/hooks/analytics"
@@ -26,8 +25,15 @@ const chartConfig = {
   activeUsers: { label: "Active users", color: "var(--chart-2)" },
 } satisfies ChartConfig
 
+const COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)"
+]
+
 export function DashboardActiveUsersChart() {
-  const gradientId = React.useId().replace(/:/g, "")
   const { dateFilters } = useDashboardOverviewRange()
   const { activeUsersTrend, isLoadingActiveUsersTrend } = useDashboardActiveUsersTrend(dateFilters)
 
@@ -51,38 +57,53 @@ export function DashboardActiveUsersChart() {
           <ChartAreaSkeleton />
         ) : (
           <ChartContainer config={chartConfig} className="aspect-auto h-[240px] w-full">
-            <AreaChart data={data} margin={{ left: 8, right: 8 }}>
-              <defs>
-                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-activeUsers)" stopOpacity={0.85} />
-                  <stop offset="95%" stopColor="var(--color-activeUsers)" stopOpacity={0.08} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
+            <ComposedChart data={data} margin={{ left: 8, right: 8, top: 40, bottom: 20 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
               <XAxis
                 dataKey="date"
                 tickLine={false}
                 axisLine={false}
-                tickMargin={8}
+                tickMargin={12}
                 minTickGap={28}
                 tickFormatter={(v) => formatChartDayMonth(v as string)}
               />
               <YAxis tickLine={false} axisLine={false} width={32} allowDecimals={false} />
               <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    labelFormatter={(v) => formatChartDayMonth(v as string)}
-                  />
-                }
+                cursor={{ fill: 'var(--muted)', opacity: 0.2 }}
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length > 0) {
+                    const rowData = payload[0]
+                    return (
+                      <div className="rounded-lg border bg-background p-2 shadow-sm">
+                        <p className="text-sm font-medium text-muted-foreground">{formatChartDayMonth(label as string)}</p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <div className="h-2.5 w-2.5 rounded-[2px]" style={{ backgroundColor: "var(--primary)" }} />
+                          <span className="text-sm font-medium">Active users: <span className="font-bold">{rowData.value}</span></span>
+                        </div>
+                      </div>
+                    )
+                  }
+                  return null
+                }}
               />
-              <Area
+              <Bar 
+                dataKey="activeUsers" 
+                radius={[4, 4, 0, 0]}
+                maxBarSize={48}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+              <Line
+                type="monotone"
                 dataKey="activeUsers"
-                type="natural"
-                fill={`url(#${gradientId})`}
-                stroke="var(--color-activeUsers)"
+                stroke="var(--primary)"
                 strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 6, fill: "var(--primary)", stroke: "var(--background)", strokeWidth: 2 }}
               />
-            </AreaChart>
+            </ComposedChart>
           </ChartContainer>
         )}
       </CardContent>
