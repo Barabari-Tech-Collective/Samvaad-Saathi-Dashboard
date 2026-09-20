@@ -559,7 +559,7 @@ export function JDConfigurationStep({
                         disabled={level.count <= 10}
                         onClick={() => {
                           const updated = [...difficultyLevels]
-                          updated[index].count = Math.max(10, updated[index].count - 1)
+                          updated[index].count = Math.max(10, updated[index].count - 10)
                           setDifficultyLevels(updated)
                         }}
                         className={cn(
@@ -579,7 +579,7 @@ export function JDConfigurationStep({
                         disabled={level.count >= 50}
                         onClick={() => {
                           const updated = [...difficultyLevels]
-                          updated[index].count = Math.min(50, updated[index].count + 1)
+                          updated[index].count = Math.min(50, updated[index].count + 10)
                           setDifficultyLevels(updated)
                         }}
                         className={cn(
@@ -592,9 +592,14 @@ export function JDConfigurationStep({
                         <IconPlus className="size-3.5" />
                       </button>
                     </div>
-                    <span className="text-[9px] font-bold text-slate-400 tracking-wide uppercase">
-                      Min 10 - Max 50
-                    </span>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[9px] font-bold text-slate-400 tracking-wide uppercase">
+                        Min 10 - Max 50
+                      </span>
+                      <span className="text-[8px] font-semibold text-slate-400/70 lowercase">
+                        (increments of 10)
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -99,8 +99,8 @@ export function QuestionsStep() {
       }
     }
     return [
-      { level: 1, selected: true, count: 15, badgeLabel: "Foundational", title: "General Fundamentals" },
-      { level: 2, selected: true, count: 15, badgeLabel: "Intermediate", title: "Project & Resume Based" },
+      { level: 1, selected: true, count: 10, badgeLabel: "Foundational", title: "General Fundamentals" },
+      { level: 2, selected: true, count: 10, badgeLabel: "Intermediate", title: "Project & Resume Based" },
       { level: 3, selected: true, count: 10, badgeLabel: "Advanced", title: "Production & Scenario Based" },
       { level: 4, selected: true, count: 10, badgeLabel: "Expert", title: "Advanced / Pressure Scenarios" }
     ]

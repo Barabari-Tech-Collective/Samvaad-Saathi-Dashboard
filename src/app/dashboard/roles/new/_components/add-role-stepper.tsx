@@ -78,7 +78,7 @@ export function AddRoleStepper() {
       description: "Basic concepts and foundational knowledge questions.",
       exampleQuestion: "What is the difference between let and const in JavaScript?",
       placeholder: "e.g., What is the difference between let and const in JS?",
-      count: 15,
+      count: 10,
     },
     {
       level: 2,
@@ -89,7 +89,7 @@ export function AddRoleStepper() {
       description: "Questions based on resume, projects and practical implementation.",
       exampleQuestion: "Explain a challenging frontend project you worked on.",
       placeholder: "e.g., Tell me about a challenging project you worked on?",
-      count: 15,
+      count: 10,
     },
     {
       level: 3,
