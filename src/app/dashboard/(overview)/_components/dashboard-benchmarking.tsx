@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useBenchmarking } from "@/lib/api/hooks/analytics"
+import { cn } from "@/lib/utils"
 import * as React from "react"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
@@ -49,7 +50,11 @@ export function DashboardBenchmarking() {
                       </TableCell>
                       <TableCell className="text-right">
                         <Badge
-                          variant={item.delta > 0 ? "default" : item.delta < 0 ? "destructive" : "secondary"}
+                          variant={item.delta > 0 ? "default" : item.delta < 0 ? "destructive" : "outline"}
+                          className={cn(
+                            item.delta === 0 &&
+                              "border-amber-500/40 bg-amber-500/10 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300"
+                          )}
                         >
                           {item.delta > 0 ? "+" : ""}
                           {item.delta.toFixed(1)}

@@ -27,7 +27,8 @@ const PAGE_SIZE = 20
 function statusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
     const s = status.toLowerCase()
     if (s === "completed") return "outline"
-    if (s === "active" || s === "incomplete") return "default"
+    if (s === "active") return "default"
+    if (s === "incomplete") return "secondary"
     if (s === "failed" || s === "cancelled") return "destructive"
     return "outline"
 }
@@ -115,7 +116,9 @@ export function StudentInterviewsTable({ studentId }: Readonly<{ studentId: numb
                                 <TableHead>Role</TableHead>
                                 <TableHead className="w-[100px]">Difficulty</TableHead>
                                 <TableHead className="w-[110px]">Status</TableHead>
-                                <TableHead className="w-[90px] text-right">Score</TableHead>
+                                <TableHead className="w-[80px] text-right">Speech</TableHead>
+                                <TableHead className="w-[80px] text-right">Knowledge</TableHead>
+                                <TableHead className="w-[80px] text-right">Overall</TableHead>
                                 <TableHead className="w-[100px] text-right">Duration</TableHead>
                                 <TableHead className="w-[160px] min-w-[140px]">Started</TableHead>
                             </TableRow>
@@ -148,13 +151,29 @@ export function StudentInterviewsTable({ studentId }: Readonly<{ studentId: numb
                                             className={cn(
                                                 "capitalize",
                                                 row.status.toLowerCase() === "completed" &&
-                                                "border-transparent bg-green-700 text-green-900 dark:bg-green-700 dark:text-green-50",
+                                                "border-transparent bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:hover:bg-emerald-500/30",
+                                                row.status.toLowerCase() === "incomplete" &&
+                                                "border-transparent bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/30",
                                             )}
                                         >
                                             {row.status}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right tabular-nums">
+                                        {row.speech_score === null || row.speech_score === undefined ? (
+                                            <span className="text-muted-foreground">—</span>
+                                        ) : (
+                                            row.speech_score
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right tabular-nums">
+                                        {row.knowledge_score === null || row.knowledge_score === undefined ? (
+                                            <span className="text-muted-foreground">—</span>
+                                        ) : (
+                                            row.knowledge_score
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right tabular-nums font-medium">
                                         {row.score === null || row.score === undefined ? (
                                             <span className="text-muted-foreground">—</span>
                                         ) : (

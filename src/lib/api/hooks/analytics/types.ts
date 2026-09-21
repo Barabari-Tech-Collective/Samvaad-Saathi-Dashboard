@@ -302,6 +302,8 @@ export type StudentInterviewRow = Readonly<{
   difficulty: string
   status: string
   score: number | null
+  speech_score?: number | null
+  knowledge_score?: number | null
   duration_seconds: number | null
   created_at: string
 }>
