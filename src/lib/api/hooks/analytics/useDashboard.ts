@@ -17,6 +17,7 @@ import type {
   RecentStudentsResponse,
   TopCollegesTableResponse,
   TopRolesTableResponse,
+  StudentsPerCollegeResponse,
 } from "./types"
 
 const overviewPath = "/v2/analytics/dashboard/overview" as const
@@ -24,6 +25,7 @@ const interviewsPerDayPath = "/v2/analytics/dashboard/interviews-per-day" as con
 const activeUsersTrendPath = "/v2/analytics/dashboard/active-users-trend" as const
 const topRolesPath = "/v2/analytics/dashboard/top-roles" as const
 const topCollegesPath = "/v2/analytics/dashboard/top-colleges" as const
+const studentsPerCollegePath = "/v2/analytics/dashboard/students-per-college" as const
 const scoreDistributionPath = "/v2/analytics/dashboard/score-distribution" as const
 const recentInterviewsPath = "/v2/analytics/dashboard/recent-interviews" as const
 const recentStudentsPath = "/v2/analytics/dashboard/recent-students" as const
@@ -100,6 +102,21 @@ export function useDashboardTopColleges(filters?: DashboardTopParams) {
   return {
     topColleges: query.data,
     isLoadingTopColleges: query.isLoading,
+    ...query,
+  }
+}
+
+export function useDashboardStudentsPerCollege(filters?: DashboardTopParams) {
+  const params = compactParams(filters as QueryParamInput | undefined)
+  const query = api.useQuery<StudentsPerCollegeResponse>({
+    url: studentsPerCollegePath,
+    method: "GET",
+    key: analyticsKey(studentsPerCollegePath, params),
+    params,
+  })
+  return {
+    studentsPerCollege: query.data,
+    isLoadingStudentsPerCollege: query.isLoading,
     ...query,
   }
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Bar, BarChart, Cell, XAxis, YAxis, LabelList } from "recharts"
-import { Users } from "lucide-react"
+import { TrendingUp } from "lucide-react"
 import { format, parseISO } from "date-fns"
 
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
@@ -17,30 +17,30 @@ import {
     ChartTooltip,
     type ChartConfig,
 } from "@/components/ui/chart"
-import { useDashboardActiveUsersTrend } from "@/lib/api/hooks/analytics"
+import { useDashboardInterviewsPerDay } from "@/lib/api/hooks/analytics"
 import type { DateRange } from "react-day-picker"
 
 import { presetToDateFilters, type DashboardRangePreset } from "./dashboard-overview-context"
 import { DashboardChartFilterTabs } from "./dashboard-date-range-tabs"
 
 const chartConfig = {
-  activeUsers: { label: "Active Students", color: "#fb7185" }, 
+  interviewCount: { label: "New Students", color: "#a78bfa" }, 
 } satisfies ChartConfig
 
-export function DashboardActiveUsersChart() {
+export function DashboardNewStudentsChart() {
   const [preset, setPreset] = React.useState<DashboardRangePreset>("90d")
   const [customRange, setCustomRange] = React.useState<DateRange | undefined>()
   const dateFilters = React.useMemo(() => presetToDateFilters(preset, customRange), [preset, customRange])
-  const { activeUsersTrend, isLoadingActiveUsersTrend } = useDashboardActiveUsersTrend(dateFilters)
+  const { interviewsPerDay, isLoadingInterviewsPerDay } = useDashboardInterviewsPerDay(dateFilters)
 
   const data = React.useMemo(
     () =>
-      (activeUsersTrend?.points ?? []).map((p) => ({
+      (interviewsPerDay?.points ?? []).map((p) => ({
         date: p.date, // original date string from API (e.g., '2026-09-10')
         formattedDate: p.date ? format(parseISO(p.date), "MMM d") : "", // e.g., 'Sep 10'
-        activeUsers: p.value,
+        interviewCount: p.value,
       })),
-    [activeUsersTrend?.points],
+    [interviewsPerDay?.points],
   )
 
   const dateRangeText = React.useMemo(() => {
@@ -60,8 +60,8 @@ export function DashboardActiveUsersChart() {
     <Card className="col-span-1 border shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-6">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Users className="w-4 h-4 text-pink-500" />
-            Active Students {dateRangeText ? `— ${dateRangeText}` : ""}
+            <TrendingUp className="w-4 h-4 text-purple-500" />
+            New Students {dateRangeText ? `— ${dateRangeText}` : ""}
         </CardTitle>
         <DashboardChartFilterTabs 
           preset={preset} 
@@ -71,7 +71,7 @@ export function DashboardActiveUsersChart() {
         />
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">
-        {isLoadingActiveUsersTrend ? (
+        {isLoadingInterviewsPerDay ? (
           <ChartBarSkeleton className="h-[240px]" />
         ) : data.length === 0 ? (
           <div className="flex h-[240px] items-center justify-center text-sm text-muted-foreground">
@@ -97,7 +97,7 @@ export function DashboardActiveUsersChart() {
                       <div className="rounded-lg border bg-background p-2 shadow-sm">
                         <p className="text-sm font-medium text-muted-foreground">{label}</p>
                         <div className="mt-1 flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-rose-400" />
+                          <div className="h-2 w-2 rounded-full bg-purple-400" />
                           <span className="text-sm font-medium text-foreground">{rowData.value}</span>
                         </div>
                       </div>
@@ -107,12 +107,12 @@ export function DashboardActiveUsersChart() {
                 }}
               />
               <Bar 
-                dataKey="activeUsers" 
+                dataKey="interviewCount" 
                 radius={[4, 4, 0, 0]}
-                fill="#fb7185" // Solid pink
+                fill="#a78bfa" // Solid purple
                 barSize={50}
               >
-                <LabelList dataKey="activeUsers" position="top" offset={10} style={{ fill: '#fb7185', fontSize: 13, fontWeight: 700 }} />
+                <LabelList dataKey="interviewCount" position="top" offset={10} style={{ fill: '#a78bfa', fontSize: 13, fontWeight: 700 }} />
               </Bar>
             </BarChart>
           </ChartContainer>

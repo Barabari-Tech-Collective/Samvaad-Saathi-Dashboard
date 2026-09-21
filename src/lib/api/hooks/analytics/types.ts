@@ -128,6 +128,16 @@ export type TopCollegesTableResponse = Readonly<{
   items: readonly TopCollegeRow[]
 }>
 
+export type StudentsPerCollegeRow = Readonly<{
+  college: string
+  students_count: number
+}>
+
+export type StudentsPerCollegeResponse = Readonly<{
+  table_type: "students_per_college"
+  items: readonly StudentsPerCollegeRow[]
+}>
+
 export type RecentInterviewRow = Readonly<{
   interview_id: number
   student_id?: number
