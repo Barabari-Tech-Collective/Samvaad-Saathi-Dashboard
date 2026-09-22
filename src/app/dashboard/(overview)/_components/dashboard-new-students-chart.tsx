@@ -17,30 +17,30 @@ import {
     ChartTooltip,
     type ChartConfig,
 } from "@/components/ui/chart"
-import { useDashboardInterviewsPerDay } from "@/lib/api/hooks/analytics"
+import { useDashboardNewStudentsTrend } from "@/lib/api/hooks/analytics"
 import type { DateRange } from "react-day-picker"
 
 import { presetToDateFilters, type DashboardRangePreset } from "./dashboard-overview-context"
 import { DashboardChartFilterTabs } from "./dashboard-date-range-tabs"
 
 const chartConfig = {
-  interviewCount: { label: "New Students", color: "#a78bfa" }, 
+  studentCount: { label: "New Students", color: "#a78bfa" }, 
 } satisfies ChartConfig
 
 export function DashboardNewStudentsChart() {
   const [preset, setPreset] = React.useState<DashboardRangePreset>("90d")
   const [customRange, setCustomRange] = React.useState<DateRange | undefined>()
   const dateFilters = React.useMemo(() => presetToDateFilters(preset, customRange), [preset, customRange])
-  const { interviewsPerDay, isLoadingInterviewsPerDay } = useDashboardInterviewsPerDay(dateFilters)
+  const { newStudentsTrend, isLoadingNewStudentsTrend } = useDashboardNewStudentsTrend(dateFilters)
 
   const data = React.useMemo(
     () =>
-      (interviewsPerDay?.points ?? []).map((p) => ({
+      (newStudentsTrend?.points ?? []).map((p) => ({
         label: p.label, // label string from API (e.g., '2026-09-10' or 'Q1')
         formattedDate: p.label ? format(parseISO(String(p.label)), "MMM d") : "", // e.g., 'Sep 10'
-        interviewCount: p.value,
+        studentCount: p.value,
       })),
-    [interviewsPerDay?.points],
+    [newStudentsTrend?.points],
   )
 
   const dateRangeText = React.useMemo(() => {
@@ -71,7 +71,7 @@ export function DashboardNewStudentsChart() {
         />
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">
-        {isLoadingInterviewsPerDay ? (
+        {isLoadingNewStudentsTrend ? (
           <ChartBarSkeleton className="h-[240px]" />
         ) : data.length === 0 ? (
           <div className="flex h-[240px] items-center justify-center text-sm text-muted-foreground">
@@ -107,12 +107,12 @@ export function DashboardNewStudentsChart() {
                 }}
               />
               <Bar 
-                dataKey="interviewCount" 
+                dataKey="studentCount" 
                 radius={[4, 4, 0, 0]}
                 fill="#a78bfa" // Solid purple
                 barSize={50}
               >
-                <LabelList dataKey="interviewCount" position="top" offset={10} style={{ fill: '#a78bfa', fontSize: 13, fontWeight: 700 }} />
+                <LabelList dataKey="studentCount" position="top" offset={10} style={{ fill: '#a78bfa', fontSize: 13, fontWeight: 700 }} />
               </Bar>
             </BarChart>
           </ChartContainer>

@@ -30,6 +30,7 @@ const scoreDistributionPath = "/v2/analytics/dashboard/score-distribution" as co
 const recentInterviewsPath = "/v2/analytics/dashboard/recent-interviews" as const
 const recentStudentsPath = "/v2/analytics/dashboard/recent-students" as const
 const attentionRequiredPath = "/v2/analytics/dashboard/attention-required" as const
+const newStudentsTrendPath = "/v2/analytics/dashboard/new-students-trend" as const
 
 export function useDashboardOverview(filters?: DashboardDateRoleFilter) {
   const params = compactParams(filters as QueryParamInput | undefined)
@@ -177,6 +178,21 @@ export function useDashboardAttentionRequired(filters?: DashboardAttentionParams
   return {
     attentionRequired: query.data,
     isLoadingAttentionRequired: query.isLoading,
+    ...query,
+  }
+}
+
+export function useDashboardNewStudentsTrend(filters?: DashboardDateRoleFilter) {
+  const params = compactParams(filters as QueryParamInput | undefined)
+  const query = api.useQuery<LineAreaChartResponse>({
+    url: newStudentsTrendPath,
+    method: "GET",
+    key: analyticsKey(newStudentsTrendPath, params),
+    params,
+  })
+  return {
+    newStudentsTrend: query.data,
+    isLoadingNewStudentsTrend: query.isLoading,
     ...query,
   }
 }

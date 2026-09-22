@@ -31,8 +31,8 @@ export function InterviewSpeechTimelineChart({
   const data = React.useMemo(
     () =>
       (interviewSpeechMetricsTimeline?.points ?? []).map((pt) => ({
-        t: pt.date,
-        label: pt.date.startsWith("Q") ? `Question ${pt.date.slice(1)}` : formatDashboardDateTime(pt.date),
+        t: pt.label,
+        label: String(pt.label).startsWith("Q") ? `Question ${String(pt.label).slice(1)}` : formatDashboardDateTime(String(pt.label)),
         value: pt.value,
       })),
     [interviewSpeechMetricsTimeline?.points],
