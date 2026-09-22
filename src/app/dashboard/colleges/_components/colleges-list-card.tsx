@@ -5,6 +5,8 @@ import { Link } from "next-view-transitions"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 
 import { StudentsTableSkeleton } from "@/components/dashboard/analytics-skeletons"
+import { TagBadge } from "@/components/dashboard/tag-badge"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -111,12 +113,17 @@ export function CollegesListCard() {
                 {rows.map((row) => (
                   <tr key={row.college_name} className="border-b last:border-0">
                     <td className="py-2 pr-3 font-medium">
-                      <Link
-                        href={`/dashboard/colleges/${encodeURIComponent(row.college_name)}`}
-                        className="text-primary underline-offset-4 hover:underline"
-                      >
-                        {row.college_name}
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/dashboard/colleges/${encodeURIComponent(row.college_name)}`}
+                          className="text-primary underline-offset-4 hover:underline"
+                        >
+                          {row.college_name}
+                        </Link>
+                        {row.tags?.map((tag) => (
+                          <TagBadge key={tag} tag={tag} />
+                        ))}
+                      </div>
                     </td>
                     <td className="py-2 pr-3 text-right tabular-nums">{row.students_count}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{row.interviews_count}</td>

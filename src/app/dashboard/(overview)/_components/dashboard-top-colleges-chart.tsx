@@ -53,7 +53,7 @@ export function DashboardTopCollegesChart() {
                     <ChartContainer config={chartConfig} className="aspect-auto h-48 w-full">
                         <BarChart data={data} layout="vertical" margin={{ left: 2, right: 4, top: 2, bottom: 2 }}>
                             <CartesianGrid horizontal={false} />
-                            <XAxis type="number" tickLine={false} axisLine={false} />
+                            <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} />
                             <YAxis
                                 type="category"
                                 dataKey="collegeShort"

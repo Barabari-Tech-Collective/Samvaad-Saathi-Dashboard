@@ -16,9 +16,12 @@ import { DashboardRecentTableSkeleton } from "@/components/dashboard/analytics-s
 import { useDashboardRecentInterviews } from "@/lib/api/hooks/analytics"
 import { isCompletedBatchInterviewStatus } from "@/lib/interview-display"
 import { cn } from "@/lib/utils"
+import { statusVariant } from "@/lib/utils/status"
 
 import { formatDashboardDateTime, formatDurationSeconds } from "./dashboard-format-utils"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
+
+
 
 export function DashboardRecentInterviews() {
   const { dateFilters } = useDashboardOverviewRange()
@@ -123,7 +126,16 @@ export function DashboardRecentInterviews() {
                   </td>
                   <td className="py-2 pr-2">
                     {row.status ? (
-                      <Badge variant="secondary" className="text-xs capitalize">
+                      <Badge 
+                        variant={statusVariant(row.status)} 
+                        className={cn(
+                          "text-xs capitalize",
+                          row.status.toLowerCase() === "completed" &&
+                          "border-transparent bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:hover:bg-emerald-500/30",
+                          row.status.toLowerCase() === "incomplete" &&
+                          "border-transparent bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/30",
+                        )}
+                      >
                         {row.status}
                       </Badge>
                     ) : (

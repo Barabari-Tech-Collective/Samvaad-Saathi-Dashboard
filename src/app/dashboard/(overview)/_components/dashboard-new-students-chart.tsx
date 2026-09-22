@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Bar, BarChart, Cell, XAxis, YAxis, LabelList } from "recharts"
-import { IconUsers } from "@tabler/icons-react"
+import { IconTrendingUp } from "@tabler/icons-react"
 import dayjs from "dayjs"
 
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
@@ -17,30 +17,30 @@ import {
     ChartTooltip,
     type ChartConfig,
 } from "@/components/ui/chart"
-import { useDashboardActiveUsersTrend } from "@/lib/api/hooks/analytics"
+import { useDashboardNewStudentsTrend } from "@/lib/api/hooks/analytics"
 import type { DateRange } from "react-day-picker"
 
 import { presetToDateFilters, type DashboardRangePreset } from "./dashboard-overview-context"
 import { DashboardChartFilterTabs } from "./dashboard-date-range-tabs"
 
 const chartConfig = {
-  activeUsers: { label: "Active Students", color: "var(--chart-2)" }, 
+  studentCount: { label: "New Students", color: "var(--chart-1)" }, 
 } satisfies ChartConfig
 
-export function DashboardActiveUsersChart() {
+export function DashboardNewStudentsChart() {
   const [preset, setPreset] = React.useState<DashboardRangePreset>("90d")
   const [customRange, setCustomRange] = React.useState<DateRange | undefined>()
   const dateFilters = React.useMemo(() => presetToDateFilters(preset, customRange), [preset, customRange])
-  const { activeUsersTrend, isLoadingActiveUsersTrend } = useDashboardActiveUsersTrend(dateFilters)
+  const { newStudentsTrend, isLoadingNewStudentsTrend } = useDashboardNewStudentsTrend(dateFilters)
 
   const data = React.useMemo(
     () =>
-      (activeUsersTrend?.points ?? []).map((p) => ({
+      (newStudentsTrend?.points ?? []).map((p) => ({
         label: p.label, // label string from API (e.g., '2026-09-10' or 'Q1')
         formattedDate: p.label ? dayjs(p.label).format("MMM D") : "", // e.g., 'Sep 10'
-        activeUsers: p.value,
+        studentCount: p.value,
       })),
-    [activeUsersTrend?.points],
+    [newStudentsTrend?.points],
   )
 
   const dateRangeText = React.useMemo(() => {
@@ -56,8 +56,8 @@ export function DashboardActiveUsersChart() {
     <Card className="col-span-1 border shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-6">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <IconUsers className="w-4 h-4 text-pink-500" />
-            Active Students {dateRangeText ? `— ${dateRangeText}` : ""}
+            <IconTrendingUp className="w-4 h-4 text-purple-500" />
+            New Students {dateRangeText ? `— ${dateRangeText}` : ""}
         </CardTitle>
         <DashboardChartFilterTabs 
           preset={preset} 
@@ -67,7 +67,7 @@ export function DashboardActiveUsersChart() {
         />
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">
-        {isLoadingActiveUsersTrend ? (
+        {isLoadingNewStudentsTrend ? (
           <ChartBarSkeleton className="h-[240px]" />
         ) : data.length === 0 ? (
           <div className="flex h-[240px] items-center justify-center text-sm text-muted-foreground">
@@ -93,7 +93,7 @@ export function DashboardActiveUsersChart() {
                       <div className="rounded-lg border bg-background p-2 shadow-sm">
                         <p className="text-sm font-medium text-muted-foreground">{label}</p>
                         <div className="mt-1 flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-rose-400" />
+                          <div className="h-2 w-2 rounded-full bg-purple-400" />
                           <span className="text-sm font-medium text-foreground">{rowData.value}</span>
                         </div>
                       </div>
@@ -103,12 +103,12 @@ export function DashboardActiveUsersChart() {
                 }}
               />
               <Bar 
-                dataKey="activeUsers" 
+                dataKey="studentCount" 
                 radius={[4, 4, 0, 0]}
-                fill="var(--color-activeUsers)"
+                fill="var(--color-studentCount)"
                 barSize={50}
               >
-                <LabelList dataKey="activeUsers" position="top" offset={10} style={{ fill: 'var(--color-activeUsers)', fontSize: 13, fontWeight: 700 }} />
+                <LabelList dataKey="studentCount" position="top" offset={10} style={{ fill: 'var(--color-studentCount)', fontSize: 13, fontWeight: 700 }} />
               </Bar>
             </BarChart>
           </ChartContainer>

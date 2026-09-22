@@ -16,6 +16,8 @@ import { DashboardRecentStudents } from "./_components/dashboard-recent-students
 import { DashboardScoreDistributionChart } from "./_components/dashboard-score-distribution-chart"
 import { DashboardTopCollegesChart } from "./_components/dashboard-top-colleges-chart"
 import { DashboardTopRolesChart } from "./_components/dashboard-top-roles-chart"
+import { DashboardNewStudentsChart } from "./_components/dashboard-new-students-chart"
+import { DashboardStudentsPerCollegeList } from "./_components/dashboard-students-per-college-list"
 
 export default function DashboardPage() {
   return (
@@ -26,11 +28,16 @@ export default function DashboardPage() {
           <DashboardDateRangeTabs className="w-full sm:w-auto sm:min-w-[20rem]" />
         </div>
 
-          <DashboardKpiSection />
+        <DashboardKpiSection />
+
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+          <DashboardNewStudentsChart />
+          <DashboardActiveUsersChart />
+        </div>
 
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
           <DashboardInterviewsPerDayChart />
-          <DashboardActiveUsersChart />
+          <DashboardStudentsPerCollegeList />
         </div>
 
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
@@ -43,16 +50,16 @@ export default function DashboardPage() {
           <DashboardRecentInterviews />
           <DashboardRecentStudents />
           {/* <DashboardAttentionRequired /> */}
-          
-            {/* <DashboardPredictiveAlerts /> */}
-            <DashboardBenchmarking />
-         
-          
+
+          {/* <DashboardPredictiveAlerts /> */}
+          <DashboardBenchmarking />
+
+
           <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
             <DashboardDropoffFunnel />
             <DashboardForecasting />
           </div>
-          
+
           {/* <DashboardQuestionsAnalytics /> */}
         </div>
       </div>

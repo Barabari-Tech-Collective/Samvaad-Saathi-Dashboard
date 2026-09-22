@@ -1,11 +1,13 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
+import { TagBadge } from "@/components/dashboard/tag-badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useBenchmarking } from "@/lib/api/hooks/analytics"
+import { cn } from "@/lib/utils"
 import * as React from "react"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
@@ -40,7 +42,14 @@ export function DashboardBenchmarking() {
                 <TableBody>
                   {(benchmarking?.items ?? []).map((item, i) => (
                     <TableRow key={i}>
-                      <TableCell className="capitalize">{item.name}</TableCell>
+                      <TableCell className="capitalize">
+                        <div className="flex items-center gap-2">
+                          <span>{item.name}</span>
+                          {item.tags?.map((tag) => (
+                            <TagBadge key={tag} tag={tag} />
+                          ))}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right tabular-nums">
                         {item.avg_score.toFixed(1)}
                       </TableCell>
@@ -49,7 +58,11 @@ export function DashboardBenchmarking() {
                       </TableCell>
                       <TableCell className="text-right">
                         <Badge
-                          variant={item.delta > 0 ? "default" : item.delta < 0 ? "destructive" : "secondary"}
+                          variant={item.delta > 0 ? "default" : item.delta < 0 ? "destructive" : "outline"}
+                          className={cn(
+                            item.delta === 0 &&
+                              "border-amber-500/40 bg-amber-500/10 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300"
+                          )}
                         >
                           {item.delta > 0 ? "+" : ""}
                           {item.delta.toFixed(1)}

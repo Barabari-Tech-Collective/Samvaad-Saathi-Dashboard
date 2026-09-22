@@ -30,7 +30,7 @@ export function DashboardForecasting() {
   const data = React.useMemo(() => {
     if (!forecasting?.points) return []
     return forecasting.points.map((p) => ({
-      date: p.date,
+      label: p.label,
       predictedValue: p.predictedValue,
       bounds: [p.lowerBound, p.upperBound],
     }))
@@ -56,7 +56,7 @@ export function DashboardForecasting() {
               </defs>
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="date"
+                dataKey="label"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}

@@ -38,7 +38,7 @@ export function CollegeTrendChart({
     const chartData = useMemo(
         () =>
             (data?.points ?? []).map((p) => ({
-                date: p.date,
+                label: p.label,
                 value: p.value,
             })),
         [data?.points],
@@ -78,7 +78,7 @@ export function CollegeTrendChart({
                             </defs>
                             <CartesianGrid vertical={false} />
                             <XAxis
-                                dataKey="date"
+                                dataKey="label"
                                 tickLine={false}
                                 axisLine={false}
                                 tickMargin={8}

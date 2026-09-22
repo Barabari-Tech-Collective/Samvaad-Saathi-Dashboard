@@ -15,7 +15,7 @@ import { useInterviewSpeechMetricsTimeline } from "@/lib/api/hooks/analytics"
 import { formatDashboardDateTime } from "@/lib/dashboard-datetime"
 
 const chartConfig = {
-  value: { label: "Metric", color: "var(--primary)" },
+  value: { label: "Metric", color: "var(--chart-4)" },
 } satisfies ChartConfig
 
 export function InterviewSpeechTimelineChart({
@@ -31,8 +31,8 @@ export function InterviewSpeechTimelineChart({
   const data = React.useMemo(
     () =>
       (interviewSpeechMetricsTimeline?.points ?? []).map((pt) => ({
-        t: pt.date,
-        label: formatDashboardDateTime(pt.date),
+        t: pt.label,
+        label: String(pt.label).startsWith("Q") ? `Question ${String(pt.label).slice(1)}` : formatDashboardDateTime(String(pt.label)),
         value: pt.value,
       })),
     [interviewSpeechMetricsTimeline?.points],
