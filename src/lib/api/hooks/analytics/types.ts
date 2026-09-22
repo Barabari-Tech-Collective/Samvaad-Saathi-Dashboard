@@ -47,6 +47,7 @@ export type DashboardRecentParams = Readonly<{
 export type DashboardTopParams = DashboardDateRoleFilter &
   Readonly<{
     limit?: number
+    view_type?: "all" | "interviewed"
   }>
 
 export type DashboardAttentionParams = PaginationParams & Readonly<{

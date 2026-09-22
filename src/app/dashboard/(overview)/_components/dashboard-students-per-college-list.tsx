@@ -1,7 +1,7 @@
 "use client"
 
 import { Users } from "lucide-react"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
 import {
@@ -15,8 +15,13 @@ import { useDashboardStudentsPerCollege } from "@/lib/api/hooks/analytics"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
 export function DashboardStudentsPerCollegeList() {
+    const [viewType, setViewType] = useState<"all" | "interviewed">("all")
     const { dateFilters } = useDashboardOverviewRange()
-    const { studentsPerCollege, isLoadingStudentsPerCollege } = useDashboardStudentsPerCollege({ ...dateFilters, limit: 10 })
+    const { studentsPerCollege, isLoadingStudentsPerCollege } = useDashboardStudentsPerCollege({ 
+        ...dateFilters, 
+        limit: 10,
+        view_type: viewType
+    })
 
     const data = useMemo(
         () =>
@@ -33,11 +38,25 @@ export function DashboardStudentsPerCollegeList() {
 
     return (
         <Card className="col-span-1 shadow-sm border">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 flex flex-row items-center justify-between">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <Users className="w-4 h-4 text-indigo-500" />
                     Students per College
                 </CardTitle>
+                <div className="flex gap-2 text-xs">
+                    <button 
+                        onClick={() => setViewType("all")} 
+                        className={viewType === "all" ? "font-bold underline" : "text-muted-foreground"}
+                    >
+                        Total
+                    </button>
+                    <button 
+                        onClick={() => setViewType("interviewed")} 
+                        className={viewType === "interviewed" ? "font-bold underline" : "text-muted-foreground"}
+                    >
+                        Interviewed
+                    </button>
+                </div>
             </CardHeader>
             <CardContent className="pt-0 pb-6 px-6">
                 {isLoadingStudentsPerCollege ? (
