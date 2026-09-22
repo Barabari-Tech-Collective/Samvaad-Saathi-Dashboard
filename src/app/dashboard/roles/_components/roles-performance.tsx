@@ -3,6 +3,8 @@
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { TagBadge } from "@/components/dashboard/tag-badge"
+import { Badge } from "@/components/ui/badge"
 import { useDashboardOverviewRange } from "@/app/dashboard/(overview)/_components/dashboard-overview-context"
 import { useRolesPerformance } from "@/lib/api/hooks/analytics"
 
@@ -37,7 +39,14 @@ export function RolesPerformance() {
               <tbody>
                 {roleRows.map((row) => (
                   <tr key={row.role} className="border-b last:border-0">
-                    <td className="py-2 pr-3 font-medium">{row.role}</td>
+                    <td className="py-2 pr-3 font-medium">
+                      <div className="flex items-center gap-2">
+                        <span>{row.role}</span>
+                        {row.tags?.map((tag) => (
+                          <TagBadge key={tag} tag={tag} />
+                        ))}
+                      </div>
+                    </td>
                     <td className="py-2 pr-3 text-right tabular-nums">{row.interviews}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{row.avg_score ?? "—"}</td>
                     <td className="py-2 text-muted-foreground">{row.common_weaknesses.join(", ") || "—"}</td>

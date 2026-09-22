@@ -232,6 +232,7 @@ export type StudentTableRow = Readonly<{
   improvement_percent: number | null
   interviews_count: number
   last_active: string
+  tags?: string[]
 }>
 
 export type StudentsTableResponse = Readonly<{
@@ -344,6 +345,7 @@ export type CollegeTableRow = Readonly<{
   avg_score: number | null
   improvement_percent: number | null
   active_users: number
+  tags?: string[]
 }>
 
 export type CollegesTableResponse = Readonly<{
@@ -414,6 +416,7 @@ export type RolePerformanceRow = Readonly<{
   avg_score: number | null
   drop_off_rate: number | null
   common_weaknesses: readonly string[]
+  tags?: string[]
 }>
 
 export type RolesPerformanceResponse = Readonly<{
@@ -497,6 +500,7 @@ export type BenchmarkingRow = Readonly<{
   avg_score: number
   platform_avg: number
   delta: number
+  tags?: string[]
 }>
 
 export type BenchmarkingResponse = Readonly<{

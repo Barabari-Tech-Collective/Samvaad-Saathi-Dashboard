@@ -6,6 +6,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import * as React from "react"
 
 import { StudentsTableSkeleton } from "@/components/dashboard/analytics-skeletons"
+import { TagBadge } from "@/components/dashboard/tag-badge"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -199,12 +201,17 @@ export function StudentsTableCard() {
                                             </Link>
                                         </td>
                                         <td className="py-2 pr-3">
-                                            <Link
-                                                href={`/dashboard/students/${encodeURIComponent(String(s.student_id))}`}
-                                                className="font-medium text-foreground underline-offset-4 hover:underline"
-                                            >
-                                                {s.name}
-                                            </Link>
+                                            <div className="flex items-center gap-2">
+                                                <Link
+                                                    href={`/dashboard/students/${encodeURIComponent(String(s.student_id))}`}
+                                                    className="font-medium text-foreground underline-offset-4 hover:underline"
+                                                >
+                                                    {s.name}
+                                                </Link>
+                                                {s.tags?.map((tag) => (
+                                                    <TagBadge key={tag} tag={tag} />
+                                                ))}
+                                            </div>
                                         </td>
                                         <td className="py-2 pr-3 text-muted-foreground">
                                             {s.college ? (
