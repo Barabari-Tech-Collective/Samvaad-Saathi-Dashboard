@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { Bar, BarChart, Cell, XAxis, YAxis, LabelList } from "recharts"
-import { TrendingUp } from "lucide-react"
-import { format, parseISO } from "date-fns"
+import { IconTrendingUp } from "@tabler/icons-react"
+import dayjs from "dayjs"
 
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
 import {
@@ -24,7 +24,7 @@ import { presetToDateFilters, type DashboardRangePreset } from "./dashboard-over
 import { DashboardChartFilterTabs } from "./dashboard-date-range-tabs"
 
 const chartConfig = {
-  studentCount: { label: "New Students", color: "#a78bfa" }, 
+  studentCount: { label: "New Students", color: "var(--chart-1)" }, 
 } satisfies ChartConfig
 
 export function DashboardNewStudentsChart() {
@@ -37,7 +37,7 @@ export function DashboardNewStudentsChart() {
     () =>
       (newStudentsTrend?.points ?? []).map((p) => ({
         label: p.label, // label string from API (e.g., '2026-09-10' or 'Q1')
-        formattedDate: p.label ? format(parseISO(String(p.label)), "MMM d") : "", // e.g., 'Sep 10'
+        formattedDate: p.label ? dayjs(p.label).format("MMM D") : "", // e.g., 'Sep 10'
         studentCount: p.value,
       })),
     [newStudentsTrend?.points],
@@ -45,13 +45,9 @@ export function DashboardNewStudentsChart() {
 
   const dateRangeText = React.useMemo(() => {
     if (data.length > 0 && data[0].label && data[data.length - 1].label) {
-      try {
-        const first = parseISO(String(data[0].label))
-        const last = parseISO(String(data[data.length - 1].label))
-        return `${format(first, "MMM d, yyyy")} to ${format(last, "MMM d, yyyy")}`
-      } catch (e) {
-        return ""
-      }
+      const first = dayjs(data[0].label)
+      const last = dayjs(data[data.length - 1].label)
+      return `${first.format("MMM D, YYYY")} to ${last.format("MMM D, YYYY")}`
     }
     return ""
   }, [data])
@@ -60,7 +56,7 @@ export function DashboardNewStudentsChart() {
     <Card className="col-span-1 border shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-6">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-purple-500" />
+            <IconTrendingUp className="w-4 h-4 text-purple-500" />
             New Students {dateRangeText ? `— ${dateRangeText}` : ""}
         </CardTitle>
         <DashboardChartFilterTabs 
@@ -109,10 +105,10 @@ export function DashboardNewStudentsChart() {
               <Bar 
                 dataKey="studentCount" 
                 radius={[4, 4, 0, 0]}
-                fill="#a78bfa" // Solid purple
+                fill="var(--color-studentCount)"
                 barSize={50}
               >
-                <LabelList dataKey="studentCount" position="top" offset={10} style={{ fill: '#a78bfa', fontSize: 13, fontWeight: 700 }} />
+                <LabelList dataKey="studentCount" position="top" offset={10} style={{ fill: 'var(--color-studentCount)', fontSize: 13, fontWeight: 700 }} />
               </Bar>
             </BarChart>
           </ChartContainer>

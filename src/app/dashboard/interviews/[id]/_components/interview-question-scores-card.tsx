@@ -14,7 +14,7 @@ function ExpandableText({ text }: Readonly<{ text: string }>) {
   
   return (
     <div className="flex flex-col items-start gap-1">
-      <span className={cn("break-words", !expanded && "line-clamp-3")}>{text}</span>
+      <p className={cn("break-words", !expanded && "line-clamp-3")}>{text}</p>
       <button 
         type="button" 
         onClick={() => setExpanded(!expanded)} 

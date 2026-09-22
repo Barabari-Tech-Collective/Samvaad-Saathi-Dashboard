@@ -1,6 +1,6 @@
 "use client"
 
-import { Users } from "lucide-react"
+import { IconUsers } from "@tabler/icons-react"
 import { useMemo, useState } from "react"
 
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
@@ -40,7 +40,7 @@ export function DashboardStudentsPerCollegeList() {
         <Card className="col-span-1 shadow-sm border">
             <CardHeader className="pb-4 flex flex-row items-center justify-between">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Users className="w-4 h-4 text-indigo-500" />
+                    <IconUsers className="w-4 h-4 text-indigo-500" />
                     Students per College
                 </CardTitle>
                 <div className="flex gap-2 text-xs">

@@ -2,7 +2,7 @@
 
 
 
-import { Calendar as CalendarIcon } from "lucide-react"
+import { IconCalendar as CalendarIcon } from "@tabler/icons-react"
 import type { DateRange } from "react-day-picker"
 
 import { Calendar } from "../../../../components/ui/calendar"
@@ -127,7 +127,7 @@ export function DashboardChartFilterTabs({
                       selected={customRange}
                       onSelect={(range: DateRange | undefined) => {
                         onPresetChange("custom")
-                        if (onCustomRangeChange) onCustomRangeChange(range)
+                        onCustomRangeChange?.(range)
                       }}
                       numberOfMonths={2}
                     />

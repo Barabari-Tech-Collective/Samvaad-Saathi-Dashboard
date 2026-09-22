@@ -16,18 +16,12 @@ import { DashboardRecentTableSkeleton } from "@/components/dashboard/analytics-s
 import { useDashboardRecentInterviews } from "@/lib/api/hooks/analytics"
 import { isCompletedBatchInterviewStatus } from "@/lib/interview-display"
 import { cn } from "@/lib/utils"
+import { statusVariant } from "@/lib/utils/status"
 
 import { formatDashboardDateTime, formatDurationSeconds } from "./dashboard-format-utils"
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 
-function statusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
-  const s = status.toLowerCase()
-  if (s === "completed") return "outline"
-  if (s === "active") return "default"
-  if (s === "incomplete") return "secondary"
-  if (s === "failed" || s === "cancelled") return "destructive"
-  return "outline"
-}
+
 
 export function DashboardRecentInterviews() {
   const { dateFilters } = useDashboardOverviewRange()

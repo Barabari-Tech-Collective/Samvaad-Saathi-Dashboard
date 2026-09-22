@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { Bar, BarChart, Cell, XAxis, YAxis, LabelList } from "recharts"
-import { Users } from "lucide-react"
-import { format, parseISO } from "date-fns"
+import { IconUsers } from "@tabler/icons-react"
+import dayjs from "dayjs"
 
 import { ChartBarSkeleton } from "@/components/dashboard/analytics-skeletons"
 import {
@@ -24,7 +24,7 @@ import { presetToDateFilters, type DashboardRangePreset } from "./dashboard-over
 import { DashboardChartFilterTabs } from "./dashboard-date-range-tabs"
 
 const chartConfig = {
-  activeUsers: { label: "Active Students", color: "#fb7185" }, 
+  activeUsers: { label: "Active Students", color: "var(--chart-2)" }, 
 } satisfies ChartConfig
 
 export function DashboardActiveUsersChart() {
@@ -37,7 +37,7 @@ export function DashboardActiveUsersChart() {
     () =>
       (activeUsersTrend?.points ?? []).map((p) => ({
         label: p.label, // label string from API (e.g., '2026-09-10' or 'Q1')
-        formattedDate: p.label ? format(parseISO(String(p.label)), "MMM d") : "", // e.g., 'Sep 10'
+        formattedDate: p.label ? dayjs(p.label).format("MMM D") : "", // e.g., 'Sep 10'
         activeUsers: p.value,
       })),
     [activeUsersTrend?.points],
@@ -45,13 +45,9 @@ export function DashboardActiveUsersChart() {
 
   const dateRangeText = React.useMemo(() => {
     if (data.length > 0 && data[0].label && data[data.length - 1].label) {
-      try {
-        const first = parseISO(String(data[0].label))
-        const last = parseISO(String(data[data.length - 1].label))
-        return `${format(first, "MMM d, yyyy")} to ${format(last, "MMM d, yyyy")}`
-      } catch (e) {
-        return ""
-      }
+      const first = dayjs(data[0].label)
+      const last = dayjs(data[data.length - 1].label)
+      return `${first.format("MMM D, YYYY")} to ${last.format("MMM D, YYYY")}`
     }
     return ""
   }, [data])
@@ -60,7 +56,7 @@ export function DashboardActiveUsersChart() {
     <Card className="col-span-1 border shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-6">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Users className="w-4 h-4 text-pink-500" />
+            <IconUsers className="w-4 h-4 text-pink-500" />
             Active Students {dateRangeText ? `— ${dateRangeText}` : ""}
         </CardTitle>
         <DashboardChartFilterTabs 
@@ -109,10 +105,10 @@ export function DashboardActiveUsersChart() {
               <Bar 
                 dataKey="activeUsers" 
                 radius={[4, 4, 0, 0]}
-                fill="#fb7185" // Solid pink
+                fill="var(--color-activeUsers)"
                 barSize={50}
               >
-                <LabelList dataKey="activeUsers" position="top" offset={10} style={{ fill: '#fb7185', fontSize: 13, fontWeight: 700 }} />
+                <LabelList dataKey="activeUsers" position="top" offset={10} style={{ fill: 'var(--color-activeUsers)', fontSize: 13, fontWeight: 700 }} />
               </Bar>
             </BarChart>
           </ChartContainer>

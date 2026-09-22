@@ -21,17 +21,11 @@ import { formatDashboardDateTime } from "@/lib/dashboard-datetime"
 import { isCompletedBatchInterviewStatus } from "@/lib/interview-display"
 import { formatDurationSeconds } from "@/lib/kpi-format"
 import { cn } from "@/lib/utils"
+import { statusVariant } from "@/lib/utils/status"
 
 const PAGE_SIZE = 20
 
-function statusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
-    const s = status.toLowerCase()
-    if (s === "completed") return "outline"
-    if (s === "active") return "default"
-    if (s === "incomplete") return "secondary"
-    if (s === "failed" || s === "cancelled") return "destructive"
-    return "outline"
-}
+
 
 export function StudentInterviewsTable({ studentId }: Readonly<{ studentId: number | string }>) {
     const [page, setPage] = React.useState(1)
