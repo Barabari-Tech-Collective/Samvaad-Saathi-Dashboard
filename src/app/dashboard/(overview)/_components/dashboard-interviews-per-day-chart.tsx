@@ -94,7 +94,7 @@ export function DashboardInterviewsPerDayChart() {
               <Bar dataKey="interviewCount" radius={[3, 3, 0, 0]} maxBarSize={28}>
                 {data.map((entry) => (
                   <Cell
-                    key={entry.label}
+                    key={String(entry.label)}
                     fill={
                       max > 0 && entry.interviewCount === max
                         ? "var(--color-interviewCount)"
