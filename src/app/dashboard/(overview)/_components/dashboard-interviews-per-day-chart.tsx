@@ -41,7 +41,7 @@ export function DashboardInterviewsPerDayChart() {
   const data = React.useMemo(
     () =>
       (interviewsPerDay?.points ?? []).map((p) => ({
-        date: p.date,
+        label: p.label,
         interviewCount: p.value,
       })),
     [interviewsPerDay?.points],
@@ -66,7 +66,7 @@ export function DashboardInterviewsPerDayChart() {
             <ComposedChart data={data} margin={{ left: 8, right: 8 }}>
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="date"
+                dataKey="label"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
@@ -94,7 +94,7 @@ export function DashboardInterviewsPerDayChart() {
               <Bar dataKey="interviewCount" radius={[3, 3, 0, 0]} maxBarSize={28}>
                 {data.map((entry) => (
                   <Cell
-                    key={entry.date}
+                    key={entry.label}
                     fill={
                       max > 0 && entry.interviewCount === max
                         ? "var(--color-interviewCount)"

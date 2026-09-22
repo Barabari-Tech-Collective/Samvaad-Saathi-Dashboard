@@ -36,18 +36,18 @@ export function DashboardNewStudentsChart() {
   const data = React.useMemo(
     () =>
       (interviewsPerDay?.points ?? []).map((p) => ({
-        date: p.date, // original date string from API (e.g., '2026-09-10')
-        formattedDate: p.date ? format(parseISO(p.date), "MMM d") : "", // e.g., 'Sep 10'
+        label: p.label, // label string from API (e.g., '2026-09-10' or 'Q1')
+        formattedDate: p.label ? format(parseISO(String(p.label)), "MMM d") : "", // e.g., 'Sep 10'
         interviewCount: p.value,
       })),
     [interviewsPerDay?.points],
   )
 
   const dateRangeText = React.useMemo(() => {
-    if (data.length > 0 && data[0].date && data[data.length - 1].date) {
+    if (data.length > 0 && data[0].label && data[data.length - 1].label) {
       try {
-        const first = parseISO(data[0].date)
-        const last = parseISO(data[data.length - 1].date)
+        const first = parseISO(String(data[0].label))
+        const last = parseISO(String(data[data.length - 1].label))
         return `${format(first, "MMM d, yyyy")} to ${format(last, "MMM d, yyyy")}`
       } catch (e) {
         return ""

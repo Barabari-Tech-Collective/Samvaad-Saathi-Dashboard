@@ -82,7 +82,7 @@ export type KpiResponse = Readonly<{
 }>
 
 export type ChartPoint = Readonly<{
-  date: string
+  label: string | Date
   value: number
 }>
 
@@ -512,7 +512,7 @@ export type BenchmarkingResponse = Readonly<{
 }>
 
 export type ForecastPoint = Readonly<{
-  date: string
+  label: string | Date
   predictedValue: number
   lowerBound: number
   upperBound: number
