@@ -108,7 +108,14 @@ export function DashboardActiveUsersChart() {
                 fill="var(--color-activeUsers)"
                 barSize={50}
               >
-                <LabelList dataKey="activeUsers" position="top" offset={10} style={{ fill: 'var(--color-activeUsers)', fontSize: 13, fontWeight: 700 }} />
+                <LabelList 
+                  dataKey="activeUsers" 
+                  position="top" 
+                  offset={10} 
+                  fill="#000000" 
+                  fontSize={13} 
+                  fontWeight={700} 
+                />
               </Bar>
             </BarChart>
           </ChartContainer>
