@@ -24,7 +24,7 @@ import { presetToDateFilters, type DashboardRangePreset } from "./dashboard-over
 import { DashboardChartFilterTabs } from "./dashboard-date-range-tabs"
 
 const chartConfig = {
-  studentCount: { label: "New Students", color: "var(--chart-1)" }, 
+  studentCount: { label: "New Students", color: "var(--chart-5)" }, // Theme-aware violet color
 } satisfies ChartConfig
 
 export function DashboardNewStudentsChart() {
@@ -108,7 +108,14 @@ export function DashboardNewStudentsChart() {
                 fill="var(--color-studentCount)"
                 barSize={50}
               >
-                <LabelList dataKey="studentCount" position="top" offset={10} style={{ fill: 'var(--color-studentCount)', fontSize: 13, fontWeight: 700 }} />
+                <LabelList 
+                  dataKey="studentCount" 
+                  position="top" 
+                  offset={10} 
+                  fill="currentColor" 
+                  fontSize={13} 
+                  fontWeight={700} 
+                />
               </Bar>
             </BarChart>
           </ChartContainer>
