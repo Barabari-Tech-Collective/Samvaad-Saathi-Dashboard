@@ -112,7 +112,7 @@ export function DashboardActiveUsersChart() {
                   dataKey="activeUsers" 
                   position="top" 
                   offset={10} 
-                  fill="#000000" 
+                  fill="currentColor" 
                   fontSize={13} 
                   fontWeight={700} 
                 />

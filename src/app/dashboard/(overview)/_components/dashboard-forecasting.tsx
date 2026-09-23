@@ -29,8 +29,8 @@ export function DashboardForecasting() {
 
   const data = React.useMemo(() => {
     if (!forecasting?.points) return []
-    return forecasting.points.map((p: any) => ({
-      label: p.label || p.date || p.created_at || p.timestamp,
+    return forecasting.points.map((p: { label?: string; date?: string; created_at?: string; timestamp?: string; predictedValue: number; lowerBound: number; upperBound: number; }) => ({
+      label: p.label || p.date || p.created_at || p.timestamp || "Unknown",
       predictedValue: p.predictedValue,
       bounds: [p.lowerBound, p.upperBound],
     }))
