@@ -421,8 +421,9 @@ export type RolePerformanceRow = Readonly<{
   avg_score: number | null
   drop_off_rate: number | null
   common_weaknesses: readonly string[]
-  avg_knowledge_score: number
-  total_students: number
+  avg_knowledge_score?: number | null
+  total_students?: number | null
+  avg_time_spent_seconds?: number | null
   tags?: string[]
 }>
 
@@ -436,8 +437,6 @@ export type RolesWeakSkillsResponse = Readonly<{
   items: readonly { x: string; y: string; value: number }[]
 }>
 
-/* Change: Added RoleDetailRow type with the 7 specific KPI metrics.
-   Why: Strictly types the 7 KPI metrics required by RoleDetail (role, interviews, total_students, avg_score, avg_knowledge_score, drop_off_rate, avg_time_spent_seconds) for compile-time safety. */
 export type RoleDetailRow = Readonly<{
   role: string
   interviews?: number | null
@@ -449,8 +448,6 @@ export type RoleDetailRow = Readonly<{
   common_weaknesses?: readonly string[]
 }>
 
-/* Change: Updated RoleDetailResponse.items from `readonly unknown[]` to `readonly RoleDetailRow[]`.
-   Why: Replaces untyped `unknown[]` so useRoleDetail consumers can access detail fields safely without type assertions. */
 export type RoleDetailResponse = Readonly<{
   tableType?: "role_detail" | string
   items: readonly RoleDetailRow[]
@@ -624,8 +621,6 @@ export type JobProfilesRecentActivityResponse = Readonly<{
   items: readonly JobProfileActivityRow[]
 }>
 
-/* Change: Added KnowledgeTopicLevel and KnowledgeTopic types, and typed topics as KnowledgeTopic[].
-   Why: Replaces `topics?: any[]` to resolve ESLint `@typescript-eslint/no-explicit-any` while safely preserving typed property access in JDConfigurationStep (e.g. topics[0].levels[0].questions). */
 export type KnowledgeTopicLevel = {
   questions?: string[]
   [key: string]: unknown

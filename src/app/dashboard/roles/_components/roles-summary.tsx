@@ -13,7 +13,7 @@ export function RolesSummary() {
   return (
     <div className={`${KPI_STAT_GRID_CLASSNAME} px-4 lg:px-6`}>
       {isLoadingRolesSummary
-        ? Array.from({ length: 4 }).map((_, idx) => (
+        ? Array.from({ length: 6 }).map((_, idx) => (
             <Skeleton key={idx} className="h-28 w-full rounded-xl" />
           ))
         : kpis.map((kpi) => (

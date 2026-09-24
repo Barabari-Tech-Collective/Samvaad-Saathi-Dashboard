@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { Link } from "next-view-transitions"
 import { IconPlus } from "@tabler/icons-react"
 
@@ -14,7 +13,6 @@ import { RolesSummary } from "../roles/_components/roles-summary"
 import { RolesPerformance } from "../roles/_components/roles-performance"
 import { RoleDetail } from "../roles/_components/role-detail"
 import { JobProfilesList } from "../roles/_components/job-profiles-list"
-// import { RolesWeakSkillsHeatmap } from "../roles/_components/roles-weak-skills-heatmap"
 
 function RolesPageContent() {
   return (
@@ -40,7 +38,6 @@ function RolesPageContent() {
       <RolesSummary />
       <JobProfilesList />   
       <RolesPerformance />
-      {/* <RolesWeakSkillsHeatmap /> */}
       <RoleDetail />
     </div>
   )
