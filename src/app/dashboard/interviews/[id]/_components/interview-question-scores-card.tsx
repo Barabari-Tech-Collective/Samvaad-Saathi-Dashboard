@@ -5,6 +5,26 @@ import * as React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DashboardRecentTableSkeleton } from "@/components/dashboard/analytics-skeletons"
 import { useInterviewQuestionScores } from "@/lib/api/hooks/analytics"
+import { cn } from "@/lib/utils"
+
+function ExpandableText({ text }: Readonly<{ text: string }>) {
+  const [expanded, setExpanded] = React.useState(false)
+  const isLong = text.length > 100
+  if (!isLong) return <span className="break-words">{text}</span>
+  
+  return (
+    <div className="flex flex-col items-start gap-1">
+      <p className={cn("break-words", !expanded && "line-clamp-3")}>{text}</p>
+      <button 
+        type="button" 
+        onClick={() => setExpanded(!expanded)} 
+        className="text-xs text-primary hover:underline font-semibold tracking-wide"
+      >
+        {expanded ? "Read less" : "Read more"}
+      </button>
+    </div>
+  )
+}
 
 function summarizeRow(item: unknown): Record<string, string> {
   if (item == null) return { value: "—" }
@@ -88,12 +108,12 @@ export function InterviewQuestionScoresCard({
         ) : items.length === 0 ? (
           <p className="text-sm text-muted-foreground">No question scores for this interview.</p>
         ) : (
-          <table className="w-full min-w-[640px] text-sm">
+          <table className="w-full min-w-[640px] text-sm border-collapse border border-border/60">
             <thead>
-              <tr className="border-b text-left text-muted-foreground">
-                <th className="pb-2 pr-3 font-medium">#</th>
+              <tr className="border-b border-border/60 bg-muted/20 text-left text-muted-foreground">
+                <th className="p-3 font-semibold border-r border-border/60 w-12 text-center">#</th>
                 {columns.map((col) => (
-                  <th key={col} className="pb-2 pr-3 font-medium capitalize">
+                  <th key={col} className="p-3 font-semibold capitalize border-r border-border/60 last:border-r-0">
                     {col.replace(/_/g, " ")}
                   </th>
                 ))}
@@ -103,11 +123,11 @@ export function InterviewQuestionScoresCard({
               {items.map((item, idx) => {
                 const row = summarizeRow(item)
                 return (
-                  <tr key={idx} className="border-b last:border-0">
-                    <td className="py-2 pr-3 tabular-nums text-muted-foreground">{idx + 1}</td>
+                  <tr key={idx} className="border-b border-border/60 last:border-b-0 hover:bg-muted/10">
+                    <td className="p-3 tabular-nums font-bold text-foreground border-r border-border/60 text-center">{idx + 1}</td>
                     {columns.map((col) => (
-                      <td key={col} className="max-w-[320px] py-2 pr-3 align-top">
-                        <span className="break-words">{row[col] ?? "—"}</span>
+                      <td key={col} className="max-w-[320px] p-3 align-top border-r border-border/60 last:border-r-0">
+                        <ExpandableText text={row[col] ?? "—"} />
                       </td>
                     ))}
                   </tr>

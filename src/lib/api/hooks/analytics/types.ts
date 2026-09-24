@@ -50,6 +50,7 @@ export type DashboardRecentParams = Readonly<{
 export type DashboardTopParams = DashboardDateRoleFilter &
   Readonly<{
     limit?: number
+    view_type?: "all" | "interviewed"
   }>
 
 export type DashboardAttentionParams = PaginationParams &
@@ -85,7 +86,7 @@ export type KpiResponse = Readonly<{
 }>
 
 export type ChartPoint = Readonly<{
-  date: string
+  label: string | Date
   value: number
 }>
 
@@ -130,6 +131,16 @@ export type TopCollegeRow = Readonly<{
 export type TopCollegesTableResponse = Readonly<{
   tableType: "top_colleges"
   items: readonly TopCollegeRow[]
+}>
+
+export type StudentsPerCollegeRow = Readonly<{
+  college: string
+  students_count: number
+}>
+
+export type StudentsPerCollegeResponse = Readonly<{
+  table_type: "students_per_college"
+  items: readonly StudentsPerCollegeRow[]
 }>
 
 export type RecentInterviewRow = Readonly<{
@@ -226,6 +237,7 @@ export type StudentTableRow = Readonly<{
   improvement_percent: number | null
   interviews_count: number
   last_active: string
+  tags?: string[]
 }>
 
 export type StudentsTableResponse = Readonly<{
@@ -307,6 +319,8 @@ export type StudentInterviewRow = Readonly<{
   difficulty: string
   status: string
   score: number | null
+  speech_score?: number | null
+  knowledge_score?: number | null
   duration_seconds: number | null
   created_at: string
 }>
@@ -336,6 +350,7 @@ export type CollegeTableRow = Readonly<{
   avg_score: number | null
   improvement_percent: number | null
   active_users: number
+  tags?: string[]
 }>
 
 export type CollegesTableResponse = Readonly<{
@@ -408,6 +423,7 @@ export type RolePerformanceRow = Readonly<{
   common_weaknesses: readonly string[]
   avg_knowledge_score: number
   total_students: number
+  tags?: string[]
 }>
 
 export type RolesPerformanceResponse = Readonly<{
@@ -506,6 +522,7 @@ export type BenchmarkingRow = Readonly<{
   avg_score: number
   platform_avg: number
   delta: number
+  tags?: string[]
 }>
 
 export type BenchmarkingResponse = Readonly<{
@@ -517,7 +534,7 @@ export type BenchmarkingResponse = Readonly<{
 }>
 
 export type ForecastPoint = Readonly<{
-  date: string
+  label: string | Date
   predictedValue: number
   lowerBound: number
   upperBound: number

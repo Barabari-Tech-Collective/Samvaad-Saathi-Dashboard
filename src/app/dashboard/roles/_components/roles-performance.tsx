@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { TagBadge } from "@/components/dashboard/tag-badge"
+import { Badge } from "@/components/ui/badge"
 import { useRolesPerformance } from "@/lib/api/hooks/analytics"
 
 // Change: Define available difficulty options including easy, medium, hard, extreme, expert, and an "all" fallback.

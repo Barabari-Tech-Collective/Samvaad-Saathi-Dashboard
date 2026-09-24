@@ -17,6 +17,7 @@ import type {
   RecentStudentsResponse,
   TopCollegesTableResponse,
   TopRolesTableResponse,
+  StudentsPerCollegeResponse,
 } from "./types"
 
 const overviewPath = "/v2/analytics/dashboard/overview" as const
@@ -24,10 +25,12 @@ const interviewsPerDayPath = "/v2/analytics/dashboard/interviews-per-day" as con
 const activeUsersTrendPath = "/v2/analytics/dashboard/active-users-trend" as const
 const topRolesPath = "/v2/analytics/dashboard/top-roles" as const
 const topCollegesPath = "/v2/analytics/dashboard/top-colleges" as const
+const studentsPerCollegePath = "/v2/analytics/dashboard/students-per-college" as const
 const scoreDistributionPath = "/v2/analytics/dashboard/score-distribution" as const
 const recentInterviewsPath = "/v2/analytics/dashboard/recent-interviews" as const
 const recentStudentsPath = "/v2/analytics/dashboard/recent-students" as const
 const attentionRequiredPath = "/v2/analytics/dashboard/attention-required" as const
+const newStudentsTrendPath = "/v2/analytics/dashboard/new-students-trend" as const
 
 export function useDashboardOverview(filters?: DashboardDateRoleFilter) {
   const params = compactParams(filters as QueryParamInput | undefined)
@@ -104,6 +107,21 @@ export function useDashboardTopColleges(filters?: DashboardTopParams) {
   }
 }
 
+export function useDashboardStudentsPerCollege(filters?: DashboardTopParams) {
+  const params = compactParams(filters as QueryParamInput | undefined)
+  const query = api.useQuery<StudentsPerCollegeResponse>({
+    url: studentsPerCollegePath,
+    method: "GET",
+    key: analyticsKey(studentsPerCollegePath, params),
+    params,
+  })
+  return {
+    studentsPerCollege: query.data,
+    isLoadingStudentsPerCollege: query.isLoading,
+    ...query,
+  }
+}
+
 export function useDashboardScoreDistribution(filters?: DashboardDateRoleFilter) {
   const params = compactParams(filters as QueryParamInput | undefined)
   const query = api.useQuery<HistogramResponse>({
@@ -160,6 +178,21 @@ export function useDashboardAttentionRequired(filters?: DashboardAttentionParams
   return {
     attentionRequired: query.data,
     isLoadingAttentionRequired: query.isLoading,
+    ...query,
+  }
+}
+
+export function useDashboardNewStudentsTrend(filters?: DashboardDateRoleFilter) {
+  const params = compactParams(filters as QueryParamInput | undefined)
+  const query = api.useQuery<LineAreaChartResponse>({
+    url: newStudentsTrendPath,
+    method: "GET",
+    key: analyticsKey(newStudentsTrendPath, params),
+    params,
+  })
+  return {
+    newStudentsTrend: query.data,
+    isLoadingNewStudentsTrend: query.isLoading,
     ...query,
   }
 }

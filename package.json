@@ -25,6 +25,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cookies-next": "^6.1.1",
+    "date-fns": "^3.6.0",
     "dayjs": "^1.11.20",
     "motion": "^12.38.0",
     "next": "16.1.7",
@@ -32,6 +33,7 @@
     "next-view-transitions": "^0.3.5",
     "radix-ui": "^1.4.3",
     "react": "^19.2.4",
+    "react-day-picker": "^8.10.1",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.74.0",
     "react-query-ease": "^0.0.6",
@@ -56,5 +58,9 @@
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom"
   }
 }

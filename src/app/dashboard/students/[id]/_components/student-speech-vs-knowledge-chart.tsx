@@ -62,11 +62,12 @@ export function StudentSpeechVsKnowledgeChart({ studentId }: Readonly<{ studentI
             <LineChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 4 }}>
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="label"
+                dataKey="fullDate"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={20}
+                tickFormatter={(val) => formatChartAxisDate(val)}
               />
               <YAxis tickLine={false} axisLine={false} width={36} domain={[0, 100]} />
               <ChartTooltip

@@ -29,8 +29,8 @@ export function DashboardForecasting() {
 
   const data = React.useMemo(() => {
     if (!forecasting?.points) return []
-    return forecasting.points.map((p) => ({
-      date: p.date,
+    return forecasting.points.map((p: { label?: string | Date; date?: string | Date; created_at?: string | Date; timestamp?: string | Date; predictedValue: number; lowerBound: number; upperBound: number; }) => ({
+      label: p.label || p.date || p.created_at || p.timestamp || "Unknown",
       predictedValue: p.predictedValue,
       bounds: [p.lowerBound, p.upperBound],
     }))
@@ -56,7 +56,7 @@ export function DashboardForecasting() {
               </defs>
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="date"
+                dataKey="label"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
@@ -96,14 +96,16 @@ export function DashboardForecasting() {
                 type="monotone"
                 fill={`url(#${gradientId})`}
                 stroke="none"
+                connectNulls={true}
               />
               <Line
                 dataKey="predictedValue"
                 type="monotone"
                 stroke="var(--color-predictedValue)"
                 strokeWidth={2}
-                dot={false}
+                dot={data.length === 1}
                 activeDot={{ r: 6 }}
+                connectNulls={true}
               />
             </ComposedChart>
           </ChartContainer>
