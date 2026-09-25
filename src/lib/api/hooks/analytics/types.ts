@@ -5,6 +5,8 @@ export type DashboardDateRoleFilter = Readonly<{
   role?: string
   difficulty?: string
   college?: string
+  domain?: string
+  category?: string
 }>
 
 export type PaginationParams = Readonly<{
@@ -25,8 +27,7 @@ export type StudentsSearchParams = PaginationParams &
     college?: string
   }>
 
-export type InterviewsTableParams = PaginationParams &
-  DashboardDateRoleFilter
+export type InterviewsTableParams = PaginationParams & DashboardDateRoleFilter
 
 export type DateRangeParams = Readonly<{
   start_date?: string
@@ -34,6 +35,8 @@ export type DateRangeParams = Readonly<{
   role?: string
   difficulty?: string
   college?: string
+  domain?: string
+  category?: string
 }>
 
 export type StudentDetailDateParams = DateRangeParams
@@ -50,14 +53,15 @@ export type DashboardTopParams = DashboardDateRoleFilter &
     view_type?: "all" | "interviewed"
   }>
 
-export type DashboardAttentionParams = PaginationParams & Readonly<{
-  start_date?: string
-  end_date?: string
-  role?: string
-  difficulty?: string
-  college?: string
-  user_id?: number | string
-}>
+export type DashboardAttentionParams = PaginationParams &
+  Readonly<{
+    start_date?: string
+    end_date?: string
+    role?: string
+    difficulty?: string
+    college?: string
+    user_id?: number | string
+  }>
 
 export type AnalyticsSearchParams = Readonly<{
   q: string
@@ -217,7 +221,8 @@ export type AnalyticsAlertsResponse = Readonly<{
   systemAlerts: readonly AnalyticsAlertItem[]
 }>
 
-export type StudentsSummaryResponse = KpiResponse & Readonly<{ tableType?: string }>
+export type StudentsSummaryResponse = KpiResponse &
+  Readonly<{ tableType?: string }>
 
 export type StudentTableRow = Readonly<{
   student_id: number
@@ -416,6 +421,9 @@ export type RolePerformanceRow = Readonly<{
   avg_score: number | null
   drop_off_rate: number | null
   common_weaknesses: readonly string[]
+  avg_knowledge_score?: number | null
+  total_students?: number | null
+  avg_time_spent_seconds?: number | null
   tags?: string[]
 }>
 
@@ -429,9 +437,20 @@ export type RolesWeakSkillsResponse = Readonly<{
   items: readonly { x: string; y: string; value: number }[]
 }>
 
+export type RoleDetailRow = Readonly<{
+  role: string
+  interviews?: number | null
+  total_students?: number | null
+  avg_score?: number | null
+  avg_knowledge_score?: number | null
+  drop_off_rate?: number | null
+  avg_time_spent_seconds?: number | null
+  common_weaknesses?: readonly string[]
+}>
+
 export type RoleDetailResponse = Readonly<{
-  tableType: "role_detail"
-  items: readonly unknown[]
+  tableType?: "role_detail" | string
+  items: readonly RoleDetailRow[]
 }>
 
 export type DifficultyMetricsRow = Readonly<{
@@ -577,7 +596,6 @@ export type UpdateJobProfileRequest = Partial<CreateJobProfileRequest> & {
   jobProfileId: string
 }
 
-
 // JobProfileOut matches the backend JobProfileOut schema exactly
 export type JobProfileItem = CreateJobProfileResponse
 
@@ -603,6 +621,16 @@ export type JobProfilesRecentActivityResponse = Readonly<{
   items: readonly JobProfileActivityRow[]
 }>
 
+export type KnowledgeTopicLevel = {
+  questions?: string[]
+  [key: string]: unknown
+}
+
+export type KnowledgeTopic = {
+  levels?: KnowledgeTopicLevel[]
+  [key: string]: unknown
+}
+
 export type JobProfileUploadResponse = {
   success: boolean
   originalFileName: string
@@ -611,7 +639,7 @@ export type JobProfileUploadResponse = {
   uploadedAt?: string
   topicsDetected?: string[]
   totalQuestions?: number
-  topics?: any[]
+  topics?: KnowledgeTopic[]
   extracted_text?: string
   extractedText?: string
 }

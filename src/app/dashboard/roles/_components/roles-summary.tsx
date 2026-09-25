@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { KPI_STAT_GRID_CLASSNAME, KpiStatCard } from "@/components/dashboard/kpi-stat-card"
 import { useRolesSummary } from "@/lib/api/hooks/analytics"
@@ -13,7 +12,7 @@ export function RolesSummary() {
   return (
     <div className={`${KPI_STAT_GRID_CLASSNAME} px-4 lg:px-6`}>
       {isLoadingRolesSummary
-        ? Array.from({ length: 4 }).map((_, idx) => (
+        ? Array.from({ length: 6 }).map((_, idx) => (
             <Skeleton key={idx} className="h-28 w-full rounded-xl" />
           ))
         : kpis.map((kpi) => (
