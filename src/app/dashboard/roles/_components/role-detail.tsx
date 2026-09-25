@@ -23,10 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useRoleDetail, useRolesPerformance } from "@/lib/api/hooks/analytics"
-/* Change: Imported RoleDetailRow type and formatDurationSeconds utility.
-   Why: Provides strict typing for role detail metrics and standard duration formatting (e.g. 38 -> "38s"). */
-import type { RoleDetailRow } from "@/lib/api/hooks/analytics"
+import {
+  useRoleDetail,
+  useRolesPerformance,
+  type RoleDetailRow,
+} from "@/lib/api/hooks/analytics"
 import { formatDurationSeconds } from "@/lib/kpi-format"
 
 const EMPTY = "__none__"

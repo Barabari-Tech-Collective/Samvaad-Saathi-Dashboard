@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { KPI_STAT_GRID_CLASSNAME, KpiStatCard } from "@/components/dashboard/kpi-stat-card"
 import { useRolesSummary } from "@/lib/api/hooks/analytics"
