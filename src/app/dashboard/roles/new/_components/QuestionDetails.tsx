@@ -4,8 +4,6 @@ import { Badge } from "@/components/ui/badge"
 interface QuestionDetailsInfo {
   keywords: string[]
   concepts: string[]
-  expectedAnswer: string
-  exampleOutput: string
 }
 
 interface QuestionDetailsProps {
@@ -22,15 +20,19 @@ export function QuestionDetails({ details }: QuestionDetailsProps) {
           Keywords
         </div>
         <div className="flex flex-wrap justify-center gap-1.5 max-w-md">
-          {details.keywords.map(kw => (
-            <Badge
-              key={kw}
-              variant="outline"
-              className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-3 py-1 rounded-md shadow-sm"
-            >
-              {kw}
-            </Badge>
-          ))}
+          {details.keywords && details.keywords.length > 0 ? (
+            details.keywords.map(kw => (
+              <Badge
+                key={kw}
+                variant="outline"
+                className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-3 py-1 rounded-md shadow-sm break-words text-center whitespace-normal max-w-full"
+              >
+                {kw}
+              </Badge>
+            ))
+          ) : (
+            <span className="text-slate-400 text-xs italic">No keywords found</span>
+          )}
         </div>
       </div>
 
@@ -44,15 +46,19 @@ export function QuestionDetails({ details }: QuestionDetailsProps) {
           Concepts Covered
         </div>
         <div className="flex flex-wrap justify-center gap-1.5 max-w-md">
-          {details.concepts.map(concept => (
-            <Badge
-              key={concept}
-              variant="outline"
-              className="bg-[#F3E8FF] text-[#7C3AED] border-none text-[11px] font-bold px-3 py-1 rounded-md shadow-sm"
-            >
-              {concept}
-            </Badge>
-          ))}
+          {details.concepts && details.concepts.length > 0 ? (
+            details.concepts.map(concept => (
+              <Badge
+                key={concept}
+                variant="outline"
+                className="bg-[#F3E8FF] text-[#7C3AED] border-none text-[11px] font-bold px-3 py-1 rounded-md shadow-sm break-words text-center whitespace-normal max-w-full"
+              >
+                {concept}
+              </Badge>
+            ))
+          ) : (
+            <span className="text-slate-400 text-xs italic">No concepts found</span>
+          )}
         </div>
       </div>
     </div>

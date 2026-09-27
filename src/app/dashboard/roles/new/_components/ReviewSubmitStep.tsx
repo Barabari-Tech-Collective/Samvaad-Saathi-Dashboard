@@ -126,15 +126,19 @@ export function ReviewSubmitStep({
           <div className="space-y-4">
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Extracted skills</div>
             <div className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto">
-              {skillsList.map(skill => (
-                <Badge
-                  key={skill}
-                  variant="outline"
-                  className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-3 py-1 rounded-md shadow-sm"
-                >
-                  {skill}
-                </Badge>
-              ))}
+              {skillsList && skillsList.length > 0 ? (
+                skillsList.map((skill: string) => (
+                  <Badge
+                    key={skill}
+                    variant="outline"
+                    className="bg-[#EFF6FF] text-[#2563EB] border-none text-[11px] font-bold px-3 py-1 rounded-md shadow-sm break-words text-center whitespace-normal max-w-full"
+                  >
+                    {skill}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-slate-400 text-xs italic">No extracted skills found</span>
+              )}
             </div>
           </div>
 

@@ -209,7 +209,7 @@ export default function RolesManagementPage() {
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-xs font-bold text-slate-700 leading-none group-hover:text-blue-600 transition-colors">
-                      Role &apos;<span className="text-slate-800 font-extrabold group-hover:text-blue-700">{act.jobName || 'Untitled Role'}</span>&apos; created
+                      Role &apos;<span className="text-slate-800 font-extrabold group-hover:text-blue-700">{act?.jobName || 'Untitled Role'}</span>&apos; created
                     </p>
                   </div>
                 </div>
