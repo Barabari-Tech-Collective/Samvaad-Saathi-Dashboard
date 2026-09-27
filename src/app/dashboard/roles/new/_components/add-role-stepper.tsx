@@ -701,7 +701,7 @@ export function AddRoleStepper() {
                     className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center gap-2 select-none cursor-pointer"
                   >
                     <IconSparkles className="size-4" />
-                    Generate questions
+                    Extract questions
                   </Button>
                 ) : (
                   <Button
