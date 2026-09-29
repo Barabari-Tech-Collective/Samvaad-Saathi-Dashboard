@@ -19,7 +19,17 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Form } from "@/components/ui/form"
-import { useCreateJobProfile, useSubmitJobProfile, useUpdateJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { useCreateJobProfile, useSubmitJobProfile, useUpdateJobProfile, useAdminReviewJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
+import { useAuth } from "@/lib/api/hooks/useAuth"
 import { RoleCreationStepper } from "./RoleCreationStepper"
 
 import {
@@ -54,8 +64,12 @@ export function AddRoleStepper() {
   const [direction, setDirection] = useState(1)
   const [skillInput, setSkillInput] = useState("")
   const [knowledgeQuestions, setKnowledgeQuestions] = useState<any>(null)
+  const [isRequestingChanges, setIsRequestingChanges] = useState(false)
+  const [isAddingConcerns, setIsAddingConcerns] = useState(false)
+  const { user: currentUser } = useAuth()
   const { createJobProfileAsync, isCreatingJobProfile } = useCreateJobProfile()
   const { updateJobProfileAsync, isUpdatingJobProfile } = useUpdateJobProfile()
+  const { adminReviewAsync, isAdminReviewing } = useAdminReviewJobProfile()
   const { submitProfileAsync, isSubmittingProfile } = useSubmitJobProfile()
 
   useEffect(() => {
@@ -552,33 +566,181 @@ export function AddRoleStepper() {
 
               {/* Right Side Buttons */}
               <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleSaveDraft}
-                  className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 select-none"
-                >
-                  Save as draft
-                </Button>
+                {currentUser?.role === 'ADMIN' ? (
+                  <div className="flex items-center gap-2">
+                    <Dialog open={isAddingConcerns || isRequestingChanges} onOpenChange={(open) => {
+                      if (!open) {
+                        setIsAddingConcerns(false);
+                        setIsRequestingChanges(false);
+                      }
+                    }}>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-bold tracking-tight">
+                            {isRequestingChanges ? "Request Changes" : "Admin Concerns"}
+                          </DialogTitle>
+                          <DialogDescription className="text-slate-500">
+                            {isRequestingChanges 
+                              ? "Detail the changes required for this interview before it can be approved." 
+                              : "Log any concerns or feedback for this interview role without changing its status."}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                          <textarea
+                            {...form.register("adminComment")}
+                            placeholder={isRequestingChanges ? "e.g. Please add more scenario-based questions in Level 2." : "e.g. The difficulty seems a bit low but it's acceptable for now."}
+                            className="w-full min-h-[120px] rounded-lg border border-slate-300 p-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+                          />
+                        </div>
+                        <DialogFooter className="gap-2 sm:gap-0">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => {
+                              setIsRequestingChanges(false);
+                              setIsAddingConcerns(false);
+                            }}
+                            className="font-semibold text-slate-500"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            disabled={isAdminReviewing}
+                            onClick={async () => {
+                               const profileId = searchParams.get("profileId");
+                               if (!profileId) {
+                                 toast.error("Profile ID is missing");
+                                 return;
+                               }
+                               try {
+                                 await adminReviewAsync({
+                                   jobProfileId: profileId,
+                                   status: isRequestingChanges ? "changes_requested" : (searchParams.get("status") || "approved"),
+                                   adminComment: form.getValues("adminComment") || "Please review."
+                                 });
+                                 queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
+                                 toast.success(isRequestingChanges ? "Requested changes from creator." : "Concerns added successfully.");
+                                 setIsRequestingChanges(false);
+                                 setIsAddingConcerns(false);
+                                 router.push("/dashboard/roles");
+                               } catch (e) {
+                                 toast.error("Failed to submit");
+                               }
+                            }}
+                            className={isRequestingChanges ? "bg-red-600 hover:bg-red-700 font-semibold" : "bg-blue-600 hover:bg-blue-700 font-semibold"}
+                          >
+                            {isAdminReviewing ? <IconLoader2 className="size-4 animate-spin" /> : "Submit"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
 
-                <Button
-                  type="button"
-                  disabled={isSubmittingProfile}
-                  className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
-                  onClick={() => handleFinalSubmit()}
-                >
-                  {isSubmittingProfile ? (
-                    <>
-                      <IconLoader2 className="size-4 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      Submit for review
-                      <IconChevronRight className="size-4" />
-                    </>
-                  )}
-                </Button>
+                    {["published", "approved"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) ? (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsAddingConcerns(true)}
+                          className="border border-amber-200 text-amber-600 hover:bg-amber-50 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors select-none"
+                        >
+                          Admin Concerns
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsRequestingChanges(true)}
+                          className="border border-red-200 text-red-600 hover:bg-red-50 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors select-none"
+                        >
+                          Request Changes
+                        </Button>
+                        <div
+                          className="bg-green-600 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
+                        >
+                          <IconCheck className="size-4" />
+                          Approved
+                        </div>
+                      </>
+                    ) : ["review", "pending", "changes"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) ? (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsRequestingChanges(true)}
+                          className="border border-red-200 text-red-600 hover:bg-red-50 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors select-none"
+                        >
+                          Request Changes
+                        </Button>
+                        <Button
+                          type="button"
+                          disabled={isAdminReviewing}
+                          className="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
+                          onClick={async () => {
+                             const profileId = searchParams.get("profileId");
+                             if (!profileId) {
+                               toast.error("Profile ID is missing");
+                               return;
+                             }
+                             try {
+                               await adminReviewAsync({
+                                 jobProfileId: profileId,
+                                 status: "published",
+                                 adminComment: form.getValues("adminComment") || "Solid Content. I Approve the Interview."
+                               });
+                               queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
+                               toast.success("Role published successfully!");
+                               router.push("/dashboard/roles");
+                             } catch (e) {
+                               toast.error("Failed to publish role");
+                             }
+                          }}
+                        >
+                          {isAdminReviewing ? (
+                            <>
+                              <IconLoader2 className="size-4 animate-spin" />
+                              Publishing...
+                            </>
+                          ) : (
+                            <>
+                              Publish Interview
+                              <IconCheck className="size-4" />
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    ) : null}
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleSaveDraft}
+                      className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 select-none"
+                    >
+                      Save as draft
+                    </Button>
+
+                    <Button
+                      type="button"
+                      disabled={isSubmittingProfile}
+                      className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
+                      onClick={() => handleFinalSubmit()}
+                    >
+                      {isSubmittingProfile ? (
+                        <>
+                          <IconLoader2 className="size-4 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          Submit for review
+                          <IconChevronRight className="size-4" />
+                        </>
+                      )}
+                    </Button>
+                  </>
+                )}
               </div>
             </>
           ) : step === 3 ? (

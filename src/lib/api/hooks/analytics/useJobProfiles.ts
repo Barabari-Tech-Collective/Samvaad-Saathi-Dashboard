@@ -338,3 +338,22 @@ export function useSubmitJobProfile() {
     ...mutation,
   }
 }
+
+// ── PATCH /v2/job-profiles/{job_profile_id}/review ───────────────────────────
+export function useAdminReviewJobProfile() {
+  const mutation = api.useMutation<
+    any,
+    unknown,
+    { jobProfileId: string; status: string; adminComment: string }
+  >({
+    url: ({ jobProfileId }) => `/v2/job-profiles/${jobProfileId}/review`,
+    method: "PATCH",
+    keyToInvalidate: analyticsKey("/v2/job-profiles"),
+  })
+
+  return {
+    adminReviewAsync: mutation.mutateAsync,
+    isAdminReviewing: mutation.isPending,
+    ...mutation,
+  }
+}

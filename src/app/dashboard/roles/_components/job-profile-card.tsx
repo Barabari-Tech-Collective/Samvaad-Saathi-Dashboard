@@ -125,7 +125,7 @@ export function JobProfileCard({ profile }: { profile: any }) {
 
       {/* Delete confirmation dialog */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>Delete &quot;{name}&quot;?</DialogTitle>
             <DialogDescription>
@@ -133,12 +133,15 @@ export function JobProfileCard({ profile }: { profile: any }) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+            <Button variant="outline" onClick={(e) => { e.stopPropagation(); setConfirmOpen(false); }}>
               Cancel
             </Button>
             <Button
               variant="destructive"
-              onClick={handleDelete}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDelete()
+              }}
               disabled={isDeletingJobProfile}
             >
               {isDeletingJobProfile && <IconLoader2 className="size-4 animate-spin" />}

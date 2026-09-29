@@ -260,6 +260,25 @@ export function ReviewSubmitStep({
           })}
         </div>
       </div>
+
+      {/* 4. ADMIN REVIEW Card (Only visible if Under Review) */}
+      {["review", "pending", "changes"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) && !["published", "approved"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) && (
+        <div className="border border-blue-200 rounded-2xl p-6 bg-blue-50/50 shadow-sm space-y-5 animate-in fade-in duration-400">
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+              Admin Review
+            </h3>
+            <p className="text-sm text-slate-500">Provide feedback or approve this interview. Your comments will be visible to the creator.</p>
+          </div>
+          <div className="w-full">
+            <textarea
+              {...form.register("adminComment")}
+              placeholder="e.g. Solid Content. I Approve the Interview."
+              className="w-full min-h-[100px] rounded-lg border border-slate-300 p-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-y"
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

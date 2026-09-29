@@ -4,18 +4,11 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import {
   IconPlus,
-  IconClock,
-  IconCheck,
-  IconX,
-  IconBriefcase,
-  IconAlertCircle,
-  IconFileText,
-  IconArrowUpRight,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -26,118 +19,107 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { useJobProfilesSummary, useJobProfilesList } from "@/lib/api/hooks/analytics/useJobProfiles"
 import { navigateToJobProfileStep } from "./utils"
+import type { JobProfileItem } from "@/lib/api/hooks/analytics/types"
+
+
 
 export default function RolesManagementPage() {
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all")
-  const [activeCardIdx, setActiveCardIdx] = React.useState<number | null>(null)
-  const [showAllRecent, setShowAllRecent] = React.useState<boolean>(false)
-
-  const { jobProfilesSummary, isLoadingJobProfilesSummary } = useJobProfilesSummary()
+  const [activeFilter, setActiveFilter] = React.useState<string>("All")
   
-  // Fetch up to 5 items initially. When showAllRecent is true, fetch up to 50 to prevent UI freezing.
-  const limit = showAllRecent ? 50 : 5
+  const { jobProfilesSummary } = useJobProfilesSummary()
+  
+  const limit = 50 // fetch all to show cards
   const { jobProfiles, isLoadingJobProfiles } = useJobProfilesList(selectedCategory, limit)
 
   const kpis = jobProfilesSummary?.kpis ?? []
-
-  const getSummaryCardMeta = (title: string) => {
-    const t = title.toLowerCase()
-    if (t.includes("pending")) return { icon: <IconClock className="size-4" />, colorClass: "text-amber-600" }
-    if (t.includes("approved")) return { icon: <IconCheck className="size-4" />, colorClass: "text-emerald-600" }
-    if (t.includes("reject")) return { icon: <IconX className="size-4" />, colorClass: "text-rose-600" }
-    return { icon: <IconBriefcase className="size-4" />, colorClass: "text-blue-600" }
+  
+  const getStatusMeta = (statusRaw?: string) => {
+    const s = (statusRaw || "Approved").toLowerCase()
+    if (s.includes("changes") || s.includes("reject")) return { label: "Changes Required", bg: "bg-red-50 text-red-600" }
+    if (s.includes("review") || s.includes("pending")) return { label: "Under Review", bg: "bg-orange-50 text-orange-600" }
+    if (s.includes("draft")) return { label: "Draft", bg: "bg-slate-100 text-slate-600" }
+    if (s.includes("publish")) return { label: "Published", bg: "bg-blue-50 text-blue-600" }
+    return { label: "Approved", bg: "bg-green-50 text-green-600" }
   }
 
-  const getActivityMeta = (status: string) => {
-    const s = status.toLowerCase()
-    if (s.includes("approved")) return { icon: <IconCheck className="size-4 text-emerald-600" />, bg: "bg-emerald-50" }
-    if (s.includes("pending")) return { icon: <IconClock className="size-4 text-amber-600" />, bg: "bg-amber-50" }
-    if (s.includes("revision") || s.includes("reject")) return { icon: <IconAlertCircle className="size-4 text-rose-600" />, bg: "bg-rose-50" }
-    return { icon: <IconFileText className="size-4 text-slate-500" />, bg: "bg-slate-50" }
+  const draftCount = jobProfiles.filter((act) => getStatusMeta(act.status).label === "Draft").length;
+  const publishedCount = jobProfiles.filter((act) => getStatusMeta(act.status).label === "Published").length;
+
+  const filteredProfiles = jobProfiles.filter((act) => {
+    if (activeFilter === "All") return true;
+    return getStatusMeta(act.status).label === activeFilter;
+  });
+
+  // Map KPI values to Figma filters
+  const filters = [
+    { label: "All", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("total"))?.value ?? jobProfiles.length },
+    { label: "Draft", value: draftCount }, 
+    { label: "Under Review", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("pending"))?.value ?? 0 },
+    { label: "Changes Requested", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("reject"))?.value ?? 0 },
+    { label: "Approved", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("approved"))?.value ?? 0 },
+    { label: "Published", value: publishedCount } 
+  ]
+
+  const getActionButtonMeta = (statusMetaLabel: string) => {
+    switch (statusMetaLabel) {
+      case "Changes Required":
+        return { label: "View Requested Changes", variant: "outline" as const, className: "border-red-200 text-red-600 hover:bg-red-50" }
+      case "Draft":
+        return { label: "Continue Editing", variant: "default" as const, className: "bg-[#1e293b] text-white hover:bg-[#0f172a]" }
+      default:
+        return { label: "View Interview", variant: "default" as const, className: "bg-[#1e293b] text-white hover:bg-[#0f172a]" }
+    }
   }
 
   return (
-    <div className="@container/main flex flex-col gap-6 py-5 px-4 md:gap-7 md:py-6 lg:px-8 bg-slate-50/50 min-h-[calc(100vh-80px)] select-none">
+    <div className="@container/main flex flex-col gap-6 py-5 px-4 md:gap-7 md:py-6 lg:px-8 bg-white min-h-[calc(100vh-80px)] select-none">
+      
       {/* Page Header */}
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-xl font-black tracking-tight text-slate-800">Roles</h1>
+        <h1 className="text-xl font-bold tracking-tight text-[#6366f1]">Creator Portal</h1>
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Interview Creation/Management System</h2>
+        <p className="text-slate-500 text-sm mt-1">Design custom practice interviews across multiple domains for student training.</p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {isLoadingJobProfilesSummary ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-2xl" />
-          ))
-        ) : (kpis.length > 0 ? kpis : [
-          { label: "Total Roles", value: 0 },
-          { label: "Pending Review", value: 0 },
-          { label: "Approved", value: 0 },
-          { label: "Rejected", value: 0 }
-        ]).map((kpi, idx) => {
-          const isActive = activeCardIdx === idx
-          const meta = getSummaryCardMeta(kpi.label)
+      {/* Filter Pills */}
+      <div className="flex flex-wrap items-center gap-3 mt-4">
+        {filters.map((f, i) => {
+          const isActive = activeFilter === f.label
           return (
-            <Card
-              key={idx}
-              onClick={() => {
-                setActiveCardIdx(idx)
-                toast.info(`Active filter set to: ${kpi.label}`)
-              }}
-              className={`border rounded-2xl shadow-sm overflow-hidden transition-all duration-200 hover:-translate-y-0.5 group cursor-pointer ${isActive
-                ? "bg-[#EFF6FF] border-[#BFDBFE]/85 shadow-md"
-                : "bg-white border-slate-200/80 hover:bg-[#EFF6FF]/40 hover:border-[#BFDBFE]/40 hover:shadow-md"
-                }`}
+            <button
+              key={i}
+              onClick={() => setActiveFilter(f.label)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                isActive 
+                  ? "bg-black border-black text-white" 
+                  : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+              }`}
             >
-              <CardContent className="p-5 flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className={`text-xs font-bold tracking-wider uppercase transition-colors duration-200 ${isActive ? "text-[#1E40AF]/80" : "text-slate-400 group-hover:text-[#1E40AF]/60"
-                    }`}>
-                    {kpi.label}
-                  </p>
-                  <h3 className={`text-3xl font-black transition-colors duration-200 ${isActive ? "text-[#1E40AF]" : "text-slate-800 group-hover:text-[#1E40AF]"
-                    }`}>
-                    {kpi.value ?? "0"}
-                  </h3>
-                </div>
-
-                <div className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-200 ${isActive ? "bg-white text-[#1E40AF]" : "bg-slate-50 group-hover:bg-white text-slate-600 group-hover:text-[#1E40AF]"
-                  }`}>
-                  {React.cloneElement(meta.icon, {
-                    className: `size-4 transition-colors duration-200 ${isActive ? "text-blue-600" : meta.colorClass + " group-hover:text-blue-600"}`
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+              <span>{f.label}</span>
+              <span className="font-bold">. {f.value}</span>
+            </button>
           )
         })}
       </div>
 
       {/* Quick Actions & Filter Section */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 px-1 py-1">
-        <div className="space-y-2.5">
-          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Quick Actions
-          </h4>
-          <Button
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                localStorage.removeItem("samvaad_saathi_draft_profile_id")
-              }
-              router.push("/dashboard/roles/new")
-            }}
-            className="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold text-xs px-5 py-2.5 h-10 rounded-lg shadow-sm flex items-center gap-1.5 transition-all select-none"
-          >
-            <IconPlus className="size-4" />
-            Create New Role
-          </Button>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mt-4">
+        <Button
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("samvaad_saathi_draft_profile_id")
+            }
+            router.push("/dashboard/roles/new")
+          }}
+          className="bg-[#1e293b] hover:bg-[#0f172a] text-white font-semibold px-5 py-2.5 h-10 rounded-lg shadow-sm flex items-center gap-2 transition-all w-fit"
+        >
+          <IconPlus className="size-4" />
+          New Interview
+        </Button>
 
-        <div className="space-y-2.5 min-w-[200px] sm:text-right">
-          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider sm:text-right">
-            Filter By Category
-          </h4>
+        <div className="w-full sm:w-[220px]">
           <Select
             value={selectedCategory}
             onValueChange={(val) => {
@@ -145,86 +127,141 @@ export default function RolesManagementPage() {
               toast.info(`Filtered category to: ${val === "all" ? "All Categories" : val.toUpperCase()}`)
             }}
           >
-            <SelectTrigger className="w-full sm:w-[220px] bg-white border border-slate-200 text-slate-700 h-10 text-xs font-medium rounded-lg px-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+            <SelectTrigger className="w-full bg-white border border-slate-200 text-slate-700 h-10 text-sm font-medium rounded-lg px-3 shadow-sm">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
-            <SelectContent className="bg-white border border-slate-100 rounded-lg shadow-md text-xs font-semibold text-slate-700">
-              <SelectItem value="all" className="hover:bg-slate-50 cursor-pointer">All Categories</SelectItem>
-              <SelectItem value="it" className="hover:bg-slate-50 cursor-pointer">IT</SelectItem>
-              <SelectItem value="design" className="hover:bg-slate-50 cursor-pointer">Design</SelectItem>
-              <SelectItem value="sales" className="hover:bg-slate-50 cursor-pointer">Sales</SelectItem>
-              <SelectItem value="marketing" className="hover:bg-slate-50 cursor-pointer">Marketing</SelectItem>
-              <SelectItem value="hr" className="hover:bg-slate-50 cursor-pointer">HR</SelectItem>
-              <SelectItem value="operations" className="hover:bg-slate-50 cursor-pointer">Operations</SelectItem>
-              <SelectItem value="data" className="hover:bg-slate-50 cursor-pointer">Data</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="it">IT</SelectItem>
+              <SelectItem value="design">Design</SelectItem>
+              <SelectItem value="sales">Sales</SelectItem>
+              <SelectItem value="marketing">Marketing</SelectItem>
+              <SelectItem value="hr">HR</SelectItem>
+              <SelectItem value="operations">Operations</SelectItem>
+              <SelectItem value="data">Data</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Recent Activity Card */}
-      <Card className="border border-slate-200/80 rounded-2xl bg-white shadow-sm overflow-hidden flex-1">
-        <CardContent className="p-6 md:p-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-extrabold text-slate-800 tracking-tight">
-              Recent Roles Activity
-            </h3>
-            <button
-              onClick={() => {
-                setShowAllRecent((prev) => !prev)
-              }}
-              className="text-xs font-bold text-[#2563EB] hover:text-blue-700 transition-colors flex items-center gap-1 cursor-pointer select-none"
-            >
-              {showAllRecent ? "View Less" : "View All"}
-              <IconArrowUpRight className={`size-3.5 transition-transform ${showAllRecent ? "rotate-180" : ""}`} />
-            </button>
-          </div>
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-2 pb-10">
+        {isLoadingJobProfiles ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 w-full rounded-2xl" />
+          ))
+        ) : filteredProfiles.length === 0 ? (
+          <p className="text-sm text-slate-500 py-4 col-span-full">No interviews found.</p>
+        ) : filteredProfiles.map((act) => {
+          const statusMeta = getStatusMeta(act.status)
+          const btnMeta = getActionButtonMeta(statusMeta.label)
+          
+          // Use mocked breakdown or backend data if available
+          const levelsInfo: { label: string; count: number; color: string }[] = act.levelsInfo || [
+            { label: "Easy", count: act.easyQuestions ?? act.easy_questions ?? 0, color: "bg-[#FDE68A] text-slate-800" },
+            { label: "Medium", count: act.mediumQuestions ?? act.medium_questions ?? 0, color: "bg-[#FBBF24] text-slate-800" },
+            { label: "Hard", count: act.hardQuestions ?? act.hard_questions ?? 0, color: "bg-[#FFEDD5] text-slate-800" },
+            { label: "Advanced", count: act.advancedQuestions ?? act.advanced_questions ?? 0, color: "bg-[#E0E7FF] text-slate-800" },
+          ]
+          
+          const totalQ = act.totalQuestions ?? act.total_questions ?? levelsInfo.reduce((acc: number, cur: { count: number }) => acc + cur.count, 0)
+          
+          const getDateLabel = (statusLabel: string) => {
+            if (statusLabel === "Draft") return "Draft Saved";
+            if (statusLabel === "Published") return "Published";
+            if (statusLabel === "Under Review") return "Submitted";
+            if (statusLabel === "Changes Required") return "Submitted";
+            return "Submitted";
+          }
 
-          <div className="divide-y divide-slate-100">
-            {isLoadingJobProfiles ? (
-              <div className="space-y-4 pt-2">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <Skeleton className="h-10 w-10 rounded-xl" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-24" />
+          return (
+            <Card key={act.jobProfileId} className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full relative overflow-hidden">
+              <div className="flex justify-between items-start mb-6 gap-4">
+                <div>
+                  <h3 className="font-bold text-[22px] text-slate-900 leading-tight">{act.jobName || 'Untitled Role'}</h3>
+                  <p className="text-sm text-slate-500 font-medium">{act.category || act.companyName || 'General Role'}</p>
+                </div>
+                <div className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${statusMeta.bg}`}>
+                  {statusMeta.label}
+                </div>
+              </div>
+
+              <div className="flex gap-6 mb-5">
+                {/* Dates Column */}
+                <div className="flex flex-col gap-3 min-w-[100px] text-xs">
+                  <div>
+                    <div className="text-slate-400 font-medium">Created</div>
+                    <div className="text-slate-700 font-bold">{new Date(act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-400 font-medium">{getDateLabel(statusMeta.label)}</div>
+                    <div className="text-slate-700 font-bold">{new Date(act.submittedAt || act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                  </div>
+                  {statusMeta.label === "Changes Required" && (
+                     <div>
+                       <div className="text-red-400 font-medium">Changes</div>
+                       <div className="text-red-500 font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                     </div>
+                  )}
+                  {statusMeta.label === "Approved" && (
+                     <div>
+                       <div className="text-green-400 font-medium">Approved</div>
+                       <div className="text-green-500 font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                     </div>
+                  )}
+                </div>
+
+                {/* Levels Grid */}
+                <div className="flex-1">
+                  {statusMeta.label === "Draft" && totalQ === 0 ? (
+                     <div className="h-full flex items-center justify-center bg-slate-50 rounded-xl">
+                       <span className="text-sm font-semibold text-slate-400">No Questions Generated</span>
+                     </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 h-full">
+                      {levelsInfo.map((l: { label: string; count: number; color: string }, idx: number) => (
+                        <div key={idx} className={`p-3 rounded-lg flex flex-col justify-center ${l.color}`}>
+                          <span className="text-[13px] font-medium opacity-80 leading-tight">{l.label}</span>
+                          <span className="text-sm font-semibold">{l.count}Q</span>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : jobProfiles.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4">No recent activity.</p>
-            ) : jobProfiles.map((act) => {
-              const meta = getActivityMeta("approved") // Default styling for job profiles
-              return (
-              <div
-                onClick={() => navigateToJobProfileStep(act, router)}
-                key={act.jobProfileId}
-                className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4 group transition-all hover:bg-slate-50/50 -mx-4 px-4 rounded-xl cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl flex items-center justify-center shrink-0 ${meta.bg}`}>
-                    {meta.icon}
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-bold text-slate-700 leading-none group-hover:text-blue-600 transition-colors">
-                      Role &apos;<span className="text-slate-800 font-extrabold group-hover:text-blue-700">{act?.jobName || 'Untitled Role'}</span>&apos; created
-                    </p>
-                  </div>
+                  )}
                 </div>
+              </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="text-[11px] font-semibold text-slate-400 shrink-0">
-                    {new Date(act.createdAt).toLocaleDateString()}
-                  </span>
-                  <IconArrowUpRight className="size-4 text-slate-300 opacity-0 group-hover:opacity-100 group-hover:text-blue-500 transition-all -translate-x-2 group-hover:translate-x-0" />
-                </div>
+              <div className="mb-4">
+                <span className="text-[22px] font-black text-[#1e293b]">{totalQ}Qs</span>
               </div>
-            )})}
-          </div>
-        </CardContent>
-      </Card>
+
+              <div className="mt-auto">
+                {/* Admin Comment */}
+                {statusMeta.label === "Changes Required" || statusMeta.label === "Approved" ? (
+                  <div className="mb-4 text-[13px] text-slate-600">
+                    <span className="font-bold text-slate-900 mr-2">Admin</span>
+                    <span>{act.adminComment || "No additional comments provided."}</span>
+                  </div>
+                ) : statusMeta.label === "Under Review" ? (
+                  <div className="mb-4 text-[13px] text-slate-600">
+                    <span className="font-bold text-slate-900 mr-2">Admin</span>
+                    <span>Not Yet Reviewed</span>
+                  </div>
+                ) : null}
+
+                {/* Action Button */}
+                <Button 
+                  onClick={() => navigateToJobProfileStep(act, router)}
+                  variant={btnMeta.variant} 
+                  className={`w-full font-bold h-11 rounded-lg ${btnMeta.className}`}
+                >
+                  {btnMeta.label}
+                </Button>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
     </div>
   )
 }
+

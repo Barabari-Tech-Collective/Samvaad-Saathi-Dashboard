@@ -596,8 +596,24 @@ export type UpdateJobProfileRequest = Partial<CreateJobProfileRequest> & {
   jobProfileId: string
 }
 
-// JobProfileOut matches the backend JobProfileOut schema exactly
-export type JobProfileItem = CreateJobProfileResponse
+// JobProfileOut matches the backend JobProfileOut schema exactly, plus our UI extensions
+export type JobProfileItem = CreateJobProfileResponse & {
+  status?: string;
+  adminComment?: string;
+  submittedAt?: string;
+  reviewedAt?: string;
+  easyQuestions?: number;
+  mediumQuestions?: number;
+  hardQuestions?: number;
+  advancedQuestions?: number;
+  easy_questions?: number;
+  medium_questions?: number;
+  hard_questions?: number;
+  advanced_questions?: number;
+  totalQuestions?: number;
+  total_questions?: number;
+  levelsInfo?: { label: string; count: number; color: string }[];
+}
 
 export type JobProfilesListResponse = {
   items: JobProfileItem[]
