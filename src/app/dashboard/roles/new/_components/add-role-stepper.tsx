@@ -29,6 +29,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useCreateJobProfile, useSubmitJobProfile, useUpdateJobProfile, useAdminReviewJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
+import { useAuth } from "@/lib/api/hooks/useAuth"
 import { RoleCreationStepper } from "./RoleCreationStepper"
 
 import {
@@ -65,7 +66,7 @@ export function AddRoleStepper() {
   const [knowledgeQuestions, setKnowledgeQuestions] = useState<any>(null)
   const [isRequestingChanges, setIsRequestingChanges] = useState(false)
   const [isAddingConcerns, setIsAddingConcerns] = useState(false)
-  const currentUser = { role: "ADMIN" } // TODO: Replace with actual user context from your auth provider
+  const { user: currentUser } = useAuth()
   const { createJobProfileAsync, isCreatingJobProfile } = useCreateJobProfile()
   const { updateJobProfileAsync, isUpdatingJobProfile } = useUpdateJobProfile()
   const { adminReviewAsync, isAdminReviewing } = useAdminReviewJobProfile()

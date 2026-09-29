@@ -19,6 +19,7 @@ export type MeApiResponse = Readonly<{
     totalAttempts?: number | null
     avatar?: string | null
     profileImageUrl?: string | null
+    role?: string | null
   }> | null
 }>
 
@@ -28,6 +29,7 @@ export type AuthUser = Readonly<{
   email?: string | null
   name?: string | null
   avatar?: string | null
+  role?: string | null
 }>
 
 export function mapMeResponseToAuthUser(data: MeApiResponse): AuthUser {
@@ -38,6 +40,7 @@ export function mapMeResponseToAuthUser(data: MeApiResponse): AuthUser {
     email: u?.email ?? null,
     name: u?.name ?? null,
     avatar,
+    role: u?.role ?? null,
   }
 }
 
