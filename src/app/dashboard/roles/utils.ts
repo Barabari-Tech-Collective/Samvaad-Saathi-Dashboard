@@ -2,12 +2,18 @@ export function navigateToJobProfileStep(profile: any, router: any) {
   if (typeof window === "undefined") return;
 
   const id = profile.jobProfileId || profile.id;
+  
+  const rawStatus = (profile.status || "Approved").toLowerCase();
+  const isDraft = rawStatus.includes("draft");
+  
   const savedStep = localStorage.getItem(`samvaad_saathi_draft_step_${id}`);
-  const targetStep = savedStep ? savedStep : "5";
+  
+  // If it's already submitted (not a draft), always go to the review page
+  const targetStep = (!isDraft || !savedStep) ? "5" : savedStep;
 
   if (targetStep === "5") {
     // Just viewing a completed role, don't overwrite draft state
-    router.push(`/dashboard/roles/new?step=5&profileId=${id}`);
+    router.push(`/dashboard/roles/new?step=5&profileId=${id}&status=${encodeURIComponent(profile.status || "Approved")}`);
   } else {
     const previousProfileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
     let existingDraft = {};

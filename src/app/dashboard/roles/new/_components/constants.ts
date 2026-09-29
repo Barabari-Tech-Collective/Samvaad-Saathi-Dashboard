@@ -22,6 +22,7 @@ export const addRoleSchema = z.object({
   additionalContext: z.string().optional(),
   uploadedJDFileName: z.string().nullable().optional(),
   uploadedJDText: z.string().nullable().optional(),
+  adminComment: z.string().optional(),
 }).superRefine((data, ctx) => {
   const hasText = data.jobDescription && data.jobDescription.trim().length >= 10;
   const hasFile = data.uploadedJDFileName && data.uploadedJDFileName.trim().length > 0;
