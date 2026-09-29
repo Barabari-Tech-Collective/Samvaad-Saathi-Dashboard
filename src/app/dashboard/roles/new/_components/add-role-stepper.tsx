@@ -65,6 +65,7 @@ export function AddRoleStepper() {
   const [knowledgeQuestions, setKnowledgeQuestions] = useState<any>(null)
   const [isRequestingChanges, setIsRequestingChanges] = useState(false)
   const [isAddingConcerns, setIsAddingConcerns] = useState(false)
+  const currentUser = { role: "ADMIN" } // TODO: Replace with actual user context from your auth provider
   const { createJobProfileAsync, isCreatingJobProfile } = useCreateJobProfile()
   const { updateJobProfileAsync, isUpdatingJobProfile } = useUpdateJobProfile()
   const { adminReviewAsync, isAdminReviewing } = useAdminReviewJobProfile()
@@ -564,7 +565,7 @@ export function AddRoleStepper() {
 
               {/* Right Side Buttons */}
               <div className="flex items-center gap-2">
-                {["published", "approved"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) ? (
+                {currentUser?.role === 'ADMIN' ? (
                   <div className="flex items-center gap-2">
                     <Dialog open={isAddingConcerns || isRequestingChanges} onOpenChange={(open) => {
                       if (!open) {
@@ -607,7 +608,10 @@ export function AddRoleStepper() {
                             disabled={isAdminReviewing}
                             onClick={async () => {
                                const profileId = searchParams.get("profileId");
-                               if (!profileId) return;
+                               if (!profileId) {
+                                 toast.error("Profile ID is missing");
+                                 return;
+                               }
                                try {
                                  await adminReviewAsync({
                                    jobProfileId: profileId,
@@ -631,89 +635,80 @@ export function AddRoleStepper() {
                       </DialogContent>
                     </Dialog>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsAddingConcerns(true)}
-                      className="border border-amber-200 text-amber-600 hover:bg-amber-50 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors select-none"
-                    >
-                      Admin Concerns
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsRequestingChanges(true)}
-                      className="border border-red-200 text-red-600 hover:bg-red-50 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors select-none"
-                    >
-                      Request Changes
-                    </Button>
-                    <Button
-                      type="button"
-                      className="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm h-11 flex items-center justify-center gap-2 min-w-[160px] select-none cursor-pointer"
-                    >
-                      <IconCheck className="size-4" />
-                      Approved
-                    </Button>
-                  </div>
-                ) : ["review", "pending", "changes"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) ? (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={async () => {
-                         const profileId = searchParams.get("profileId");
-                         if (!profileId) return;
-                         try {
-                           await adminReviewAsync({
-                             jobProfileId: profileId,
-                             status: "changes_requested",
-                             adminComment: form.getValues("adminComment") || "Please review and make changes."
-                           });
-                           queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
-                           toast.success("Requested changes from creator.");
-                           router.push("/dashboard/roles");
-                         } catch (e) {
-                           toast.error("Failed to request changes");
-                         }
-                      }}
-                      className="border border-red-200 text-red-600 hover:bg-red-50 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors select-none"
-                    >
-                      Request Changes
-                    </Button>
-                    <Button
-                      type="button"
-                      disabled={isAdminReviewing}
-                      className="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
-                      onClick={async () => {
-                         const profileId = searchParams.get("profileId");
-                         if (!profileId) return;
-                         try {
-                           await adminReviewAsync({
-                             jobProfileId: profileId,
-                             status: "published",
-                             adminComment: form.getValues("adminComment") || "Solid Content. I Approve the Interview."
-                           });
-                           queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
-                           toast.success("Role published successfully!");
-                           router.push("/dashboard/roles");
-                         } catch (e) {
-                           toast.error("Failed to publish role");
-                         }
-                      }}
-                    >
-                      {isAdminReviewing ? (
-                        <>
-                          <IconLoader2 className="size-4 animate-spin" />
-                          Publishing...
-                        </>
-                      ) : (
-                        <>
-                          Publish Interview
+                    {["published", "approved"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) ? (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsAddingConcerns(true)}
+                          className="border border-amber-200 text-amber-600 hover:bg-amber-50 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors select-none"
+                        >
+                          Admin Concerns
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsRequestingChanges(true)}
+                          className="border border-red-200 text-red-600 hover:bg-red-50 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors select-none"
+                        >
+                          Request Changes
+                        </Button>
+                        <div
+                          className="bg-green-600 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
+                        >
                           <IconCheck className="size-4" />
-                        </>
-                      )}
-                    </Button>
-                  </>
+                          Approved
+                        </div>
+                      </>
+                    ) : ["review", "pending", "changes"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) ? (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsRequestingChanges(true)}
+                          className="border border-red-200 text-red-600 hover:bg-red-50 font-semibold rounded-lg px-6 py-2.5 h-11 shadow-sm text-xs transition-colors select-none"
+                        >
+                          Request Changes
+                        </Button>
+                        <Button
+                          type="button"
+                          disabled={isAdminReviewing}
+                          className="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
+                          onClick={async () => {
+                             const profileId = searchParams.get("profileId");
+                             if (!profileId) {
+                               toast.error("Profile ID is missing");
+                               return;
+                             }
+                             try {
+                               await adminReviewAsync({
+                                 jobProfileId: profileId,
+                                 status: "published",
+                                 adminComment: form.getValues("adminComment") || "Solid Content. I Approve the Interview."
+                               });
+                               queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
+                               toast.success("Role published successfully!");
+                               router.push("/dashboard/roles");
+                             } catch (e) {
+                               toast.error("Failed to publish role");
+                             }
+                          }}
+                        >
+                          {isAdminReviewing ? (
+                            <>
+                              <IconLoader2 className="size-4 animate-spin" />
+                              Publishing...
+                            </>
+                          ) : (
+                            <>
+                              Publish Interview
+                              <IconCheck className="size-4" />
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    ) : null}
+                  </div>
                 ) : (
                   <>
                     <Button

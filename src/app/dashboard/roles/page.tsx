@@ -21,17 +21,7 @@ import { useJobProfilesSummary, useJobProfilesList } from "@/lib/api/hooks/analy
 import { navigateToJobProfileStep } from "./utils"
 import type { JobProfileItem } from "@/lib/api/hooks/analytics/types"
 
-interface ExtendedJobProfileItem extends JobProfileItem {
-  status?: string;
-  levelsInfo?: { label: string; count: number; color: string }[];
-  easy_questions?: number;
-  medium_questions?: number;
-  hard_questions?: number;
-  advanced_questions?: number;
-  totalQuestions?: number;
-  submittedAt?: string;
-  adminComment?: string;
-}
+
 
 export default function RolesManagementPage() {
   const router = useRouter()
@@ -54,8 +44,13 @@ export default function RolesManagementPage() {
     return { label: "Approved", bg: "bg-green-50 text-green-600" }
   }
 
-  const draftCount = jobProfiles.filter((act) => getStatusMeta((act as any).status).label === "Draft").length;
-  const publishedCount = jobProfiles.filter((act) => getStatusMeta((act as any).status).label === "Published").length;
+  const draftCount = jobProfiles.filter((act) => getStatusMeta(act.status).label === "Draft").length;
+  const publishedCount = jobProfiles.filter((act) => getStatusMeta(act.status).label === "Published").length;
+
+  const filteredProfiles = jobProfiles.filter((act) => {
+    if (activeFilter === "All") return true;
+    return getStatusMeta(act.status).label === activeFilter;
+  });
 
   // Map KPI values to Figma filters
   const filters = [
@@ -155,22 +150,21 @@ export default function RolesManagementPage() {
           Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-64 w-full rounded-2xl" />
           ))
-        ) : jobProfiles.length === 0 ? (
+        ) : filteredProfiles.length === 0 ? (
           <p className="text-sm text-slate-500 py-4 col-span-full">No interviews found.</p>
-        ) : jobProfiles.map((actRaw) => {
-          const act = actRaw as ExtendedJobProfileItem
+        ) : filteredProfiles.map((act) => {
           const statusMeta = getStatusMeta(act.status)
           const btnMeta = getActionButtonMeta(statusMeta.label)
           
           // Use mocked breakdown or backend data if available
-          const levelsInfo = act.levelsInfo || [
-            { label: "Easy", count: act.easy_questions ?? (act as any).easyQuestions ?? 0, color: "bg-[#FDE68A] text-slate-800" },
-            { label: "Medium", count: act.medium_questions ?? (act as any).mediumQuestions ?? 0, color: "bg-[#FBBF24] text-slate-800" },
-            { label: "Hard", count: act.hard_questions ?? (act as any).hardQuestions ?? 0, color: "bg-[#FFEDD5] text-slate-800" },
-            { label: "Advanced", count: act.advanced_questions ?? (act as any).advancedQuestions ?? 0, color: "bg-[#E0E7FF] text-slate-800" },
+          const levelsInfo: { label: string; count: number; color: string }[] = act.levelsInfo || [
+            { label: "Easy", count: act.easyQuestions ?? act.easy_questions ?? 0, color: "bg-[#FDE68A] text-slate-800" },
+            { label: "Medium", count: act.mediumQuestions ?? act.medium_questions ?? 0, color: "bg-[#FBBF24] text-slate-800" },
+            { label: "Hard", count: act.hardQuestions ?? act.hard_questions ?? 0, color: "bg-[#FFEDD5] text-slate-800" },
+            { label: "Advanced", count: act.advancedQuestions ?? act.advanced_questions ?? 0, color: "bg-[#E0E7FF] text-slate-800" },
           ]
           
-          const totalQ = act.totalQuestions ?? (act as any).total_questions ?? levelsInfo.reduce((acc, cur) => acc + cur.count, 0)
+          const totalQ = act.totalQuestions ?? act.total_questions ?? levelsInfo.reduce((acc: number, cur: { count: number }) => acc + cur.count, 0)
           
           const getDateLabel = (statusLabel: string) => {
             if (statusLabel === "Draft") return "Draft Saved";
@@ -206,13 +200,13 @@ export default function RolesManagementPage() {
                   {statusMeta.label === "Changes Required" && (
                      <div>
                        <div className="text-red-400 font-medium">Changes</div>
-                       <div className="text-red-500 font-bold">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                       <div className="text-red-500 font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                      </div>
                   )}
                   {statusMeta.label === "Approved" && (
                      <div>
                        <div className="text-green-400 font-medium">Approved</div>
-                       <div className="text-green-500 font-bold">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                       <div className="text-green-500 font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                      </div>
                   )}
                 </div>
@@ -225,7 +219,7 @@ export default function RolesManagementPage() {
                      </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3 h-full">
-                      {levelsInfo.map((l, idx) => (
+                      {levelsInfo.map((l: { label: string; count: number; color: string }, idx: number) => (
                         <div key={idx} className={`p-3 rounded-lg flex flex-col justify-center ${l.color}`}>
                           <span className="text-[13px] font-medium opacity-80 leading-tight">{l.label}</span>
                           <span className="text-sm font-semibold">{l.count}Q</span>
@@ -242,15 +236,10 @@ export default function RolesManagementPage() {
 
               <div className="mt-auto">
                 {/* Admin Comment */}
-                {act.adminComment || statusMeta.label === "Changes Required" ? (
+                {statusMeta.label === "Changes Required" || statusMeta.label === "Approved" ? (
                   <div className="mb-4 text-[13px] text-slate-600">
                     <span className="font-bold text-slate-900 mr-2">Admin</span>
-                    <span>{act.adminComment || "Interview was good but some questions were too vague. Please check the Levels 1 & 2. I have commented on few questions"}</span>
-                  </div>
-                ) : statusMeta.label === "Approved" ? (
-                   <div className="mb-4 text-[13px] text-slate-600">
-                    <span className="font-bold text-slate-900 mr-2">Admin</span>
-                    <span>Solid Content. I Approve the Interview</span>
+                    <span>{act.adminComment || "No additional comments provided."}</span>
                   </div>
                 ) : statusMeta.label === "Under Review" ? (
                   <div className="mb-4 text-[13px] text-slate-600">
