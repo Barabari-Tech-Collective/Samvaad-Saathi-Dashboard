@@ -7,6 +7,7 @@ export type DashboardDateRoleFilter = Readonly<{
   college?: string
   domain?: string
   category?: string
+  metric?: string
 }>
 
 export type PaginationParams = Readonly<{
@@ -430,6 +431,18 @@ export type RolePerformanceRow = Readonly<{
 export type RolesPerformanceResponse = Readonly<{
   tableType: "role_performance"
   items: readonly RolePerformanceRow[]
+}>
+
+export type RolePerformanceSummaryRow = Readonly<{
+  role: string
+  totalInterviews: number
+  avgKnowledgeScore: number | null
+  avgSpeechScore: number | null
+  avgOverallScore: number | null
+}>
+
+export type RolePerformanceSummaryResponse = Readonly<{
+  roles: readonly RolePerformanceSummaryRow[]
 }>
 
 export type RolesWeakSkillsResponse = Readonly<{

@@ -36,14 +36,16 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-          <DashboardInterviewsPerDayChart />
+          <div className="flex flex-col gap-4">
+            <DashboardInterviewsPerDayChart />
+            <DashboardTopRolesChart />
+          </div>
           <DashboardStudentsPerCollegeList />
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
-          <DashboardTopRolesChart />
-          <DashboardTopCollegesChart />
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
           <DashboardScoreDistributionChart />
+          <DashboardTopCollegesChart />
         </div>
 
         <div className="flex flex-col gap-4 ">

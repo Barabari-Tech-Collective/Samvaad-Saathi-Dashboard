@@ -56,22 +56,16 @@ export function EditQuestionDialog({
                 onChange={(e) => setModalCategory(e.target.value)}
                 className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-white outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="THEORETICAL">Theoretical</option>
-                <option value="PRACTICAL">Practical</option>
+                <option value="TECH_ALIGNED">Tech Aligned</option>
+                <option value="BEHAVIORAL">Behavioral</option>
               </select>
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-600">Difficulty</label>
-              <select
-                value={modalDifficulty}
-                onChange={(e) => setModalDifficulty(e.target.value)}
-                className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-white outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="EASY">Easy</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HARD">Hard</option>
-              </select>
+              <div className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-slate-50 text-slate-500 font-medium capitalize">
+                {modalDifficulty?.toLowerCase() || 'Easy'}
+              </div>
             </div>
           </div>
 
