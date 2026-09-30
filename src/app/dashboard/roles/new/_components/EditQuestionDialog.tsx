@@ -68,14 +68,20 @@ export function EditQuestionDialog({
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-600">Difficulty</label>
-              <div className={cn(
-                "w-full text-xs rounded-full px-3 py-1.5 font-bold capitalize w-fit",
-                (!modalDifficulty || modalDifficulty.toUpperCase() === "EASY") && "bg-emerald-50 text-emerald-700",
-                modalDifficulty?.toUpperCase() === "MEDIUM" && "bg-amber-50 text-amber-700",
-                modalDifficulty?.toUpperCase() === "HARD" && "bg-rose-50 text-rose-700"
-              )}>
-                {modalDifficulty?.toLowerCase() || 'Easy'}
-              </div>
+              <select
+                value={modalDifficulty}
+                onChange={(e) => setModalDifficulty(e.target.value)}
+                className={cn(
+                  "w-full text-xs rounded-full px-3 py-1.5 font-bold capitalize outline-none cursor-pointer border focus:ring-1 focus:ring-blue-500 focus:border-blue-500",
+                  (!modalDifficulty || modalDifficulty.toUpperCase() === "EASY") && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                  modalDifficulty?.toUpperCase() === "MEDIUM" && "bg-amber-50 text-amber-700 border-amber-200",
+                  modalDifficulty?.toUpperCase() === "HARD" && "bg-rose-50 text-rose-700 border-rose-200"
+                )}
+              >
+                <option value="EASY" className="bg-white text-slate-700 font-semibold">Easy</option>
+                <option value="MEDIUM" className="bg-white text-slate-700 font-semibold">Medium</option>
+                <option value="HARD" className="bg-white text-slate-700 font-semibold">Hard</option>
+              </select>
             </div>
           </div>
 
