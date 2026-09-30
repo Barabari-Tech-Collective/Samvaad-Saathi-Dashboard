@@ -20,7 +20,7 @@ interface QuestionCardProps {
   details: any
 }
 
-const getCategoryBadgeStyle = (cat: string) => {
+export const getCategoryBadgeStyle = (cat: string) => {
   const categoryStr = (cat || "").toLowerCase()
   if (categoryStr.includes("tech")) {
     return "bg-blue-50 text-blue-700 border-blue-200"

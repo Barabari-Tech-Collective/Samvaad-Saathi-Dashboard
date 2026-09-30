@@ -566,7 +566,7 @@ export function AddRoleStepper() {
 
               {/* Right Side Buttons */}
               <div className="flex items-center gap-2">
-                {isAdmin ? (
+                {isAdmin && searchParams.get("status") ? (
                   <div className="flex items-center gap-2">
                     <Dialog open={isAddingConcerns || isRequestingChanges} onOpenChange={(open) => {
                       if (!open) {
@@ -708,7 +708,37 @@ export function AddRoleStepper() {
                           )}
                         </Button>
                       </>
-                    ) : null}
+                    ) : (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleSaveDraft}
+                          className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 select-none"
+                        >
+                          Save as draft
+                        </Button>
+
+                        <Button
+                          type="button"
+                          disabled={isSubmittingProfile}
+                          className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
+                          onClick={() => handleFinalSubmit()}
+                        >
+                          {isSubmittingProfile ? (
+                            <>
+                              <IconLoader2 className="size-4 animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            <>
+                              Submit for review
+                              <IconChevronRight className="size-4" />
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <>

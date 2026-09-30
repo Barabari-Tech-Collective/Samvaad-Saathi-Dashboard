@@ -32,7 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useDashboardScoreDistribution, useJobProfilesList } from "@/lib/api/hooks/analytics"
+import { useDashboardScoreDistribution, useAnalyticsRolesFilters } from "@/lib/api/hooks/analytics"
 
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
 import { DashboardRolePerformanceDialog } from "./dashboard-role-performance-dialog"
@@ -48,7 +48,7 @@ export function DashboardScoreDistributionChart() {
 
     // TODO: Scalability - Upgrading this to a searchable Combobox with backend pagination 
     // will be needed in the future to support tenants with >100 roles.
-    const { jobProfiles } = useJobProfilesList(undefined, 100)
+    const { roles } = useAnalyticsRolesFilters()
 
     const filters = React.useMemo(() => {
         return {
@@ -86,9 +86,9 @@ export function DashboardScoreDistributionChart() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Roles</SelectItem>
-                            {jobProfiles?.map((profile) => (
-                                <SelectItem key={profile.jobProfileId} value={profile.jobName}>
-                                    {profile.jobName}
+                            {roles?.map((role) => (
+                                <SelectItem key={role} value={role}>
+                                    {role}
                                 </SelectItem>
                             ))}
                         </SelectContent>

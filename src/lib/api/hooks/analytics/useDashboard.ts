@@ -212,3 +212,16 @@ export function useRolePerformanceSummary(filters?: DashboardDateRoleFilter) {
     ...query,
   }
 }
+
+export function useAnalyticsRolesFilters() {
+  const query = api.useQuery<{ roles: string[] }>({
+    url: "/v2/analytics/roles/filters",
+    method: "GET",
+    key: analyticsKey("/v2/analytics/roles/filters"),
+  })
+  return {
+    roles: query.data?.roles || [],
+    isLoadingRoles: query.isLoading,
+    ...query,
+  }
+}
