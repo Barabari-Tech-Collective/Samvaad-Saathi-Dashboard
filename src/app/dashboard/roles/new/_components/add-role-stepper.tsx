@@ -66,7 +66,7 @@ export function AddRoleStepper() {
   const [knowledgeQuestions, setKnowledgeQuestions] = useState<any>(null)
   const [isRequestingChanges, setIsRequestingChanges] = useState(false)
   const [isAddingConcerns, setIsAddingConcerns] = useState(false)
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, isAdmin } = useAuth()
   const { createJobProfileAsync, isCreatingJobProfile } = useCreateJobProfile()
   const { updateJobProfileAsync, isUpdatingJobProfile } = useUpdateJobProfile()
   const { adminReviewAsync, isAdminReviewing } = useAdminReviewJobProfile()
@@ -566,7 +566,7 @@ export function AddRoleStepper() {
 
               {/* Right Side Buttons */}
               <div className="flex items-center gap-2">
-                {currentUser?.role?.toUpperCase() === 'ADMIN' ? (
+                {isAdmin ? (
                   <div className="flex items-center gap-2">
                     <Dialog open={isAddingConcerns || isRequestingChanges} onOpenChange={(open) => {
                       if (!open) {
