@@ -566,7 +566,7 @@ export function AddRoleStepper() {
 
               {/* Right Side Buttons */}
               <div className="flex items-center gap-2">
-                {currentUser?.role === 'ADMIN' ? (
+                {currentUser?.role?.toUpperCase() === 'ADMIN' ? (
                   <div className="flex items-center gap-2">
                     <Dialog open={isAddingConcerns || isRequestingChanges} onOpenChange={(open) => {
                       if (!open) {

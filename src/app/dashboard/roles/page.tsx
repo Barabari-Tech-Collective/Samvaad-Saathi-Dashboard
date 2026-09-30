@@ -198,15 +198,26 @@ export default function RolesManagementPage() {
                     <div className="text-slate-700 font-bold">{new Date(act.submittedAt || act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                   </div>
                   {statusMeta.label === "Changes Required" && (
-                     <div>
-                       <div className="text-red-400 font-medium">Changes</div>
-                       <div className="text-red-500 font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                     <div className="text-red-500">
+                       <div className="font-medium">Changes</div>
+                       <div className="font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                      </div>
                   )}
                   {statusMeta.label === "Approved" && (
-                     <div>
-                       <div className="text-green-400 font-medium">Approved</div>
-                       <div className="text-green-500 font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                     <div className="text-green-500">
+                       <div className="font-medium">Approved</div>
+                       <div className="font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                     </div>
+                  )}
+                  {statusMeta.label === "Under Review" && (
+                     <div className="text-orange-500 font-bold mt-1 text-sm">
+                       Under Review
+                     </div>
+                  )}
+                  {statusMeta.label === "Published" && (
+                     <div className="text-blue-500">
+                       <div className="font-medium">Published</div>
+                       <div className="font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                      </div>
                   )}
                 </div>
@@ -236,15 +247,14 @@ export default function RolesManagementPage() {
 
               <div className="mt-auto">
                 {/* Admin Comment */}
-                {statusMeta.label === "Changes Required" || statusMeta.label === "Approved" ? (
-                  <div className="mb-4 text-[13px] text-slate-600">
+                {statusMeta.label !== "Draft" ? (
+                  <div className="mb-4 text-[13px] text-slate-700 bg-slate-100 p-3 rounded-lg">
                     <span className="font-bold text-slate-900 mr-2">Admin</span>
-                    <span>{act.adminComment || "No additional comments provided."}</span>
-                  </div>
-                ) : statusMeta.label === "Under Review" ? (
-                  <div className="mb-4 text-[13px] text-slate-600">
-                    <span className="font-bold text-slate-900 mr-2">Admin</span>
-                    <span>Not Yet Reviewed</span>
+                    <span className={!act.adminComment && statusMeta.label === "Under Review" ? "text-slate-500 italic" : ""}>
+                      {statusMeta.label === "Under Review" 
+                        ? (act.adminComment || "Not Yet Reviewed")
+                        : (act.adminComment || "No additional comments provided.")}
+                    </span>
                   </div>
                 ) : null}
 
