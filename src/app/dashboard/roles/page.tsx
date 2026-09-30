@@ -23,6 +23,14 @@ import type { JobProfileItem } from "@/lib/api/hooks/analytics/types"
 
 
 
+const STATUS_LABELS = {
+  CHANGES_REQUIRED: "Changes Required",
+  UNDER_REVIEW: "Under Review",
+  DRAFT: "Draft",
+  PUBLISHED: "Published",
+  APPROVED: "Approved",
+}
+
 export default function RolesManagementPage() {
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all")
@@ -37,15 +45,15 @@ export default function RolesManagementPage() {
   
   const getStatusMeta = (statusRaw?: string) => {
     const s = (statusRaw || "Approved").toLowerCase()
-    if (s.includes("changes") || s.includes("reject")) return { label: "Changes Required", bg: "bg-red-50 text-red-600" }
-    if (s.includes("review") || s.includes("pending")) return { label: "Under Review", bg: "bg-orange-50 text-orange-600" }
-    if (s.includes("draft")) return { label: "Draft", bg: "bg-slate-100 text-slate-600" }
-    if (s.includes("publish")) return { label: "Published", bg: "bg-blue-50 text-blue-600" }
-    return { label: "Approved", bg: "bg-green-50 text-green-600" }
+    if (s.includes("changes") || s.includes("reject")) return { label: STATUS_LABELS.CHANGES_REQUIRED, bg: "bg-red-50 text-red-600" }
+    if (s.includes("review") || s.includes("pending")) return { label: STATUS_LABELS.UNDER_REVIEW, bg: "bg-orange-50 text-orange-600" }
+    if (s.includes("draft")) return { label: STATUS_LABELS.DRAFT, bg: "bg-slate-100 text-slate-600" }
+    if (s.includes("publish")) return { label: STATUS_LABELS.PUBLISHED, bg: "bg-blue-50 text-blue-600" }
+    return { label: STATUS_LABELS.APPROVED, bg: "bg-green-50 text-green-600" }
   }
 
-  const draftCount = jobProfiles.filter((act) => getStatusMeta(act.status).label === "Draft").length;
-  const publishedCount = jobProfiles.filter((act) => getStatusMeta(act.status).label === "Published").length;
+  const draftCount = jobProfiles.filter((act) => getStatusMeta(act.status).label === STATUS_LABELS.DRAFT).length;
+  const publishedCount = jobProfiles.filter((act) => getStatusMeta(act.status).label === STATUS_LABELS.PUBLISHED).length;
 
   const filteredProfiles = jobProfiles.filter((act) => {
     if (activeFilter === "All") return true;
@@ -55,18 +63,18 @@ export default function RolesManagementPage() {
   // Map KPI values to Figma filters
   const filters = [
     { label: "All", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("total"))?.value ?? jobProfiles.length },
-    { label: "Draft", value: draftCount }, 
-    { label: "Under Review", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("pending"))?.value ?? 0 },
+    { label: STATUS_LABELS.DRAFT, value: draftCount }, 
+    { label: STATUS_LABELS.UNDER_REVIEW, value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("pending"))?.value ?? 0 },
     { label: "Changes Requested", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("reject"))?.value ?? 0 },
-    { label: "Approved", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("approved"))?.value ?? 0 },
-    { label: "Published", value: publishedCount } 
+    { label: STATUS_LABELS.APPROVED, value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("approved"))?.value ?? 0 },
+    { label: STATUS_LABELS.PUBLISHED, value: publishedCount } 
   ]
 
   const getActionButtonMeta = (statusMetaLabel: string) => {
     switch (statusMetaLabel) {
-      case "Changes Required":
+      case STATUS_LABELS.CHANGES_REQUIRED:
         return { label: "View Requested Changes", variant: "outline" as const, className: "border-red-200 text-red-600 hover:bg-red-50" }
-      case "Draft":
+      case STATUS_LABELS.DRAFT:
         return { label: "Continue Editing", variant: "default" as const, className: "bg-[#1e293b] text-white hover:bg-[#0f172a]" }
       default:
         return { label: "View Interview", variant: "default" as const, className: "bg-[#1e293b] text-white hover:bg-[#0f172a]" }
@@ -167,12 +175,16 @@ export default function RolesManagementPage() {
           const totalQ = act.totalQuestions ?? act.total_questions ?? levelsInfo.reduce((acc: number, cur: { count: number }) => acc + cur.count, 0)
           
           const getDateLabel = (statusLabel: string) => {
-            if (statusLabel === "Draft") return "Draft Saved";
-            if (statusLabel === "Published") return "Published";
-            if (statusLabel === "Under Review") return "Submitted";
-            if (statusLabel === "Changes Required") return "Submitted";
+            if (statusLabel === STATUS_LABELS.DRAFT) return "Draft Saved";
+            if (statusLabel === STATUS_LABELS.PUBLISHED) return "Published";
+            if (statusLabel === STATUS_LABELS.UNDER_REVIEW) return "Submitted";
+            if (statusLabel === STATUS_LABELS.CHANGES_REQUIRED) return "Submitted";
             return "Submitted";
           }
+
+          const createdDate = new Date(act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const displayDate = new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const submittedDate = new Date(act.submittedAt || act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
           return (
             <Card key={act.jobProfileId} className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full relative overflow-hidden">
@@ -191,22 +203,33 @@ export default function RolesManagementPage() {
                 <div className="flex flex-col gap-3 min-w-[100px] text-xs">
                   <div>
                     <div className="text-slate-400 font-medium">Created</div>
-                    <div className="text-slate-700 font-bold">{new Date(act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                    <div className="text-slate-700 font-bold">{createdDate}</div>
                   </div>
                   <div>
                     <div className="text-slate-400 font-medium">{getDateLabel(statusMeta.label)}</div>
-                    <div className="text-slate-700 font-bold">{new Date(act.submittedAt || act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                    <div className="text-slate-700 font-bold">{submittedDate}</div>
                   </div>
-                  {statusMeta.label === "Changes Required" && (
-                     <div>
-                       <div className="text-red-400 font-medium">Changes</div>
-                       <div className="text-red-500 font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                  {statusMeta.label === STATUS_LABELS.CHANGES_REQUIRED && (
+                     <div className="text-red-500">
+                       <div className="font-medium">Changes</div>
+                       <div className="font-bold">{displayDate}</div>
                      </div>
                   )}
-                  {statusMeta.label === "Approved" && (
-                     <div>
-                       <div className="text-green-400 font-medium">Approved</div>
-                       <div className="text-green-500 font-bold">{new Date(act.updatedAt || act.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                  {statusMeta.label === STATUS_LABELS.APPROVED && (
+                     <div className="text-green-500">
+                       <div className="font-medium">Approved</div>
+                       <div className="font-bold">{displayDate}</div>
+                     </div>
+                  )}
+                  {statusMeta.label === STATUS_LABELS.UNDER_REVIEW && (
+                     <div className="text-orange-500 font-bold mt-1 text-sm">
+                       Under Review
+                     </div>
+                  )}
+                  {statusMeta.label === STATUS_LABELS.PUBLISHED && (
+                     <div className="text-blue-500">
+                       <div className="font-medium">Published</div>
+                       <div className="font-bold">{displayDate}</div>
                      </div>
                   )}
                 </div>
@@ -236,15 +259,14 @@ export default function RolesManagementPage() {
 
               <div className="mt-auto">
                 {/* Admin Comment */}
-                {statusMeta.label === "Changes Required" || statusMeta.label === "Approved" ? (
-                  <div className="mb-4 text-[13px] text-slate-600">
+                {statusMeta.label !== STATUS_LABELS.DRAFT ? (
+                  <div className="mb-4 text-[13px] text-slate-700 bg-slate-100 p-3 rounded-lg">
                     <span className="font-bold text-slate-900 mr-2">Admin</span>
-                    <span>{act.adminComment || "No additional comments provided."}</span>
-                  </div>
-                ) : statusMeta.label === "Under Review" ? (
-                  <div className="mb-4 text-[13px] text-slate-600">
-                    <span className="font-bold text-slate-900 mr-2">Admin</span>
-                    <span>Not Yet Reviewed</span>
+                    <span className={!act.adminComment && statusMeta.label === STATUS_LABELS.UNDER_REVIEW ? "text-slate-500 italic" : ""}>
+                      {statusMeta.label === STATUS_LABELS.UNDER_REVIEW 
+                        ? (act.adminComment || "Not Yet Reviewed")
+                        : (act.adminComment || "No additional comments provided.")}
+                    </span>
                   </div>
                 ) : null}
 

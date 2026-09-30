@@ -14,6 +14,7 @@ import {
   EXPERIENCE_OPTIONS,
 } from "./constants"
 import { useGetJobProfileReview } from "@/lib/api/hooks/analytics/useJobProfiles"
+import { useAuth } from "@/lib/api/hooks/useAuth"
 
 import { useSearchParams } from "next/navigation"
 
@@ -36,6 +37,7 @@ export function ReviewSubmitStep({
   }, [])
 
   const { reviewData, isLoadingReview } = useGetJobProfileReview(profileId)
+  const { isAdmin, isLoadingUser } = useAuth()
 
   // Accordion active level state
   const [activeLevel, setActiveLevel] = useState<number | null>(1)
@@ -43,11 +45,11 @@ export function ReviewSubmitStep({
 
   if (!isMounted) return null
 
-  if (isLoadingReview || !reviewData) {
+  if (isLoadingReview || !reviewData || isLoadingUser) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-500">
         <IconLoader2 className="w-8 h-8 animate-spin mb-4 text-blue-600" />
-        <p className="text-sm font-medium">Loading review summary...</p>
+        <p className="text-sm font-medium">Loading...</p>
       </div>
     )
   }
@@ -79,6 +81,11 @@ export function ReviewSubmitStep({
       hasMoreText: `View all ${level.questionCount} questions`
     }
   })
+
+  const currentStatus = searchParams.get("status")?.toLowerCase() || "";
+  const isPendingReview = ["review", "pending", "changes"].some(s => currentStatus.includes(s));
+  const isFinalized = ["published", "approved"].some(s => currentStatus.includes(s));
+  const showAdminReviewCard = isAdmin && isPendingReview && !isFinalized;
 
   return (
     <div className="space-y-6">
@@ -261,8 +268,8 @@ export function ReviewSubmitStep({
         </div>
       </div>
 
-      {/* 4. ADMIN REVIEW Card (Only visible if Under Review) */}
-      {["review", "pending", "changes"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) && !["published", "approved"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) && (
+      {/* 4. ADMIN REVIEW Card (Only visible if Under Review and user is Admin) */}
+      {showAdminReviewCard && (
         <div className="border border-blue-200 rounded-2xl p-6 bg-blue-50/50 shadow-sm space-y-5 animate-in fade-in duration-400">
           <div className="space-y-1">
             <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider">
