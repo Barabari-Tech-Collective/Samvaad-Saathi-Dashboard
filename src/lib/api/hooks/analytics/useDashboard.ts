@@ -18,6 +18,7 @@ import type {
   TopCollegesTableResponse,
   TopRolesTableResponse,
   StudentsPerCollegeResponse,
+  RolePerformanceSummaryResponse,
 } from "./types"
 
 const overviewPath = "/v2/analytics/dashboard/overview" as const
@@ -193,6 +194,34 @@ export function useDashboardNewStudentsTrend(filters?: DashboardDateRoleFilter) 
   return {
     newStudentsTrend: query.data,
     isLoadingNewStudentsTrend: query.isLoading,
+    ...query,
+  }
+}
+
+export function useRolePerformanceSummary(filters?: DashboardDateRoleFilter) {
+  const params = compactParams(filters as QueryParamInput | undefined)
+  const query = api.useQuery<RolePerformanceSummaryResponse>({
+    url: "/v2/analytics/roles/performance-summary",
+    method: "GET",
+    key: analyticsKey("/v2/analytics/roles/performance-summary", params),
+    params,
+  })
+  return {
+    rolePerformanceSummary: query.data,
+    isLoadingRolePerformanceSummary: query.isLoading,
+    ...query,
+  }
+}
+
+export function useAnalyticsRolesFilters() {
+  const query = api.useQuery<{ roles: string[] }>({
+    url: "/v2/analytics/roles/filters",
+    method: "GET",
+    key: analyticsKey("/v2/analytics/roles/filters"),
+  })
+  return {
+    roles: query.data?.roles || [],
+    isLoadingRoles: query.isLoading,
     ...query,
   }
 }

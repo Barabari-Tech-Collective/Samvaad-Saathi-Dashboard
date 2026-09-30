@@ -2,6 +2,8 @@ import { IconX } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
+import { getCategoryBadgeStyle } from "./QuestionCard"
 
 interface EditQuestionDialogProps {
   isOpen: boolean
@@ -13,6 +15,7 @@ interface EditQuestionDialogProps {
   modalDifficulty: string
   setModalDifficulty: (difficulty: string) => void
   onSave: () => void
+  categories?: string[]
 }
 
 export function EditQuestionDialog({
@@ -25,6 +28,7 @@ export function EditQuestionDialog({
   modalDifficulty,
   setModalDifficulty,
   onSave,
+  categories = [],
 }: EditQuestionDialogProps) {
   if (!isOpen) return null
 
@@ -54,10 +58,11 @@ export function EditQuestionDialog({
               <select
                 value={modalCategory}
                 onChange={(e) => setModalCategory(e.target.value)}
-                className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-white outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-white outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 capitalize"
               >
-                <option value="THEORETICAL">Theoretical</option>
-                <option value="PRACTICAL">Practical</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat.replace('_', ' ')}</option>
+                ))}
               </select>
             </div>
 
@@ -66,11 +71,16 @@ export function EditQuestionDialog({
               <select
                 value={modalDifficulty}
                 onChange={(e) => setModalDifficulty(e.target.value)}
-                className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-white outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className={cn(
+                  "w-full text-xs rounded-full px-3 py-1.5 font-bold capitalize outline-none cursor-pointer border focus:ring-1 focus:ring-blue-500 focus:border-blue-500",
+                  (!modalDifficulty || modalDifficulty.toUpperCase() === "EASY") && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                  modalDifficulty?.toUpperCase() === "MEDIUM" && "bg-amber-50 text-amber-700 border-amber-200",
+                  modalDifficulty?.toUpperCase() === "HARD" && "bg-rose-50 text-rose-700 border-rose-200"
+                )}
               >
-                <option value="EASY">Easy</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HARD">Hard</option>
+                <option value="EASY" className="bg-white text-slate-700 font-semibold">Easy</option>
+                <option value="MEDIUM" className="bg-white text-slate-700 font-semibold">Medium</option>
+                <option value="HARD" className="bg-white text-slate-700 font-semibold">Hard</option>
               </select>
             </div>
           </div>

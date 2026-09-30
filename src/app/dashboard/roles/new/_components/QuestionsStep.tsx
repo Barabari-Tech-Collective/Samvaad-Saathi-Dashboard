@@ -523,30 +523,39 @@ export function QuestionsStep() {
       </div>
 
       {/* Add Question Modal */}
-      <AddQuestionDialog
-        isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        modalText={modalText}
-        setModalText={setModalText}
-        modalCategory={modalCategory}
-        setModalCategory={setModalCategory}
-        modalDifficulty={modalDifficulty}
-        setModalDifficulty={setModalDifficulty}
-        onAdd={handleAddQuestion}
-      />
+      {(() => {
+        const cats = Array.from(new Set(questions.map(q => q.category))).filter(Boolean) as string[]
+        if (cats.length === 0) cats.push("TECH_ALIGNED", "BEHAVIORAL")
+        return (
+          <>
+            <AddQuestionDialog
+              isOpen={isAddOpen}
+              onClose={() => setIsAddOpen(false)}
+              modalText={modalText}
+              setModalText={setModalText}
+              modalCategory={modalCategory}
+              setModalCategory={setModalCategory}
+              modalDifficulty={modalDifficulty}
+              setModalDifficulty={setModalDifficulty}
+              onAdd={handleAddQuestion}
+              categories={cats}
+            />
 
-      {/* Edit Question Modal */}
-      <EditQuestionDialog
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        modalText={modalText}
-        setModalText={setModalText}
-        modalCategory={modalCategory}
-        setModalCategory={setModalCategory}
-        modalDifficulty={modalDifficulty}
-        setModalDifficulty={setModalDifficulty}
-        onSave={handleSaveEdit}
-      />
+            <EditQuestionDialog
+              isOpen={isEditOpen}
+              onClose={() => setIsEditOpen(false)}
+              modalText={modalText}
+              setModalText={setModalText}
+              modalCategory={modalCategory}
+              setModalCategory={setModalCategory}
+              modalDifficulty={modalDifficulty}
+              setModalDifficulty={setModalDifficulty}
+              onSave={handleSaveEdit}
+              categories={cats}
+            />
+          </>
+        )
+      })()}
     </div>
   )
 }

@@ -25,9 +25,17 @@ import {
     ChartTooltipContent,
     type ChartConfig,
 } from "@/components/ui/chart"
-import { useDashboardScoreDistribution } from "@/lib/api/hooks/analytics"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { useDashboardScoreDistribution, useAnalyticsRolesFilters } from "@/lib/api/hooks/analytics"
 
 import { useDashboardOverviewRange } from "./dashboard-overview-context"
+import { DashboardRolePerformanceDialog } from "./dashboard-role-performance-dialog"
 
 const chartConfig = {
     count: { label: "Interviews", color: "var(--chart-4)" },
@@ -35,7 +43,22 @@ const chartConfig = {
 
 export function DashboardScoreDistributionChart() {
     const { dateFilters } = useDashboardOverviewRange()
-    const { scoreDistribution, isLoadingScoreDistribution } = useDashboardScoreDistribution(dateFilters)
+    const [selectedRole, setSelectedRole] = React.useState<string>("all")
+    const [selectedMetric, setSelectedMetric] = React.useState<string>("overall")
+
+    // TODO: Scalability - Upgrading this to a searchable Combobox with backend pagination 
+    // will be needed in the future to support tenants with >100 roles.
+    const { roles } = useAnalyticsRolesFilters()
+
+    const filters = React.useMemo(() => {
+        return {
+            ...dateFilters,
+            ...(selectedRole !== "all" ? { role: selectedRole } : {}),
+            ...(selectedMetric !== "overall" ? { metric: selectedMetric } : {}),
+        }
+    }, [dateFilters, selectedRole, selectedMetric])
+
+    const { scoreDistribution, isLoadingScoreDistribution } = useDashboardScoreDistribution(filters)
 
     const data = React.useMemo(
         () =>
@@ -51,9 +74,37 @@ export function DashboardScoreDistributionChart() {
 
     return (
         <Card size="sm">
-            <CardHeader>
-                <CardTitle className="text-base">Score distribution</CardTitle>
-                <CardDescription>Histogram of interview scores</CardDescription>
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
+                <div>
+                    <CardTitle className="text-base">Score distribution</CardTitle>
+                    <CardDescription>Histogram of interview scores</CardDescription>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Select value={selectedRole} onValueChange={setSelectedRole}>
+                        <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs">
+                            <SelectValue placeholder="All Roles" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Roles</SelectItem>
+                            {roles?.map((role) => (
+                                <SelectItem key={role} value={role}>
+                                    {role}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+                        <SelectTrigger className="w-full sm:w-[150px] h-8 text-xs">
+                            <SelectValue placeholder="Metric" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="overall">Overall Score</SelectItem>
+                            <SelectItem value="knowledge">Knowledge Competence</SelectItem>
+                            <SelectItem value="speech">Speech Structure</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <DashboardRolePerformanceDialog />
+                </div>
             </CardHeader>
             <CardContent className="pt-0 pb-2">
                 {isLoadingScoreDistribution ? (
