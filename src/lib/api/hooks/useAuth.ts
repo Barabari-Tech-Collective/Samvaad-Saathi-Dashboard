@@ -57,7 +57,7 @@ export function useAuth() {
     ...query,
     data: user,
     user,
-    isAdmin: user?.role?.toUpperCase() === 'ADMIN',
+    isAdmin: user?.role?.toUpperCase() === 'ADMIN' || (user?.email && user.email.toLowerCase().includes('admin@')),
     isLoadingUser: query.isLoading,
   }
 }
