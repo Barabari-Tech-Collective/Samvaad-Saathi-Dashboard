@@ -46,6 +46,8 @@ export function DashboardScoreDistributionChart() {
     const [selectedRole, setSelectedRole] = React.useState<string>("all")
     const [selectedMetric, setSelectedMetric] = React.useState<string>("overall")
 
+    // TODO: Scalability - Upgrading this to a searchable Combobox with backend pagination 
+    // will be needed in the future to support tenants with >100 roles.
     const { jobProfiles } = useJobProfilesList(undefined, 100)
 
     const filters = React.useMemo(() => {
