@@ -14,6 +14,7 @@ import {
   EXPERIENCE_OPTIONS,
 } from "./constants"
 import { useGetJobProfileReview } from "@/lib/api/hooks/analytics/useJobProfiles"
+import { useAuth } from "@/lib/api/hooks/useAuth"
 
 import { useSearchParams } from "next/navigation"
 
@@ -36,6 +37,8 @@ export function ReviewSubmitStep({
   }, [])
 
   const { reviewData, isLoadingReview } = useGetJobProfileReview(profileId)
+  const { user: currentUser } = useAuth()
+  const isAdmin = currentUser?.role?.toUpperCase() === 'ADMIN'
 
   // Accordion active level state
   const [activeLevel, setActiveLevel] = useState<number | null>(1)
@@ -261,8 +264,8 @@ export function ReviewSubmitStep({
         </div>
       </div>
 
-      {/* 4. ADMIN REVIEW Card (Only visible if Under Review) */}
-      {["review", "pending", "changes"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) && !["published", "approved"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) && (
+      {/* 4. ADMIN REVIEW Card (Only visible if Under Review and user is Admin) */}
+      {isAdmin && ["review", "pending", "changes"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) && !["published", "approved"].some(s => searchParams.get("status")?.toLowerCase().includes(s)) && (
         <div className="border border-blue-200 rounded-2xl p-6 bg-blue-50/50 shadow-sm space-y-5 animate-in fade-in duration-400">
           <div className="space-y-1">
             <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider">
