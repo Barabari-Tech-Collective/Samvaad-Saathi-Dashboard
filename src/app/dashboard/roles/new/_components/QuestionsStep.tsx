@@ -525,7 +525,7 @@ export function QuestionsStep() {
       {/* Add Question Modal */}
       {(() => {
         const cats = Array.from(new Set(questions.map(q => q.category))).filter(Boolean) as string[]
-        if (cats.length === 0) cats.push("TECH_ALIGNED", "BEHAVIORAL")
+        if (cats.length === 0) cats.push("tech_allied", "behavioral")
         return (
           <>
             <AddQuestionDialog
