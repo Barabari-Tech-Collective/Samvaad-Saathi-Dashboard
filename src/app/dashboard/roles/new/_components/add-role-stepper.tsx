@@ -678,7 +678,10 @@ export function AddRoleStepper() {
                           disabled={isAdminReviewing}
                           className="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
                           onClick={async () => {
-
+                             if (!profileId) {
+                               toast.error("Profile ID is missing");
+                               return;
+                             }
                              try {
                                await adminReviewAsync({
                                  jobProfileId: profileId,
