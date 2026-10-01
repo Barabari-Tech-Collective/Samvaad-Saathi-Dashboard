@@ -616,7 +616,7 @@ export function AddRoleStepper() {
                                try {
                                  await adminReviewAsync({
                                    jobProfileId: profileId,
-                                   status: isRequestingChanges ? "changes_requested" : (searchParams.get("status") || "approved"),
+                                   ...(isRequestingChanges ? { status: "changes_requested" } : {}),
                                    adminComment: form.getValues("adminComment") || "Please review."
                                  });
                                  queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });

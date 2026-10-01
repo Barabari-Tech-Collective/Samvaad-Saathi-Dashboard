@@ -57,7 +57,7 @@ export function useAuth() {
     ...query,
     data: user,
     user,
-    isAdmin: !!(user?.role && user.role.toUpperCase() === 'ADMIN') || user?.email === 'admin@samvaad-sathi.com',
+    isAdmin: !!(user?.role && (user.role.toUpperCase() === 'ADMIN' || user.role.toUpperCase() === 'SUPER_ADMIN')) || user?.email === 'admin@barabari.org',
     isLoadingUser: query.isLoading,
   }
 }

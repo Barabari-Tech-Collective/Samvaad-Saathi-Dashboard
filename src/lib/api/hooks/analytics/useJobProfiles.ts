@@ -345,7 +345,7 @@ export function useAdminReviewJobProfile() {
   const mutation = api.useMutation<
     JobProfileItem,
     unknown,
-    { jobProfileId: string; status: string; adminComment: string }
+    { jobProfileId: string; status?: string; adminComment: string }
   >({
     url: ({ jobProfileId }) => `/v2/job-profiles/${jobProfileId}/review`,
     method: "PATCH",
