@@ -1,6 +1,7 @@
 "use client"
 
 import { api } from "@/lib/api/config"
+import { toast } from "sonner"
 import type {
   CreateJobProfileRequest,
   CreateJobProfileResponse,
@@ -342,13 +343,16 @@ export function useSubmitJobProfile() {
 // ── PATCH /v2/job-profiles/{job_profile_id}/review ───────────────────────────
 export function useAdminReviewJobProfile() {
   const mutation = api.useMutation<
-    any,
+    JobProfileItem,
     unknown,
     { jobProfileId: string; status: string; adminComment: string }
   >({
     url: ({ jobProfileId }) => `/v2/job-profiles/${jobProfileId}/review`,
     method: "PATCH",
     keyToInvalidate: analyticsKey("/v2/job-profiles"),
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to submit admin review. Please try again.")
+    }
   })
 
   return {

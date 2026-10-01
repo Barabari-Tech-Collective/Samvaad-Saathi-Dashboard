@@ -65,8 +65,6 @@ export default function RolesManagementPage() {
     { label: "All", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("total"))?.value ?? jobProfiles.length },
     { label: STATUS_LABELS.DRAFT, value: draftCount }, 
     { label: STATUS_LABELS.UNDER_REVIEW, value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("pending"))?.value ?? 0 },
-    { label: "Changes Requested", value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("reject"))?.value ?? 0 },
-    { label: STATUS_LABELS.APPROVED, value: kpis.find((k: { label: string }) => k.label.toLowerCase().includes("approved"))?.value ?? 0 },
     { label: STATUS_LABELS.PUBLISHED, value: publishedCount } 
   ]
 

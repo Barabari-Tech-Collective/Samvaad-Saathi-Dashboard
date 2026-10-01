@@ -1,4 +1,6 @@
-export function navigateToJobProfileStep(profile: any, router: any) {
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+
+export function navigateToJobProfileStep(profile: Record<string, any>, router: AppRouterInstance) {
   if (typeof window === "undefined") return;
 
   const id = profile.jobProfileId || profile.id;
@@ -16,13 +18,14 @@ export function navigateToJobProfileStep(profile: any, router: any) {
     router.push(`/dashboard/roles/new?step=5&profileId=${id}&status=${encodeURIComponent(profile.status || "Approved")}`);
   } else {
     const previousProfileId = localStorage.getItem("samvaad_saathi_draft_profile_id");
-    let existingDraft = {};
-    if (previousProfileId === id.toString()) {
-      const savedDraft = localStorage.getItem("samvaad_saathi_draft_role");
-      if (savedDraft) {
-        try {
-          existingDraft = JSON.parse(savedDraft);
-        } catch (e) {}
+    let existingDraft: Record<string, any> = {};
+    const savedDraft = localStorage.getItem(`samvaad_saathi_draft_role_${id}`);
+    if (savedDraft) {
+      try {
+        existingDraft = JSON.parse(savedDraft);
+      } catch (e) {
+        console.error("Failed to parse existing draft", e);
+        localStorage.removeItem(`samvaad_saathi_draft_role_${id}`);
       }
     }
 
@@ -30,15 +33,15 @@ export function navigateToJobProfileStep(profile: any, router: any) {
 
     const formDraft = {
       jdType: "role",
-      jobName: profile.jobName || profile.title || (existingDraft as any).jobName || "",
-      companyName: profile.companyName || (existingDraft as any).companyName || "",
-      category: profile.category || (existingDraft as any).category || "",
-      experienceLevel: profile.experienceLevel || (existingDraft as any).experienceLevel || "",
-      employmentType: profile.employmentType || (existingDraft as any).employmentType || "",
-      jobDescription: profile.jobDescription || profile.description || (existingDraft as any).jobDescription || "",
-      skills: (profile.skills?.length ? profile.skills : (existingDraft as any).skills) || [],
+      jobName: profile.jobName || profile.title || existingDraft.jobName || "",
+      companyName: profile.companyName || existingDraft.companyName || "",
+      category: profile.category || existingDraft.category || "",
+      experienceLevel: profile.experienceLevel || existingDraft.experienceLevel || "",
+      employmentType: profile.employmentType || existingDraft.employmentType || "",
+      jobDescription: profile.jobDescription || profile.description || existingDraft.jobDescription || "",
+      skills: (profile.skills?.length ? profile.skills : existingDraft.skills) || [],
     };
-    localStorage.setItem("samvaad_saathi_draft_role", JSON.stringify(formDraft));
+    localStorage.setItem(`samvaad_saathi_draft_role_${id}`, JSON.stringify(formDraft));
 
     if (targetStep === "4") {
       router.push("/dashboard/roles/new/questions");

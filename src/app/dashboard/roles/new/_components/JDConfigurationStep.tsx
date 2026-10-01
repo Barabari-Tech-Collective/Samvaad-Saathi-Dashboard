@@ -216,6 +216,16 @@ export function JDConfigurationStep({
       setUploadError(null)
       const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
 
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File Too Large", {
+          description: "Please upload a file smaller than 10MB.",
+          duration: 6000,
+        })
+        setUploadError("File too large (>10MB)")
+        if (e.target) e.target.value = ''
+        return
+      }
+
       if (!isValidExtension) {
         toast.error("Unsupported File Format", {
           description: "Please upload your Job Description as a PDF (.pdf) or Word Document (.doc, .docx). Other formats are not allowed.",
@@ -259,6 +269,16 @@ export function JDConfigurationStep({
       setKnowledgeUploadError(null)
       const isValidExtension = file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')
 
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File Too Large", {
+          description: "Please upload a file smaller than 10MB.",
+          duration: 6000,
+        })
+        setKnowledgeUploadError("File too large (>10MB)")
+        if (e.target) e.target.value = ''
+        return
+      }
+
       if (!isValidExtension) {
         toast.error("Unsupported File Format", {
           description: "Please upload your Knowledge Set as a PDF (.pdf) or Word Document (.doc, .docx). Other formats are not allowed.",
@@ -276,13 +296,12 @@ export function JDConfigurationStep({
         const response = await uploadKnowledgeAsync(formData)
 
         const topics = response.topics || []
-        const isSingleHugeQuestion = topics.length === 1 && topics[0].levels?.length === 1 && topics[0].levels[0].questions?.length === 1 && topics[0].levels[0].questions[0].length > 500;
         const isMissingQuestions = topics.length === 0 || response.totalQuestions === 0;
 
-        if (isSingleHugeQuestion || isMissingQuestions) {
+        if (isMissingQuestions) {
           toast.dismiss(toastId)
           toast.error("Incorrect Document Format", {
-            description: "Hey boss, this is not a correct format of the document. If you want to check, please check out the format that we provided in the above 'Follow this format' link.",
+            description: "The document could not be read or is missing valid questions. Please refer to the 'Follow this format' link for the expected structure.",
             duration: 8000,
           })
           setKnowledgeUploadError("Incorrect document format")
@@ -299,11 +318,14 @@ export function JDConfigurationStep({
           uploadedAt: response.uploadedAt,
           totalQuestions: response.totalQuestions,
           topicsDetected: response.topicsDetected || [],
-          extractedText: response.extracted_text || ""
         }
         setKnowledgeQuestions(parsed)
-        if (typeof window !== "undefined") {
-          localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(parsed))
+        try {
+          if (typeof window !== "undefined") {
+            localStorage.setItem("samvaad_saathi_knowledge_questions", JSON.stringify(parsed))
+          }
+        } catch (storageError) {
+          console.warn("Failed to save knowledge questions to local storage:", storageError)
         }
       } catch (error) {
         toast.dismiss(toastId)
