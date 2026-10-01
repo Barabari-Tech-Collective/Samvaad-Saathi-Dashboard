@@ -28,7 +28,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useCreateJobProfile, useSubmitJobProfile, useUpdateJobProfile, useAdminReviewJobProfile, useGetJobProfileReview } from "@/lib/api/hooks/analytics/useJobProfiles"
+import { useCreateJobProfile, useSubmitJobProfile, useUpdateJobProfile, useAdminReviewJobProfile } from "@/lib/api/hooks/analytics/useJobProfiles"
 import { useAuth } from "@/lib/api/hooks/useAuth"
 import { RoleCreationStepper } from "./RoleCreationStepper"
 
@@ -74,7 +74,6 @@ export function AddRoleStepper() {
   
   const draftId = typeof window !== "undefined" ? localStorage.getItem("samvaad_saathi_draft_profile_id") : null
   const profileId = searchParams.get("profileId") || draftId
-  const { reviewData } = useGetJobProfileReview(profileId)
 
   useEffect(() => {
     const stepParam = searchParams.get("step")
@@ -612,7 +611,6 @@ export function AddRoleStepper() {
                             type="button"
                             disabled={isAdminReviewing}
                             onClick={async () => {
-                               const profileId = searchParams.get("profileId");
                                if (!profileId) {
                                  toast.error("Profile ID is missing");
                                  return;
@@ -620,7 +618,7 @@ export function AddRoleStepper() {
                                try {
                                  await adminReviewAsync({
                                    jobProfileId: profileId,
-                                   status: isRequestingChanges ? "changes_requested" : (reviewData?.status || "under_review"),
+                                   ...(isRequestingChanges ? { status: "changes_requested" } : {}),
                                    adminComment: form.getValues("adminComment") || "Please review."
                                  });
                                  queryClient.invalidateQueries({ queryKey: analyticsKey("/v2/job-profiles") });
@@ -680,11 +678,7 @@ export function AddRoleStepper() {
                           disabled={isAdminReviewing}
                           className="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-6 py-2.5 shadow-sm transition-colors duration-200 h-11 flex items-center justify-center gap-2 min-w-[160px] select-none"
                           onClick={async () => {
-                             const profileId = searchParams.get("profileId");
-                             if (!profileId) {
-                               toast.error("Profile ID is missing");
-                               return;
-                             }
+
                              try {
                                await adminReviewAsync({
                                  jobProfileId: profileId,

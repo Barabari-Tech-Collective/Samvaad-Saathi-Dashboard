@@ -17,9 +17,9 @@ const authInterceptor = createAuthInterceptor({
       throw new Error("No refresh token")
     }
     const response = await axios.post<{
-      token: string
-      refresh_token: string
-    }>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/refresh`, {
+      accessToken: string
+      refreshToken: string
+    }>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/refresh`, {
       refresh_token: refreshToken,
     },
       {
@@ -29,8 +29,8 @@ const authInterceptor = createAuthInterceptor({
       },
     )
     return {
-      accessToken: response.data.token,
-      refreshToken: response.data.refresh_token,
+      accessToken: response.data.accessToken,
+      refreshToken: response.data.refreshToken,
     }
   },
   setTokens: (tokens) => {

@@ -20,6 +20,7 @@ export type MeApiResponse = Readonly<{
     avatar?: string | null
     profileImageUrl?: string | null
     role?: string | null
+    isAdmin?: boolean
   }> | null
 }>
 
@@ -30,6 +31,7 @@ export type AuthUser = Readonly<{
   name?: string | null
   avatar?: string | null
   role?: string | null
+  isAdmin?: boolean
 }>
 
 export function mapMeResponseToAuthUser(data: MeApiResponse): AuthUser {
@@ -41,6 +43,7 @@ export function mapMeResponseToAuthUser(data: MeApiResponse): AuthUser {
     name: u?.name ?? null,
     avatar,
     role: u?.role ?? null,
+    isAdmin: u?.isAdmin ?? false,
   }
 }
 
@@ -57,7 +60,7 @@ export function useAuth() {
     ...query,
     data: user,
     user,
-    isAdmin: !!(user?.role && (user.role.toUpperCase() === 'ADMIN' || user.role.toUpperCase() === 'SUPER_ADMIN')) || user?.email === 'admin@barabari.org',
+    isAdmin: user?.isAdmin ?? false,
     isLoadingUser: query.isLoading,
   }
 }
