@@ -13,7 +13,8 @@ import type {
   JobProfileExtractSkillsRequest,
   JobProfileExtractSkillsResponse,
   JobProfileGenerateQuestionsRequest,
-  JobProfileGenerateQuestionsResponse,
+  JobProfileGenerateJobEnqueuedResponse,
+  JobProfileGenerateJobStatusResponse,
   JobProfileQuestionsListResponse,
   JobProfileAddQuestionRequest,
   JobProfileAddQuestionResponse,
@@ -192,21 +193,41 @@ export function useUploadKnowledgeQuestions() {
 }
 
 // ── POST /v2/job-profiles/{job_profile_id}/questions/generate ─────────────────
+// Returns a job_id immediately (202). Use useGenerateQuestionsStatus to poll.
 export function useGenerateQuestions(jobProfileId: string | null) {
   const mutation = api.useMutation<
-    JobProfileGenerateQuestionsResponse,
+    JobProfileGenerateJobEnqueuedResponse,
     unknown,
     JobProfileGenerateQuestionsRequest
   >({
     url: () => `/v2/job-profiles/${jobProfileId}/questions/generate`,
     method: "POST",
-    keyToInvalidate: jobProfileId ? ["/v2/job-profiles", jobProfileId, "questions"] : undefined,
+    // No keyToInvalidate here — we refetch manually once polling confirms completion.
   })
 
   return {
     generateQuestionsAsync: mutation.mutateAsync,
-    isGenerating: mutation.isPending,
+    isEnqueuing: mutation.isPending,
     ...mutation,
+  }
+}
+
+// ── GET /v2/job-profiles/{job_profile_id}/questions/generate/status/{job_id} ──
+export function useGenerateQuestionsStatus(jobProfileId: string | null, jobId: string | null) {
+  const isEnabled = !!jobProfileId && !!jobId && jobProfileId !== "null"
+
+  const query = api.useQuery<JobProfileGenerateJobStatusResponse>({
+    url: `/v2/job-profiles/${jobProfileId}/questions/generate/status/${jobId}`,
+    method: "GET",
+    key: ["/v2/job-profiles", jobProfileId, "generate-status", jobId],
+    enabled: isEnabled,
+    refetchInterval: isEnabled ? 4000 : false,
+  })
+
+  return {
+    statusData: query.data,
+    isStatusLoading: query.isLoading,
+    ...query,
   }
 }
 

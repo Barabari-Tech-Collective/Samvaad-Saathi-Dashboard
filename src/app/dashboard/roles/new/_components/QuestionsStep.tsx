@@ -25,13 +25,14 @@ import { Accordion } from "@/components/ui/accordion"
 import { AddQuestionDialog } from "./AddQuestionDialog"
 import { EditQuestionDialog } from "./EditQuestionDialog"
 
-import { 
-  useGetJobProfileQuestions, 
-  useGenerateQuestions, 
-  useAddJobProfileQuestion, 
-  useUpdateJobProfileQuestion, 
-  useDeleteJobProfileQuestion, 
-  useRegenerateJobProfileQuestion 
+import {
+  useGetJobProfileQuestions,
+  useGenerateQuestions,
+  useGenerateQuestionsStatus,
+  useAddJobProfileQuestion,
+  useUpdateJobProfileQuestion,
+  useDeleteJobProfileQuestion,
+  useRegenerateJobProfileQuestion
 } from "@/lib/api/hooks/analytics/useJobProfiles"
 import { useRef } from "react"
 
@@ -43,11 +44,19 @@ export function QuestionsStep() {
 
   // API Hooks
   const { questionsData, isLoadingQuestions, refetch } = useGetJobProfileQuestions(profileId)
-  const { generateQuestionsAsync, isGenerating } = useGenerateQuestions(profileId)
+  const { generateQuestionsAsync, isEnqueuing } = useGenerateQuestions(profileId)
   const { addQuestionAsync } = useAddJobProfileQuestion(profileId)
   const { updateQuestionAsync } = useUpdateJobProfileQuestion(profileId)
   const { deleteQuestionAsync } = useDeleteJobProfileQuestion(profileId)
   const { regenerateQuestionAsync } = useRegenerateJobProfileQuestion(profileId)
+
+  // Track the arq job id returned by POST /generate so we can poll its status
+  const [generationJobId, setGenerationJobId] = useState<string | null>(null)
+  const generationLoadingToastRef = useRef<string | number | null>(null)
+  const { statusData } = useGenerateQuestionsStatus(profileId, generationJobId)
+
+  // isGenerating is true while the POST is in-flight OR while we're polling
+  const isGenerating = isEnqueuing || !!generationJobId
 
   // Map API questions to UI model
   const apiQuestions = questionsData?.questions || []
@@ -140,48 +149,77 @@ export function QuestionsStep() {
   const activeLevels = difficultyLevels.filter(l => l.selected)
   const totalQuestions = activeLevels.reduce((acc, curr) => acc + curr.count, 0)
   
-  // Try to generate questions automatically if we have 0 questions from API
+  // Auto-generate when the page loads with 0 questions
   useEffect(() => {
     const fetchedTotal = questionsData?.total_questions ?? questionsData?.totalQuestions
     if (profileId && questionsData && fetchedTotal === 0 && !isGenerating && !hasGeneratedRef.current) {
-       hasGeneratedRef.current = true;
+       hasGeneratedRef.current = true
+
        const levelsPayload = difficultyLevels.map(l => ({
           level: l.level,
           count: l.selected ? l.count : 0
        }))
-       
-       let knowledgeReferenceContext = undefined;
+
+       let knowledgeReferenceContext: string | undefined = undefined
        if (typeof window !== "undefined") {
-         const k = localStorage.getItem("samvaad_saathi_knowledge_questions");
+         const k = localStorage.getItem("samvaad_saathi_knowledge_questions")
          if (k) {
             try {
-              const parsed = JSON.parse(k);
-              knowledgeReferenceContext = parsed.extractedText || JSON.stringify(parsed.topics);
-            } catch (e) {
-             knowledgeReferenceContext = k;
-           }
+              const parsed = JSON.parse(k)
+              knowledgeReferenceContext = parsed.extractedText || JSON.stringify(parsed.topics)
+            } catch {
+              knowledgeReferenceContext = k
+            }
          }
        }
 
        if (levelsPayload.some(l => l.count > 0)) {
-         const loadingToast = toast.loading("Generating AI questions based on provided reference...")
-         generateQuestionsAsync({ 
+         const loadingToastId = toast.loading("Generating AI questions based on provided reference...")
+         generationLoadingToastRef.current = loadingToastId
+
+         generateQuestionsAsync({
              levels: levelsPayload,
              knowledge_reference_context: knowledgeReferenceContext
          })
-           .then(() => {
-             toast.dismiss(loadingToast)
-             toast.success("Questions generated successfully!")
-             refetch()
+           .then((response) => {
+             // Backend returns 202 with job_id immediately — start polling
+             const jobId = response?.job_id
+             if (jobId) {
+               setGenerationJobId(jobId)
+             } else {
+               // Unexpected: no job_id in response
+               toast.dismiss(loadingToastId)
+               toast.error("Generation started but no job ID returned")
+             }
            })
            .catch(err => {
-             console.error("Error generating questions:", err)
-             toast.dismiss(loadingToast)
-             toast.error(err?.response?.data?.detail || "Failed to generate questions")
+             console.error("Error enqueuing question generation:", err)
+             toast.dismiss(loadingToastId)
+             generationLoadingToastRef.current = null
+             toast.error(err?.response?.data?.detail || "Failed to start question generation")
            })
        }
     }
-  }, [profileId, questionsData, difficultyLevels, isGenerating, generateQuestionsAsync, refetch])
+  }, [profileId, questionsData, difficultyLevels, isGenerating, generateQuestionsAsync])
+
+  // React to polling results from useGenerateQuestionsStatus
+  useEffect(() => {
+    if (!statusData || !generationJobId) return
+
+    const { status, questions_count, error } = statusData
+    if (status === "complete") {
+      setGenerationJobId(null)
+      if (generationLoadingToastRef.current) toast.dismiss(generationLoadingToastRef.current)
+      generationLoadingToastRef.current = null
+      toast.success(`${questions_count ?? ""} questions generated successfully!`.trim())
+      refetch()
+    } else if (status === "failed" || status === "not_found") {
+      setGenerationJobId(null)
+      if (generationLoadingToastRef.current) toast.dismiss(generationLoadingToastRef.current)
+      generationLoadingToastRef.current = null
+      toast.error(error || "Question generation failed. Please try again.")
+    }
+  }, [statusData, generationJobId, refetch])
 
   useEffect(() => {
     if (activeLevels.length > 0 && !activeLevels.some(l => l.level === activeTab)) {

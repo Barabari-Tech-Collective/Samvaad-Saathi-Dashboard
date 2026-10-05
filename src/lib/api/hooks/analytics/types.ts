@@ -695,6 +695,18 @@ export type JobProfileGenerateQuestionsResponse = {
   generatedCount: number
 }
 
+export type JobProfileGenerateJobEnqueuedResponse = {
+  job_id: string
+  status: string
+}
+
+export type JobProfileGenerateJobStatusResponse = {
+  job_id: string
+  status: "queued" | "in_progress" | "complete" | "failed" | "not_found" | "unknown" | "deferred"
+  questions_count?: number | null
+  error?: string | null
+}
+
 export type JobProfileQuestionItem = {
   question_id: string
   questionId?: string
